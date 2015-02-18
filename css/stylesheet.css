@@ -1,0 +1,103 @@
+/*NEW*/
+#header {
+	margin-top: 10px;
+	margin-bottom: 0;
+	margin-left: 30px;
+	color:#01A9DB;
+}
+
+#workspace {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#hiddenUpload {
+	display:none;
+}
+
+/****** Style for table display ******/
+#control {
+	width: 250px;
+	height: 450px;
+	/*display: inline;*/
+	float:right;
+	margin-left:10px;
+	margin-right: 20px;
+	background-color: "red";
+	overflow:scroll;
+}
+
+#control td {
+	border: 1px solid black;
+	padding:3px;
+}
+
+#control td input {
+	width:50px;
+}
+
+#svg {
+	border:1px solid black;
+	background: #DFF5F9;
+	-webkit-user-select:none;
+	-moz-user-select:none;
+	-ms-user-select:none;
+	-o-user-select:none;
+	user-select:none;
+	float:left;	
+}
+
+g.node circle{
+	fill: #01A9DB;
+	stroke:#0489B1;
+	stroke-width:1px;
+}
+
+g.node.selected circle{
+	fill:#2B809A !important;
+	stroke-width:2px !important;
+}
+
+path.conn{
+	fill:none;
+	stroke:#0489B1;
+	stroke-width:3px;
+	cursor:default;
+}
+
+path.conn.hidden{
+	stroke-width: 0;
+}
+
+path.conn.dragline{
+	pointer-events:none;
+}
+
+path.conn.selected{
+	stroke:#CC0B7C !important; /* change */
+}
+/* --- */
+
+
+#workfield {
+	fill: #DFF5F9;
+}
+
+.control{
+	fill: #F2F2F2;
+	stroke:#999999;
+}
+
+.selected-ctrl{
+	fill: #D3D3D3;
+	stroke: #999999;
+}
+
+
+.conn-point {
+	fill:#0489B1;
+	fill-opacity:0.1;
+	stroke:#0489B1;
+	display:none;
+}
+

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width initial-scale=1">
+		<title> Bayesian networks tool </title>
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/stylesheet.css">
+	</head>
+	<body>
+		<div class="page-header">
+			<h3 id="header"> Bayesian networks tool </h3>
+		</div>
+		<div class="btn-group" role="group">
+			<button type="button" class="btn" id="nodeMode"> NodeMode </button>
+			<button type="button" class="btn" id="connMode"> ConnMode </button>
+			<button type="button" class="btn" id="downloadNet"> Download </button>
+			<button type="button" class="btn" id="uploadNet"> Upload </button>
+			<input type="file" id="hiddenUpload">
+			<button type="button" class="btn" id="deleteNet"> Delete </button>
+			<button type="button" class="btn" id="sampleNet"> Sample </button>
+		</div>
+		<div id="workspace"> </div>
+		<div id="control"> </div>
+
+		<script src="lib/d3.min.js"> </script>
+		<script src="lib/jquery-1.11.1.min.js"></script>
+		<script src="lib/bootstrap.min.js"></script>
+		<script src="lib/FileSaver.min.js"></script>
+		<script src="js/app.js"></script>
+<!--	<script type="text/javascript" src="js/my.js"></script>  -->
+<!--		<script type="text/javascript" src="js/skeleton.js"></script> 
+		<script type="text/javascript" src="js/circles.js"></script> 
+		<script type="text/javascript" src="js/lines.js"></script> 
+-->
+<!--		<script type="text/javascript" src="js/nodes.js"></script> -->
+	</body>
+</html>

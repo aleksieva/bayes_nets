@@ -1,0 +1,592 @@
+//svg width & height
+var width = 920,
+	height = 450,
+	r=20,
+	lastKey = -1;
+
+var constants = {
+	BACKSPACE: 8,
+	DELETE:46
+};
+
+var svg = d3.select("#workspace")
+			.append("svg")
+			.attr("width", width)
+			.attr("height", height)
+			.attr("id", "svg");
+
+//test nodes and links
+var nodes = [
+	{id: 0, title: "project", x: 450, y: 100},
+	{id: 1, title: "mark", x: 450, y: 250}
+	],
+	edges = [
+		{source: nodes[0], target:nodes[1]}
+	],
+	lastID=1;
+
+//arrow markers
+//TODO code used from
+svg.append("defs")
+   .append("marker")
+   .attr("id", "arrow")
+   .attr("viewBox", "0 -5 10 10")
+   .attr("refX", 30) //TODO change that
+   .attr("markerWidth", 3)
+   .attr("markerHeight", 3)
+   .attr("orient", "auto")
+   .append("path")
+   .attr("d", "M0,-5L10,0L0,5")
+   .attr("fill", "#0489B1") //TODO move to css
+
+svg.append("defs")
+   .append("marker")
+   .attr("id", "dragline-arrow")
+   .attr("viewBox", "0 -5 10 10")
+   .attr("refX", 6)
+   .attr("markerWidth", 3)
+   .attr("markerHeight", 3)
+   .attr("orient", "auto")
+   .append("path")
+   .attr("d", "M0,-5L10,0L0,5")
+   .attr("fill", "#0489B1") //TODO move to css
+
+//graph group, paths, circles
+var graph = svg.append("g"),
+	paths = graph.append("g").selectAll("path"),
+    circles = graph.append("g").selectAll("g");
+
+//dragline
+var dragline = graph.append("path")
+					.attr("class", "conn hidden dragline")
+				 	.attr("d", "M0,0L0,0")
+				 	.style("marker-end", "url(#dragline-arrow)");
+
+//mouse event variables
+var selectedNode = null,
+	selectedPath = null,
+	mousedownPath = null,
+	mousedownNode = null,
+	mouseupNode = null;
+
+//network states
+//TODO do we need these?
+var dragged = false,
+	zoomed = false;
+
+//work mode
+var standardMode = true,
+	nodeMode = false,
+	connMode = false;
+
+// var resetMouseFunctions = function(){
+// 	mousedownPath = null;
+// 	mousedownNode = null;
+// 	mouseupNode = null;
+// };
+
+var setMode = function(mode){
+	if (mode === "node") {
+		if(!nodeMode) {
+			standardMode = false;
+			nodeMode = true;
+			connMode = false;
+			return;
+		}
+	}
+	else if (mode === "conn") {
+		if(!connMode) {
+			standardMode = false;
+			nodeMode = false;
+			connMode = true;
+			return;
+		}
+	}
+	standardMode = true;
+	nodeMode = false;
+	connMode = false;
+};
+
+//handle drag behaviour
+var dragmove = function(d) {
+	//set the state to being dragged
+	dragged = true;
+	//handle when a line is being dragged to connect 2 nodes
+	if(connMode) {
+		dragline.attr("d", "M" + d.x + "," + d.y + "L" + d3.mouse(svg.node())[0] + "," + d3.mouse(svg.node())[1]);
+	}
+	else {
+		// console.log(d3.event);
+		// console.log(d.x);
+		// console.log(d3.event.dx);
+		d.x += d3.event.dx;
+		d.y += d3.event.dy;
+		update();		
+	}
+};
+
+//TODO maybe change cursor dragstart && dragend?
+var drag = d3.behavior.drag()
+			 .origin(function(d){
+			 	return {x: d.x, y:d.y};
+			 })
+			 .on("dragstart", function(){
+			 	d3.event.sourceEvent.stopPropagation();
+			 })
+			 .on("drag", dragmove);
+
+//handle zoom behaviour
+var zoomed = function(d){
+	graph.attr("transform", "translate(" + d3.event.translate + ") scale (" + d3.event.scale + ")");
+};
+
+var zoom = d3.behavior.zoom()
+			 .scaleExtent([0.5, 5])
+			 .on("zoomstart", function(){
+			 	//TODO cursor
+			 })
+			 .on("zoom", zoomed)
+			 .on("zoomend", function(){
+			 	//TODO cursor
+			 });
+svg.call(zoom)
+   .on("dblclick.zoom", null);
+
+var nodeMouseDown = function(d){
+	mousedownNode = d;
+
+	if(connMode) {
+		//reposition the dragline to the center of the node
+		dragline.classed("hidden", false)
+				.attr("d", "M" + d.x + "," + d.y + "L" + d.x + "," + d.y);
+	}
+}
+
+var nodeMouseUp = function(d){
+
+	//check if mousedownNode is set
+	if(!mousedownNode)
+		return;
+
+	dragline.classed("hidden", true);
+
+	mouseupNode = d;
+	if(mousedownNode !== mouseupNode) {
+		if(connMode) {
+			//create a new edge
+			var newEdge = {source:mousedownNode, target:mouseupNode};
+			var duplicates = edges.filter(function(e){
+				//check if there is an edge in the opposite direction between the same nodes
+				if(newEdge.target === e.source && newEdge.source === e.target) {
+					edges.splice(edges.indexOf(e),1);
+				}
+				return newEdge.source === e.source && newEdge.target === e.target;
+			})
+			if(!duplicates[0]) {
+				edges.push(newEdge);
+				update();
+			}
+		}
+	}
+	else {
+		if(dragged) {
+			dragged = false;
+		}
+		else {
+			if(selectedNode === mousedownNode) {
+				selectedNode = null;
+			}
+			else {
+				selectedNode = mousedownNode;
+			}
+			selectedPath = null;
+			update();
+		}
+	}
+	
+	mousedownNode = null;
+	mouseupNode = null;
+}
+
+var getNodeParents = function(d){
+	var nodeParentsIds = [];
+	var inConns = edges.filter(function(e) {
+		return e.target === d;
+	})
+
+	for (c in inConns) {
+		nodeParentsIds.push(inConns[c].source.id);
+	}
+	console.log(nodeParentsIds);
+	return nodeParentsIds;
+}
+
+var html = "";
+var createCPT = function(numParents, data, idsList, level){
+	if (numParents === 0) {
+		var lastEl = idsList[level];
+		// console.log(lastEl);
+
+		var trueCase = lastEl + "true";
+		data[trueCase] = 0.5;
+		d3.select("#control").append("p").text(nodes[lastEl].title + " = T ->" + data[trueCase]);
+
+		var falseCase = lastEl + "false";
+		data[falseCase] = 0.5;
+		d3.select("#control").append("p").text(nodes[lastEl].title + " = F ->" + data[falseCase]);
+	}
+	else {
+		// console.log("list");
+		// console.log(idsList);
+		numParents--;
+		//get the element from the front of the list
+		var currEl = idsList[level];
+		level++;
+
+		// console.log("current element " + currEl);
+		var trueCase = currEl + "true";
+		data[trueCase] = {};
+
+		d3.select("#control").append("p").text(nodes[currEl].title + " = T");
+		createCPT(numParents, data[trueCase], idsList, level);			
+
+		var falseCase = currEl + "false";
+		data[falseCase] = {};
+
+		d3.select("#control").append("p").text(nodes[currEl].title + " = F");
+		createCPT(numParents, data[falseCase], idsList, level);
+	}
+}
+
+var displayCPT = function(numRows, numCols) {
+	var tblHeight = 100;
+	var tblWidth = 200;
+
+	//apend the table
+	d3.select("#control").append('table').style('border', 3)
+}
+
+//create & display table
+var nodeDblClick = function(d) {
+	// console.log(d);
+	var parents = getNodeParents(d);
+	parents.sort();
+	parents.unshift(d.id);
+	// console.log(parents);
+	cpt = {}
+	createCPT(parents.length-1, cpt, parents, 0);
+	console.log(cpt);
+	// console.log(parents);
+	// displayCPT(cpt, parents);
+}
+
+var update = function(){
+	//data for the paths
+	paths = paths.data(edges);
+
+	//update existing edges
+	paths.classed("selected", function(d){
+		    return d === selectedPath;
+		 })
+		//If a node has been dragged, update the associated paths' coordinates
+		 .attr("d", function(d){
+		 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+		 })
+
+	//add new edges
+	paths.enter().append("path")
+		 .attr("class", "conn")
+		 .classed("selected", function(d) {
+		 	return d === selectedPath;
+		 })
+		 .style("marker-end", "url(#arrow)")
+		 .attr("d", function(d) {
+		 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+		 })
+		 .on("mousedown", function(d){ //select the path
+		 	d3.event.stopPropagation();
+
+		 	mousedownPath = d;
+		 	if(mousedownPath === selectedPath) {
+		 		selectedPath = null;
+		 	} else {
+		 		selectedPath = mousedownPath;
+		 	}
+
+		 	selectedNode = null;
+		 	update();
+		 })
+		 .on("mouseup", function(){
+		 	mousedownPath = null;
+		 	//update(); //TODO check?
+		 })
+
+    //remove old paths
+    paths.exit().remove();
+
+    //data for the circles
+    circles = circles.data(nodes, function(d) {
+    	return d.id;
+    });
+
+    //update nodes
+    circles.classed("selected", function(d){
+    	   	//TODO go to darker color from here rgb bla bla
+    	   	 return d === selectedNode;
+    	   })
+    	   .attr("transform", function(d){
+    	   	 return "translate(" + d.x + "," + d.y + ")";
+    	   })
+
+    //new nodes
+    var circleGroup = circles.enter().append("g");
+
+    circleGroup.attr("class", "node")
+    		   .attr("transform", function(d){
+    			  return "translate(" + d.x + "," + d.y + ")";
+    		   })
+			   .on("mousedown", function(d){
+    		      d3.event.stopPropagation();
+    		      nodeMouseDown(d);
+    		   })
+			   .on("mouseup", function(d){
+			   	  nodeMouseUp(d);
+    		   })
+    		   .on("dblclick", function(d){
+    		   	  nodeDblClick(d);
+    		   })
+    		   .call(drag);
+
+    //add circle for each group
+    circleGroup.append("circle")
+    		   .attr("r", r);
+
+    //add titles
+    //TODO this is only temporary
+    circleGroup.append("text")
+    		   .attr("x", 0)
+    		   .attr("y", 5)
+    		   .attr("text-anchor", "middle")
+    		   .text(function(d){
+    		   	 return d.title;
+    		   })
+
+    //remove old circles
+    circles.exit().remove();		   
+};
+
+var svgMouseDown = function(){
+	//TODO is this working in all cases?
+	if(!nodeMode || mousedownNode || mousedownPath) {
+		return;
+	}
+
+	var circleCenter = d3.mouse(svg.node()),
+		xPos = circleCenter[0],
+		yPos = circleCenter[1],
+		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos};
+
+	console.log(d3.mouse(this));
+	console.log(d3.mouse(svg.node()));
+	nodes.push(newNode);
+	update();
+};
+
+var svgMouseUp = function(){
+	if(mousedownNode && connMode) {
+		dragline.classed("hidden", true);
+	}
+};
+
+//TODO code taken from
+var removeAssociatedEdges = function(node) {
+	console.log("removeAssociatedEdges");
+	var edgesToDelete = edges.filter(function(e) {
+		return (e.source === node || e.target === node);
+	})
+	console.log(edgesToDelete);
+	edgesToDelete.map(function(e) {
+		edges.splice(edges.indexOf(e), 1);
+	})
+};
+
+var keyDown = function() {
+	if(lastKey !== -1)
+	  return;
+	lastKey = d3.event.keyCode;
+
+	switch(lastKey) {
+		case constants.BACKSPACE:
+		case constants.DELETE:
+			//prevent default only for these keys
+			d3.event.preventDefault();
+			if(selectedNode) {
+				console.log("removing the selected node");
+				nodes.splice(nodes.indexOf(selectedNode),1);
+				removeAssociatedEdges(selectedNode);
+			}
+			else if(selectedPath) {
+				edges.splice(edges.indexOf(selectedPath), 1);
+			}
+      selectedNode = null;
+      selectedPath = null;
+      update();
+      break;
+	}
+};
+
+var keyUp = function() {
+	//reset
+	lastKey = -1;
+};
+
+var deleteNetwork = function(isConfirm) {
+	var confirmed = true;
+	if(isConfirm) {
+		confirmed = window.confirm("Are you sure you want to delete the network?");
+	}
+	if(confirmed) {
+		nodes = [];
+		edges = [];
+		update();
+	}
+}
+
+var downloadNetwork = function(){
+	var netObject = JSON.stringify({
+		"nodes":nodes,
+		"edges":edges
+	});
+	console.log(netObject);
+	var blob = new Blob([netObject], {type:"text/plain;charset=utf-8"});
+	saveAs(blob, "bayesnet.json");
+}
+
+var uploadNetwork = function(){
+	if(window.File && window.FileReader && window.FileList && window.Blob) {
+		var fileReader = new window.FileReader();
+		console.log(this);
+		var uploadFile = this.files[0];
+
+		fileReader.onload = function(){
+			var txt = fileReader.result;
+			try {
+				var netObj = JSON.parse(txt);
+				deleteNetwork(false);
+				nodes = netObj.nodes;
+				edges = netObj.edges;
+				lastID = netObj.nodes.length - 1;
+				update();
+			}
+			catch(err){
+				alert("Error occured while parsing the file.")
+			}
+		}
+
+		fileReader.readAsText(uploadFile);
+	}
+	else {
+		alert("Your browser does not support this functionality.")
+	}
+}
+
+var getEnterTraversalNodes = function(){
+	var enterNodes = []
+	for(n in nodes) {
+		var inEdges = edges.filter(function(e) {
+			return e.target === nodes[n];
+		})
+		if (inEdges.length === 0) {
+			enterNodes.push(nodes[n].id);
+		}
+	}
+	console.log(enterNodes);
+	return enterNodes;
+};
+
+var buildAdjacencyList = function(){
+	var adjList = {};
+	for (n in nodes) {
+		adjList[nodes[n].id] = [];
+		var incidentEdges = edges.filter(function(e) {
+			return e.source === nodes[n]
+		})
+		for (iE in incidentEdges) {
+			adjList[nodes[n].id].push(incidentEdges[iE].target.id);
+		}
+	}
+	console.log(adjList);
+	return adjList;
+}
+
+var traverseGraph = function() {
+	//get initial nodes
+	var enterNodes = getEnterTraversalNodes();
+	//get adjList of the graph
+	var adjList = buildAdjacencyList();
+	//mark all nodes as not visited
+	var visited = {}
+	for (n in nodes){
+		visited[nodes[n].id] = false;
+	}
+
+	//state of stack - shows which nodes are on the stack
+	var nodesOnStack = {}
+	for(n in nodes) {
+		nodesOnStack[nodes[n].id] = false;
+	}
+	for(eN in enterNodes) {
+		nodesOnStack[enterNodes[eN]] = true;
+	}
+
+	while(enterNodes.length !== 0) {
+		//Note that v is the index of the node, not the object itself
+		//shift get elements from the front
+		var v = enterNodes.shift();
+		nodesOnStack[v] = false;
+		if(!visited[v]) {
+			visited[v] = true;
+			targetNodes = adjList[v];
+			for (tN in targetNodes){
+				console.log("visiting " + targetNodes[tN] + " from " + v);
+				if(!visited[targetNodes[tN]] && !nodesOnStack[targetNodes[tN]]) {
+					enterNodes.unshift(targetNodes[tN]);
+					nodesOnStack[targetNodes[tN]] = true;
+				}
+			}
+		}
+	}
+
+	console.log(visited);
+};
+
+svg.on("mousedown", svgMouseDown)
+   .on("mouseup", svgMouseUp);
+d3.select(window)
+  .on("keydown", keyDown)
+  .on("keyup", keyUp);
+//TODO temporary
+d3.select("#nodeMode")
+  .on("click", function(){
+  	setMode("node");
+  });
+d3.select("#connMode")
+  .on("click", function(){
+  	setMode("conn");
+  })
+d3.select("#downloadNet")
+  .on("click", downloadNetwork);
+d3.select("#deleteNet")
+  .on("click", function(){
+  	deleteNetwork(true);
+  });
+d3.select("#uploadNet")
+  .on("click", function(){
+  	document.getElementById("hiddenUpload").click()
+  });
+d3.select("#hiddenUpload")
+  .on("change", uploadNetwork);
+
+	
+update();
+traverseGraph();
