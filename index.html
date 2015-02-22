@@ -13,15 +13,17 @@
 			<h3 id="header"> Bayesian networks tool </h3>
 		</div>
 		<div class="btn-group" role="group">
-			<button type="button" class="btn" id="nodeMode"> NodeMode </button>
-			<button type="button" class="btn" id="connMode"> ConnMode </button>
-			<button type="button" class="btn" id="downloadNet"> Download </button>
-			<button type="button" class="btn" id="uploadNet"> Upload </button>
+			<button type="button" class="btn btn-default" id="nodeMode"> Add Node </button>
+			<button type="button" class="btn btn-default" id="editNode"> Edit Node </button>
+			<button type="button" class="btn btn-default" id="connMode"> Add Link </button>
+			<button type="button" class="btn btn-default" id="downloadNet"> Download Network</button>
+			<button type="button" class="btn btn-default" id="uploadNet"> Upload Network</button>
 			<input type="file" id="hiddenUpload">
-			<button type="button" class="btn" id="deleteNet"> Delete </button>
-			<button type="button" class="btn" id="sampleNet"> Sample </button>
+			<button type="button" class="btn btn-default" id="deleteNet"> Delete Network</button>
+			<button type="button" class="btn btn-default" id="sampleNet"> Sample Network </button>
 		</div>
 		<div id="workspace"> </div>
+		<!-- <div id="error"> </div> -->
 		<div id="control"> </div>
 
 		<script src="lib/d3.min.js"> </script>

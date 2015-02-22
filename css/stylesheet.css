@@ -17,11 +17,12 @@
 
 /****** Style for table display ******/
 #control {
-	width: 250px;
+	/*width: 250px;*/
+	width :20%;
 	height: 450px;
 	/*display: inline;*/
 	float:right;
-	margin-left:10px;
+	margin-left:30px;
 	margin-right: 20px;
 	background-color: "red";
 	overflow:scroll;
@@ -30,10 +31,19 @@
 #control td {
 	border: 1px solid black;
 	padding:3px;
+	/*TODO temporary*/
+	width: 100px;
 }
 
 #control td input {
 	width:50px;
+}
+
+#error {
+	width:250px;
+	float:right;
+	margin-left:30px;
+	margin-right: 20px;
 }
 
 #svg {
@@ -101,3 +111,11 @@ path.conn.selected{
 	display:none;
 }
 
+/*TODO temporary*/
+.selected-button {
+	background-color: #e6e6e6;
+}
+
+.helpText {
+	color: gray;
+}
