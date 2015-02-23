@@ -156,7 +156,7 @@ var dragmove = function(d) {
 	dragged = true;
 	//handle when a line is being dragged to connect 2 nodes
 	if(connMode) {
-		dragline.attr("d", "M" + d.x + "," + d.y + "L" + d3.mouse(svg.node())[0] + "," + d3.mouse(svg.node())[1]);
+		dragline.attr("d", "M" + d.x + "," + d.y + "L" + d3.mouse(graph.node())[0] + "," + d3.mouse(graph.node())[1]);
 	}
 	//handle node dragging
 	else {
@@ -164,8 +164,8 @@ var dragmove = function(d) {
 		d.y += d3.event.dy;
 		//disable dragging out of boundaries
 		//TODO not working when called on the group
-		d.x = Math.min(width-r, Math.max(d.x, r));
-		d.y = Math.min(height-r, Math.max(d.y, r));
+		// d.x = Math.min(width-r, Math.max(d.x, r));
+		// d.y = Math.min(height-r, Math.max(d.y, r));
 		refresh();		
 	}
 };
@@ -183,11 +183,12 @@ var drag = d3.behavior.drag()
 //handle zoom behaviour
 var zoomBehavior = function(d){
 	// zoomed = true;
+
 	d3.select(".test").attr("transform", "translate(" + d3.event.translate + ") scale (" + d3.event.scale + ")");
 };
 
 var zoom = d3.behavior.zoom()
-			 .scaleExtent([0.5, 5])
+			 // .scaleExtent([0.5, 5])
 			 // .on("zoom", function(d){
 			 	// zoomBehavior(d);
 			 // })
@@ -385,44 +386,96 @@ var nodeMouseUp = function(d, groupNode){
 	mouseupNode = null;
 }
 
-var numberNodeValues = function(num) {
-	if(isNaN(num)) {
-		//TODO error msg
-		return
-	}
-	else if(num < 2 || num > 10) {
-		//TODO error msg
-		return
-	}
-
+//append number of input fields depending on the value of input type number
+var appendNodeValues = function(num) {
 	//count # of old input fields
 	var progress = d3.selectAll("tr.nodeValueRow")[0].length;
 
 	var nodeInfo = d3.select("table.nodeEditTbl");
-	//add new input fields
-	for(var i =progress+1; i<= num; i++) {
-		var currRow = nodeInfo.append("tr")
-							  .attr("class", "nodeValueRow");
-		currRow.append("td")
-			   .text("Value " + i);
-		currRow.append("td")
-			   .append("input")
-			   .classed("nodeValue", true)
-			   .attr("type", "text");
-	}	
+
+	if(progress < num) {
+		//add new rows
+		for(var i =progress+1; i<= num; i++) {
+			var currRow = nodeInfo.append("tr")
+								  .attr("class", "nodeValueRow");
+			currRow.append("td")
+				   .text("Value " + i);
+			currRow.append("td")
+				   .append("input")
+				   .classed("nodeValue", true)
+				   .attr("type", "text");
+		}		
+	}
+	else if(progress > num) {
+		//remove rows
+		while(progress > num) {
+			d3.selectAll("tr.nodeValueRow")[0][progress-1].remove();
+			progress--;
+		}
+	}
+
+	// var data = num;
+	// // for (var i=1; i<=num; i++) {
+	// // 	data.push(i);
+	// // }
+
+	// var rowsGroup = d3.select("table.nodeEditTbl")
+	// 			 .selectAll("tr.nodeValueRow")
+	// 			 .data(data);
+
+	// rowsGroup.enter()
+	// 		 .append("tr")
+	// 		 .attr("class", "nodeValueRow");
+
+	// rowsGroup.append("td")
+	// 		 .text(function(d) {
+	// 		 	return "Value " + d
+	// 		 });
+
+	// rowsGroup.append("td")
+	// 		 .append("input")
+	// 		 .classed("nodeValue", true)
+	// 		 .attr("type", text);
+
+	// rowsGroup.exit().remove();	
 }
 
+//change the values that a particular node can take
 var updateNodeValues = function(node){
 	//remove error text
-	//TODO
+	d3.select("#control")
+	  .selectAll(".errorTxt")
+	  .remove();
 
-	node.values = [];
+	// node.values = [];
+	var newValues = [];
+	var isValid = true;
 	var cells = d3.selectAll("input.nodeValue")
 				  .each(function(d, i) {
 				  	console.log(this.value);
-				  	//TODO check it is not empty etc
-				  	node.values.push(this.value);
+				  	if(!isEmptyString(this.value)) {
+					  	newValues.push(this.value);
+				  		d3.select(this)
+				  		  .style("border-color","gray");						  	
+				  	}
+				  	else {
+				  		d3.select(this)
+				  		  .style("border-color","red");	
+				  		isValid = false;			  		
+				  	}
 				  })
+
+	if (isValid) {
+		node.values = newValues;
+		//TODO recreate cpts
+	}
+	else {
+		d3.select("#control")
+		  .insert("p", ".nodeEditTbl")
+		  .classed("errorTxt", true) //TODO add styles
+		  .text("Enter a non-empty value.")
+		  .style("color", "red");
+	}
 
 }
 
@@ -446,14 +499,21 @@ var displayNodeInfo = function(d) {
 			   .attr("max", 10)
 			   .attr("value", d.values.length)
 			   .on("input", function() {
-			   	  numberNodeValues(this.value);
+			   	  // var dataset = d.values;
+			   	  // for (var i=d.values.length+1; i<=this.value; i++) {
+			   	  // 	dataset.push(i);
+			   	  // }
+			   	  // appendNodeValues(dataset);
+			   	  appendNodeValues(this.value);
 			   })
 			   .on("keydown", function() {
 			   	 d3.event.preventDefault();
 			   });
 
+	//TODO
+	// appendNodeValues(d.values);
 
-	//append options
+	// append options
 	for(var i =1; i<= d.values.length; i++) {
 		var currRow = nodeInfo.append("tr")
 							  .attr("class", "nodeValueRow");
@@ -483,6 +543,8 @@ var hideNodeInfo = function() {
 	}
 }
 
+//in edit node mode
+//clear the display field and wait until a node has been selected
 var editNodeValues = function() {
 	setMode("editNode");
 
@@ -719,8 +781,8 @@ var updateTbl = function(){
 					//the nested cpt 
 					var nestedCpt = currCpt;
 					//get to the last level of the cpt
-					for (var p=0; p<path.length-1; p++) {
-						nestedCpt = currCpt[path[i]];
+					for (var i=0; i<path.length-1; i++) {
+						nestedCpt = nestedCpt[path[i]];
 					}
 		 			nestedCpt[path[path.length-1]] = parseFloat(this.value);
 				  });
@@ -897,17 +959,13 @@ var svgMouseDown = function(){
 		return;
 	}
 
-	//TODO
-	test = d3.mouse(svg.node());
-	console.log(test);
-	// var circleCenter = d3.mouse(svg.node()),
-	var circleCenter = test,
+	//add new node
+	var circleCenter = d3.mouse(graph.node()),
 		xPos = circleCenter[0],
 		yPos = circleCenter[1],
 		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos};
 
-//	console.log(d3.mouse(this));
-//	console.log(d3.mouse(svg.node()));
+
 	nodes.push(newNode);
 	refresh();
 };
@@ -1011,6 +1069,12 @@ var downloadNetwork = function(){
 	// console.log(netObject);
 	var blob = new Blob([netObject], {type:"text/plain;charset=utf-8"});
 	saveAs(blob, "bayesnet.json");
+	// http://stackoverflow.com/questions/17868643/save-javascript-data-to-excel
+	//TODO uncomment
+    // var filename = prompt("Please enter the filename:");
+    // if(filename!=null && filename!="")
+    //     saveAs(blob, [filename+'.json']);
+
 }
 
 var maxNodeId = function(){
@@ -1020,7 +1084,6 @@ var maxNodeId = function(){
 var uploadNetwork = function(){
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
 		var fileReader = new window.FileReader();
-		console.log(this);
 		var uploadFile = this.files[0];
 
 		fileReader.onload = function(){
@@ -1059,6 +1122,7 @@ var uploadNetwork = function(){
 		}
 
 		fileReader.readAsText(uploadFile);
+		document.getElementById("hiddenUpload").value = "";
 	}
 	else {
 		alert("Your browser does not support this functionality.")
@@ -1114,13 +1178,15 @@ var sampleNode = function(node, sample) {
 	var parents = getNodeParents(node);
 	// console.log("Parents " + parents);
 	if(parents.length > 0) {
-		for (var p in parents) {
-			var currParent = nodes.filter(function(n) { return n.id === parents[p]});
-			// console.log(nodes[parents[p]].sampled);
+		parents.forEach(function(p) {
+			var currParent = nodes.filter(function(n) { return n.id === p})[0];
 			if(currParent.sampled === false) {
 				sampleNode(currParent, sample);
 			}
-		}
+			else if(!currParent.sampled){
+				console.log("currParent is undefined");
+			}
+		})	
 	}
 	var value = doSampling(node, parents, sample);
 	// console.log(value);
@@ -1129,7 +1195,7 @@ var sampleNode = function(node, sample) {
 	node.sampled = true;
 }
 
-var initialiseSampling = function() {
+var setSamplingStatus = function() {
 	//set all nodes state to not sampled
 	for (var n in nodes) {
 		nodes[n].sampled = false;
@@ -1139,13 +1205,15 @@ var initialiseSampling = function() {
 
 var singleSample = function() {
 	//set nodes status to not sampled
-	initialiseSampling();
+	setSamplingStatus();
 	var currSample = {};
-	for (var n in nodes) {
-		if(!nodes[n].sampled) {
-			sampleNode(nodes[n], currSample);
+
+	//sample each node that has not been sampled
+	nodes.forEach(function(n) {
+		if(!n.sampled) {
+			sampleNode(n, currSample);
 		}
-	}
+	})
 	return currSample;
 }
 
@@ -1276,6 +1344,9 @@ var ancestralSampling = function() {
 
 	console.log(samples);
 
+	//get nodes status back to false
+	setSamplingStatus();
+	//display the samples
 	displaySamples(samples);
 }
 
@@ -1304,7 +1375,8 @@ svg.on("mousedown", svgMouseDown)
    .on("mouseout", function() {
    	   focused = false;
    })
-   // .call(zoom); //TODO uncomment
+   .call(zoom); //TODO uncomment
+
 
 svg.on("dblclick.zoom", null);
 
