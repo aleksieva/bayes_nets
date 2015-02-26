@@ -487,9 +487,8 @@ var updateSingleValue = function(input, node) {
 	//TODO
 }
 
-var displayNodeValues = function(d) {
-	// clearDisplayField();
-	var nodeInfo = control.append("div")
+var displayNodeValues = function(d, field) {
+	var nodeInfo = field.append("div")
 						  .append("table")
 						  .attr("class", "table nodeEditTbl");
 
@@ -542,7 +541,7 @@ var displayNodeValues = function(d) {
 			   });
 	}
 
-	control.append("button")
+	field.append("button")
 		   .classed("btn btn-default", true) //TODO style
 		   .attr("id", "updateNodeValues")
 		   .html("Update Values")
@@ -851,10 +850,10 @@ var createCPT = function(d) {
 	}
 }
 
-var displayCPT = function(d) {
+var displayCPT = function(d, field) {
 	html = "";
 	//attach a new table
-	control
+	field
 	  .append("table")
 	  .attr("id", d.id)
 	  .classed("cptTable", true);
@@ -880,7 +879,7 @@ var displayCPT = function(d) {
 	
 	// Handling editing CPTs events
  	// d3.select(".cptTable")
- 	control
+ 	field
  	  .append("button")
  	  .attr("class", "btn btn-default")
  	  .attr("id", "tblUpdateBtn")
@@ -1042,7 +1041,7 @@ var refresh = function(){
     		   })
     		   .on("dblclick", function(d){
     		   	  if(!editNodeTextMode && editNodeMode) {
-	    		   	  displayCPT(d);
+	    		   	  displayNodeOption('cpt', d);
 	    		  }
     		   })
     		   .call(drag);
