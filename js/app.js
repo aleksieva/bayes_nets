@@ -1,9 +1,7 @@
 //svg width & height
-// var width = 920,
-	// height = 450,
 var width = 0.7 * window.innerWidth,
 	height = 450,
-	r=20,
+	radius=20,
 	pressedKey = -1;
 
 var constants = {
@@ -14,14 +12,18 @@ var constants = {
 
 var svg = d3.select("#workspace")
 			.append("svg")
-			.attr("width", width)
+			.attr("width", "100%")
 			.attr("height", height)
+			// .attr("width", width)
+			// .attr("height", height)
 			.attr("id", "svg");
+
+var control = d3.select("#control");
 
 //TODO change default nodes and links
 var nodes = [
-	{id: 0, title: "project", x: 450, y: 100},
-	{id: 1, title: "mark", x: 450, y: 250}
+	{id: 0, title: "Smoker", x: 450, y: 100, values:['1','0']},
+	{id: 1, title: "Bronchitis", x: 450, y: 250, values:['1', '0']}
 	],
 	edges = [
 		{source: nodes[0], target:nodes[1]}
@@ -34,13 +36,13 @@ svg.append("defs")
    .append("marker")
    .attr("id", "arrow")
    .attr("viewBox", "0 -5 10 10")
-   .attr("refX", 30) //TODO change that
+   .attr("refX", 21)
    .attr("markerWidth", 3)
    .attr("markerHeight", 3)
    .attr("orient", "auto")
    .append("path")
    .attr("d", "M0,-5L10,0L0,5")
-   .attr("fill", "#0489B1") //TODO move to css
+   .attr("class", "arrow")
 
 svg.append("defs")
    .append("marker")
@@ -52,11 +54,10 @@ svg.append("defs")
    .attr("orient", "auto")
    .append("path")
    .attr("d", "M0,-5L10,0L0,5")
-   .attr("fill", "#0489B1") //TODO move to css
+   .attr("class", "arrow");
 
 //graph group, paths, circles
-//TODO graph class temporary
-var graph = svg.append("g").classed("test", true),
+var graph = svg.append("g"),
 	paths = graph.append("g").selectAll("path"),
     circles = graph.append("g").selectAll("g");
 
@@ -82,23 +83,26 @@ var defaultMode = true,
 	nodeMode = false,
 	connMode = false,
 	editNodeTextMode = false,
-	editNodeValuesMode = false;
+	editNodeMode = false;
 
 var setMode = function(mode){
+	//clear the display field
+	clearDisplayField();
+
 	if (mode === "node") {
 		if(!nodeMode) {
 			defaultMode = false;
 			nodeMode = true;
 			connMode = false;
-			editNodeValuesMode = false
+			editNodeMode = false
 
-			//TODO change
-			d3.select("#nodeMode")
-			  .classed("selected-button", true);
-			d3.select("#connMode")
-			  .classed("selected-button", false);
-			d3.select("#editNode")
-			  .classed("selected-button", false);
+			//indicate the mode as selected
+			d3.select("#node-mode")
+			  .classed("selected", true);
+			d3.select("#conn-mode")
+			  .classed("selected", false);
+			d3.select("#edit-mode")
+			  .classed("selected", false);
 			return;
 		}
 	}
@@ -107,47 +111,46 @@ var setMode = function(mode){
 			defaultMode = false;
 			nodeMode = false;
 			connMode = true;
-			editNodeValuesMode = false
+			editNodeMode = false
 
-			//TODO change
-			d3.select("#connMode")
-			  .classed("selected-button", true);
-			d3.select("#nodeMode")
-			  .classed("selected-button", false);
-			d3.select("#editNode")
-			  .classed("selected-button", false);			  		  
+			//indicate the mode as selected
+			d3.select("#conn-mode")
+			  .classed("selected", true);
+			d3.select("#node-mode")
+			  .classed("selected", false);
+			d3.select("#edit-mode")
+			  .classed("selected", false);			  		  
 			return;
 		}
 	}
-	else if (mode === "editNode") {
-		if(!editNodeValuesMode) {
+	else if (mode === "edit") {
+		if(!editNodeMode) {
 			defaultMode = false;
 			nodeMode = false;
 			connMode = false;
-			editNodeValuesMode = true;
+			editNodeMode = true;
 
-			//TODO change
-			d3.select("#editNode")
-			  .classed("selected-button", true);
-			d3.select("#connMode")
-			  .classed("selected-button", false);
-			d3.select("#nodeMode")
-			  .classed("selected-button", false);			  
+			//indicate the mode as selected
+			d3.select("#edit-mode")
+			  .classed("selected", true);
+			d3.select("#conn-mode")
+			  .classed("selected", false);
+			d3.select("#node-mode")
+			  .classed("selected", false);			  
 			return;
 		}
 	}
 	defaultMode = true;
 	nodeMode = false;
 	connMode = false;
-	editNodeValuesMode = false
-	d3.select("#nodeMode")
-	  .classed("selected-button", false);
-	d3.select("#connMode")
-	  .classed("selected-button", false);
-	d3.select("#editNode")
-	  .classed("selected-button", false);
-
-	hideNodeInfo();	  
+	editNodeMode = false
+	d3.select("#node-mode")
+	  .classed("selected", false);
+	d3.select("#conn-mode")
+	  .classed("selected", false);
+	d3.select("#edit-mode")
+	  .classed("selected", false);
+	  
 };
 
 //handle drag behaviour
@@ -163,9 +166,8 @@ var dragmove = function(d) {
 		d.x += d3.event.dx;
 		d.y += d3.event.dy;
 		//disable dragging out of boundaries
-		//TODO not working when called on the group
-		// d.x = Math.min(width-r, Math.max(d.x, r));
-		// d.y = Math.min(height-r, Math.max(d.y, r));
+		// d.x = Math.min(width-radius, Math.max(d.x, radius));
+		// d.y = Math.min(height-radius, Math.max(d.y, radius));
 		refresh();		
 	}
 };
@@ -184,14 +186,11 @@ var drag = d3.behavior.drag()
 var zoomBehavior = function(d){
 	// zoomed = true;
 
-	d3.select(".test").attr("transform", "translate(" + d3.event.translate + ") scale (" + d3.event.scale + ")");
+	graph.attr("transform", "translate(" + d3.event.translate + ") scale (" + d3.event.scale + ")");
 };
 
 var zoom = d3.behavior.zoom()
-			 // .scaleExtent([0.5, 5])
-			 // .on("zoom", function(d){
-			 	// zoomBehavior(d);
-			 // })
+			 .scaleExtent([0.5, 2])
 			 // .on("zoomstart", function(){
 			 	//TODO cursor
 			 // })
@@ -201,7 +200,7 @@ var zoom = d3.behavior.zoom()
 			 // });
 
 var clearDisplayField = function() {
-	d3.select("#control").html("");
+	control.html("");
 }
 
 //TODO code taken from
@@ -228,40 +227,27 @@ var isEmptyString = function(text) {
 }
 
 var editNodeText = function(d, d3Group){
-	//TODO comment
 	editNodeTextMode = true;
 
 	var offsetX = 3,
 		offsetY = 3;
 
-	// var offsetX = d3Group.data()[0].x + 3,
-		// offsetY = d3Group.data()[0].y + 3;
-
 	//remove the current text
-	//TODO change
 	var backupTxt = d3Group.select("text");
 	d3Group.select("text")
 		   .remove();
 
-	//TODO attach it to the svg rather than the element 
-	// e.g. svg.append
 	var textP = d3Group.append("foreignObject")
 				   .attr("x", offsetX)
 				   .attr("y", offsetY)
-				   //TODO styling
-				   .attr("width", r*6)
-				   .attr("height", r*3)
-				   //TODO make the id a constant					  
+				   .attr("width", radius*6)
+				   .attr("height", radius*3)
 				   .attr("id", "nodeTxtInput")
 				   .append("xhtml:textarea")
 				   .attr("type", "text")
 				   .attr("class", "form-control")
-				   // .attr("style", "width:294px")
-				   // .attr("contentEditable", true)
 				   .text(d.title)
-				   // .attr("value", d.title)
 				   .on("keypress", function(){
-				   	// d3.event.stopPropagation();
 				      if(d3.event.keyCode === constants.ENTER) {
 				   	 	 d3.event.preventDefault();
 				   		 this.blur();
@@ -270,6 +256,9 @@ var editNodeText = function(d, d3Group){
 				   .on("blur", function(){
 				   	 if(!isEmptyString(this.value)) {
  					   	d.title = this.value.trim();
+ 					   	//capitalize every node title
+ 					   	d.title = d.title.charAt(0).toUpperCase() + d.title.slice(1);
+ 					   	console.log(d.title);
 					   	multipleLinesText(d.title, d3Group);
 				   	 }
 				   	 else {
@@ -314,6 +303,8 @@ var createNewEdge = function(sourceNode, targetNode) {
 		//if so -> remove it
 		if(newEdge.target === e.source && newEdge.source === e.target) {
 			edges.splice(edges.indexOf(e),1);
+			//recalculate this node cpt as this edge has been deleted
+			recalculateCPT([e], e.source);
 		}
 		//check if there is identical edge
 		return newEdge.source === e.source && newEdge.target === e.target;
@@ -357,18 +348,14 @@ var nodeMouseUp = function(d, groupNode){
 		}
 		else {
 			if(d3.event.shiftKey) {
-				//TODO test
-				// document.getElementById("workspace").blur();
 				//deselect node/edge if any are selected
 				selectedNode = null;
 				selectedPath = null;
+				refresh();
 				//edit node title
 				editNodeText(mouseupNode, groupNode);
 			}
-			else if(editNodeValuesMode) {
-				displayNodeInfo(mouseupNode);
-			}
-			else {
+			else {				
 				//select/deselect node
 				if(selectedNode === mousedownNode) {
 					selectedNode = null;
@@ -378,6 +365,14 @@ var nodeMouseUp = function(d, groupNode){
 				}
 				selectedPath = null;
 				refresh();
+
+				//display the node info if in editNodeMode && a node has been selected
+				if(editNodeMode && selectedNode) {
+					displayNodeInfo(selectedNode);
+				}
+				else {
+					editNodeEnter();
+				}
 			}
 		}
 	}
@@ -414,40 +409,40 @@ var appendNodeValues = function(num) {
 		}
 	}
 
-	// var data = num;
-	// // for (var i=1; i<=num; i++) {
-	// // 	data.push(i);
-	// // }
+	d3.selectAll("input.nodeValue")
+	  .on("blur", function() {
+	  	alert("lose focus");
+	  	//TODO
+	  	//updateValue
+	  })
+	
+}
 
-	// var rowsGroup = d3.select("table.nodeEditTbl")
-	// 			 .selectAll("tr.nodeValueRow")
-	// 			 .data(data);
+var getNodeChildren = function(node) {
+	var children = [];
 
-	// rowsGroup.enter()
-	// 		 .append("tr")
-	// 		 .attr("class", "nodeValueRow");
+	var targetEdges = edges.filter(function(e) {
+		return e.source === node
+	});
 
-	// rowsGroup.append("td")
-	// 		 .text(function(d) {
-	// 		 	return "Value " + d
-	// 		 });
+	targetEdges.forEach(function(edge) {
+		console.log(edge.target)
+		children.push(edge.target);
+	});
 
-	// rowsGroup.append("td")
-	// 		 .append("input")
-	// 		 .classed("nodeValue", true)
-	// 		 .attr("type", text);
+	return children;
+}
 
-	// rowsGroup.exit().remove();	
+var checkNodeValuesDuplicates = function(values) {
+	//TODO
 }
 
 //change the values that a particular node can take
 var updateNodeValues = function(node){
 	//remove error text
-	d3.select("#control")
-	  .selectAll(".errorTxt")
-	  .remove();
+	control.selectAll(".error-text")
+		   .remove();
 
-	// node.values = [];
 	var newValues = [];
 	var isValid = true;
 	var cells = d3.selectAll("input.nodeValue")
@@ -455,35 +450,52 @@ var updateNodeValues = function(node){
 				  	console.log(this.value);
 				  	if(!isEmptyString(this.value)) {
 					  	newValues.push(this.value);
+					  	//TODO classed 
 				  		d3.select(this)
 				  		  .style("border-color","gray");						  	
 				  	}
 				  	else {
+					  	//TODO classed 
 				  		d3.select(this)
 				  		  .style("border-color","red");	
 				  		isValid = false;			  		
 				  	}
 				  })
 
+	checkNodeValuesDuplicates(newValues);
+
 	if (isValid) {
 		node.values = newValues;
-		//TODO recreate cpts
+		//recreate cpts
+		createCPT(node);
+		//recreate cpts of this node children
+		var children = getNodeChildren(node);
+		children.forEach(function(child){
+			createCPT(child);
+		})
 	}
 	else {
-		d3.select("#control")
-		  .insert("p", ".nodeEditTbl")
-		  .classed("errorTxt", true) //TODO add styles
-		  .text("Enter a non-empty value.")
-		  .style("color", "red");
+		control.insert("p", ".nodeEditTbl")
+			   .classed("error-text", true) //TODO add styles
+			   .text("Enter a non-empty value.");
 	}
 
 }
 
-var displayNodeInfo = function(d) {
-	clearDisplayField();
-	var nodeInfo = d3.select("#control")
-					 .append("table")
-					 .classed("nodeEditTbl", true);
+//update a single value on blur of the input field
+var updateSingleValue = function(input, node) {
+	//TODO
+}
+
+var displayNodeValues = function(d) {
+	// clearDisplayField();
+	var nodeInfo = control.append("div")
+						  .append("table")
+						  .attr("class", "table nodeEditTbl");
+
+					 //TODO
+					 // .attr("class", "table table-striped nodeEditTbl")
+					 // .classed("nodeEditTbl", true);
 
 	//add node title
 	nodeInfo.append("tr").html("<td> Node: </td> <td> " + d.title + " </td>")
@@ -510,9 +522,6 @@ var displayNodeInfo = function(d) {
 			   	 d3.event.preventDefault();
 			   });
 
-	//TODO
-	// appendNodeValues(d.values);
-
 	// append options
 	for(var i =1; i<= d.values.length; i++) {
 		var currRow = nodeInfo.append("tr")
@@ -523,40 +532,67 @@ var displayNodeInfo = function(d) {
 			   .append("input")
 			   .classed("nodeValue", true)			   
 			   .attr("type", "text")
-			   .attr("value", d.values[i-1]);
+			   .attr("value", d.values[i-1])
+			   .on("blur", function() {
+			   	 console.log("lose focus");
+			   	 console.log(this);
+			   	 //TODO
+			   	 //Update value
+			   	 updateSingleValue(this, d);
+			   });
 	}
 
-	d3.select("#control")
-	  .append("button")
-	  .classed("btn btn-default", true) //TODO style
-	  .attr("id", "updateNodeValues")
-	  .html("Update Values")
-	  .on("click", function() {
-	  	updateNodeValues(d);
-	  });
+	control.append("button")
+		   .classed("btn btn-default", true) //TODO style
+		   .attr("id", "updateNodeValues")
+		   .html("Update Values")
+	  	   .on("click", function() {
+	  	   	updateNodeValues(d);
+	  	   });
 }
 
-//remove tables for changing node values if not in editNodeMode
-var hideNodeInfo = function() {
-	if(!editNodeValuesMode) {
-		d3.selectAll(".nodeEditTbl").remove();
-	}
-}
-
-//in edit node mode
-//clear the display field and wait until a node has been selected
-var editNodeValues = function() {
-	setMode("editNode");
-
-	if(editNodeValuesMode) {
+//display instructions for edit node mode
+var editNodeEnter = function() {
+	if(editNodeMode) {
 		//clear display
 		clearDisplayField();
-		d3.select("#control")
-		  .append("text")
-		  .classed("helpText", true) //TODO style it
-		  .text("Select a node to edit.");
-	}
+		//remove select from node && path
+		selectedNode = null;
+		selectedPath = null;
+		refresh();
 
+		//instructions
+		control.append("p")
+			   .classed("help-text", true)
+			   .text("Select a node to edit: ");
+	}
+}
+
+
+//display instructions for add node mode
+var addNodeEnter = function() {
+	if(nodeMode) {
+		//clear display
+		clearDisplayField();
+
+		//instructions
+		control.append("p")
+			   .classed("help-text", true)
+			   .text("Click on the work field to add a new node.");		
+	}
+}
+
+//display instructions for add node mode
+var addLinkEnter = function() {
+	if(connMode) {
+		//clear display
+		clearDisplayField();
+
+		//instructions
+		control.append("p")
+			   .classed("help-text", true)
+			   .text("Drag from one node to another to place a link between them.");		
+	}
 }
 
 var getNodeParents = function(d){
@@ -573,130 +609,11 @@ var getNodeParents = function(d){
 	return nodeParentsIds;
 }
 
-var html = "";
-var createCPT = function(dataStr, idsList, level) {
-	if (level === idsList.length-1) {
-		var lastEl = idsList[level];
-
-		//True case - data
-		var trueCase = lastEl + "1";
-		dataStr[trueCase] = 0.5;
-
-		//False case - data
-		var falseCase = lastEl + "0";
-		dataStr[falseCase] = 1 - dataStr[trueCase];
-	}
-	else if(level < idsList.length-1) {
-		//get the element from the front of the list
-		var currEl = idsList[level];
-		level++;
-
-		//True case
-		var trueCase = currEl + "1";
-		dataStr[trueCase] = {};
-		createCPT(dataStr[trueCase], idsList, level);			
-
-		//False case		
-		var falseCase = currEl + "0";
-		dataStr[falseCase] = {};
-		createCPT(dataStr[falseCase], idsList, level);
-	}
-	else {
-		alert("Something unexpected has happened!")
-	}
-}
-
-var displayCPT = function(cpt, list, level, chain) {
-	//Base case
-	if (level == list.length -1) {
-		var lastEl = list[level];
-		var valT = cpt[lastEl+'1'];
-		var chainT = chain + lastEl + '1';
-		// console.log(valT);
-		html += '<td class="editable"> <input type="text" id="' + chainT + '" value="' + valT + '"></td> ';
-
-		var valF = cpt[lastEl+'0'];
-		var chainF = chain + lastEl + '0';
-		// console.log(valF);
-		//TODO make it readonly
-		// html += '<td class="editable"> <input type="text" id="' + chainF + '"value="' + valF + '" readonly></td>';
-		html += '<td class="editable"> <input type="text" id="' + chainF + '"value="' + valF + '"></td>';		
-		d3.select(".cptTable")
-		  .append("tr")
-		  .classed("editableCptRow", true)
-		  .html(html);
-
-	}
-	//Recursive case
-	else if (level < list.length -1) {
-		var currEl = list[level];
-		level++;
-
-		var tmpHtml = html;
-		var tmpChain = chain;
-		//True case
-		chain += currEl + '1->';
-		html += "<td>1</td>";
-		var cptTrueCase = cpt[currEl + '1']
-		displayCPT(cptTrueCase, list, level, chain);
-
-		html = tmpHtml;
-		chain = tmpChain;
-		//False case
-		chain += currEl + '0->';
-		html += "<td>0</td>";
-		var cptFalseCase = cpt[currEl + '0'];		
-		displayCPT(cptFalseCase, list, level, chain);
-	}
-	//Error
-	else {
-		alert("Something unexpected happened!");
-	}
-}
-
-var cptColumnNames = function(parents){
-	var names = [];
-	for (var i=0; i<parents.length; i++) {
-		var filteredNode = nodes.filter(function(n) {
-			return n.id === parents[i];
-		})[0];
-		names.push(filteredNode.title.charAt(0));
-	}
-	// console.log(names);
-
-	if(names.length === 1) {
-		var currName = "P(" + names[names.length-1];		
-	}
-	else if(names.length > 1) {
-		var currName = "P(" + names[names.length-1] + "|";		
-	}
-
-	//go over all the elements except the last element - the current node
-	// it defines the columns
-	for (var i=0; i<names.length-1; i++) {
-		html += '<td>' + names[i] + '</td>';
-		currName += names[i] + ",";
-	}
-
-	//trim the last comma
-	if(names.length > 1) {
-		currName = currName.substring(0, currName.length-1)
-	}
-
-	//TODO change customisable
-	html += '<td>' + currName + "=0)" +'</td>'
-	html += '<td>' + currName + "=1)" +'</td>'
-	d3.select(".cptTable").append("tr").html(html);
-	html = "";
-}
-
 var isValidCPTEntry = function(num) {
 	if(isNaN(num)) {
-  		// return "NaNs are not acceptable.")
   		return false;
   	}
   	else if(num < 0 || num > 1) {
-  		// alert("Enter a valid probability value between 0 and 1");
   		return false;
   	}
   	return true;
@@ -736,19 +653,17 @@ var validateUpdate = function() {
 
 	if (!validEntries) {
 		// alert("Enter a valid probability value between 0 and 1.")
-		d3.select("#control")
+		control
 		  .insert("p", ".cptTable")
-		  .classed("errorTxt", true) //TODO add styles
-		  .text("Enter a valid probability value between 0 and 1.\n")
-		  .style("color", "red");
+		  .classed("error-text", true)
+		  .text("Enter a valid probability value between 0 and 1.\n");
 	}
 
 	if(!validRowSums) {
-		d3.select("#control")
+		control
 		  .insert("p", ".cptTable")
-		  .classed("errorTxt", true) //TODO add styles
-		  .text("Probabilities on one row must sum up to 1.\n")
-		  .style("color", "red");		
+		  .classed("error-text", true)
+		  .text("Probabilities on one row must sum up to 1.\n");
 	}
 
 	return validEntries && validRowSums;
@@ -756,16 +671,16 @@ var validateUpdate = function() {
 //update table values when edited
 var updateTbl = function(){
 	//clear previous error messages
-	d3.select("#control")
-	  .selectAll(".errorTxt")
-	  .remove();
+	control.selectAll(".error-text").remove();
 
 	var tblId = d3.select(".cptTable").attr("id");
 	if(!tblId) {
 		alert ("Table does not exist.")
 	}
 
-	var currCpt = nodes[tblId].tbl;
+	var currCpt = nodes.filter(function(node) {
+		return node.id === parseInt(tblId);
+	})[0].tbl;
 	if(!currCpt){
 		alert("The CPT for this nodes cannot be accessed.");
 	}
@@ -788,8 +703,138 @@ var updateTbl = function(){
 				  });
 }
 
+var updateCell = function(){
+	//TODO
+}
+
+var html = "";
+var createCPTRows = function(dataStr, idsList, level) {
+	if (level === idsList.length-1) {
+		var lastEl = idsList[level];
+
+		var values = nodes.filter(function(node) {
+			return node.id === lastEl;
+		})[0].values;
+
+		//initial probability for each value is 1 / N
+		// N - number of possible values
+		var initialValue = 1.0 / values.length;
+		values.forEach(function(value) {
+			var option = lastEl + value;
+			dataStr[option] = initialValue;
+		})
+	}
+	else if(level < idsList.length-1) {
+		//get the element from the front of the list
+		var currEl = idsList[level];
+		level++;
+
+		var values = nodes.filter(function(node) {
+			return node.id === currEl;
+		})[0].values;
+		//branch for each possible value
+		values.forEach(function(value) {
+			var option = currEl + value;
+			dataStr[option] = {};
+			createCPTRows(dataStr[option], idsList, level, values);
+		})
+	}
+	else {
+		alert("Something unexpected has happened!")
+	}
+}
+
+var displayCPTRows = function(cpt, list, level, chain) {
+	//Base case
+	if (level == list.length -1) {
+		var lastEl = list[level];
+
+		var values = nodes.filter(function(node) {
+			return node.id === lastEl;
+		})[0].values;
+
+		values.forEach(function(value) {
+			var currVal = cpt[lastEl + value];
+			var currChain = chain + lastEl + value;
+			html += '<td class="editable"> <input type="text" id="' + currChain + '" value="' + currVal + '"></td> ';
+		})
+
+		d3.select(".cptTable")
+		  .append("tr")
+		  .classed("editableCptRow", true)
+		  .html(html);
+
+	}
+	//Recursive case
+	else if (level < list.length -1) {
+		var currEl = list[level];
+		level++;
+
+		var tmpHtml = html;
+		var tmpChain = chain;
+
+		var values = nodes.filter(function(node) {
+			return node.id === currEl;
+		})[0].values;
+
+		values.forEach(function(value) {
+			html = tmpHtml;
+			chain = tmpChain;
+			chain += currEl + value + "->";
+			html += "<td>" + value + "</td>";
+			var cptCurrOption = cpt[currEl + value];
+			displayCPTRows(cptCurrOption, list, level, chain, values);
+		})
+	}
+	//Error
+	else {
+		alert("Something unexpected happened!");
+	}
+}
+
+var cptColumnNames = function(parents, values){
+	var names = [];
+
+	parents.forEach(function(parent) {
+		var filteredNode = nodes.filter(function(n) {
+			return n.id === parent;
+		})[0];
+		names.push(filteredNode.title.charAt(0).toUpperCase());
+	})
+
+	var currName = "P(" + names[names.length-1];
+	var nodeNameValues = [];
+	//go over possible values
+	values.forEach(function(value) {
+		nodeNameValues.push(currName + "=" + value);
+	})	
+
+	//go over all the elements except the last element - the current node
+	// it defines the columns
+	var conditionalVariables = ""
+	for (var i=0; i<names.length-1; i++) {		
+		html += '<td>' + names[i] + '</td>';
+		conditionalVariables += names[i] + ',';
+	}
+	conditionalVariables = conditionalVariables.substring(0, conditionalVariables.length-1)
+
+
+	//append different value columns for this node
+	nodeNameValues.forEach(function(option) {
+		if(names.length === 1) {
+			html += '<td>' + option + ')</td>';
+		}
+		else if (names.length > 1) {
+			html += '<td>' + option + "|" + conditionalVariables + ')</td>';
+		}
+	})
+
+	d3.select(".cptTable").append("tr").html(html);
+	html = "";
+}
+
 //create table on added node
-var createCPTInitialisation = function(d) {
+var createCPT = function(d) {
 	//get the parents for this node
 	var parents = getNodeParents(d);
 	parents.push(d.id);
@@ -800,44 +845,116 @@ var createCPTInitialisation = function(d) {
 	}
 	else {
 		//create the internal cpt representation
-		createCPT(cpt, parents, 0);		
+		createCPTRows(cpt, parents, 0);		
 		//assign the table as property of the current node
 		d.tbl = cpt;
 	}
-
-	//TODO change that for multiple values
-	d.values = ['1', '0'];	
 }
 
-var displayCPTInitialisation = function(d) {
-	// console.log(d);
-	//clear the current table
-	clearDisplayField();
+var displayCPT = function(d) {
 	html = "";
 	//attach a new table
-	d3.select("#control")
+	control
 	  .append("table")
 	  .attr("id", d.id)
 	  .classed("cptTable", true);
 	
 	var parents = getNodeParents(d);
-	console.log(parents);	
+	// console.log(parents);	
 	parents.push(d.id);
 
 	//CPT column names
-	cptColumnNames(parents);
+	cptColumnNames(parents, d.values);
 	var cpt = d.tbl;
 
 	//display the cpt
-	displayCPT(cpt, parents, 0, "");
+	displayCPTRows(cpt, parents, 0, "");
+
+	d3.selectAll("td.editable")
+	  .selectAll("input")
+	  .on("blur", function() {
+	  	// alert("lose focus");
+	  	//TODO
+	  	updateCell();
+	  })
 	
 	// Handling editing CPTs events
- 	d3.select(".cptTable")
+ 	// d3.select(".cptTable")
+ 	control
  	  .append("button")
  	  .attr("class", "btn btn-default")
  	  .attr("id", "tblUpdateBtn")
  	  .html("Update")
  	  .on("click", updateTbl);
+}
+
+var displayNodeOption = function(option, node) {
+	console.log(option)
+	if(option === "cpt") {
+		displayCPT(node);
+	}
+	else if(option === "val") {
+		displayNodeValues(node);
+	}
+}
+
+var displayNodeInfo = function(node) {
+	clearDisplayField();
+	
+	//append node title
+	control.append("h3")
+		   .text(node.title + ":")
+		   .classed("node-title", true);
+
+	control.append("hr");
+
+	//append select for different options
+	//option 1 - cpt table - selected
+	//option 2 - node values
+	var form = control.append("div")
+					  .attr("class", "form-group")
+
+	form.append("label")
+		.attr("for", "node-options")
+		.attr("class", "label-text")
+		.text("Select an option for this node: ")
+
+	var select = form.append("select")
+					 .attr("id", "node-options")
+					 .attr("class", "form-control")
+					 .on("change", function() {
+					 	displayNodeOption(this.options[this.selectedIndex].value, node);
+					 });
+
+	select.append("option")
+		  .attr("value", "cpt")
+		  .attr("selected", true)		  
+		  .text("CPT table");
+	select.append("option")
+		  .attr("value", "val")
+		  .text("Node Values");
+
+	control.append("hr");
+
+	//display the relevant data
+	displayNodeOption(d3.select("#node-options").node().options[d3.select("#node-options").node().selectedIndex].value, node);
+	control.append("hr");
+
+	// delete button
+	control.append("p")
+		   .attr("class", "label-text")
+		   .text("Delete the node:" );
+
+	control.append("button")
+		   .attr("class", "btn btn-default btn-bayes")
+		   .attr("id", "delete-node-btn")
+		   .html("Delete Node")
+		   .on("click", function() {
+		   	//TODO
+		   	//delete this node
+		   	//remove info
+		   })
+
 }
 
 var refresh = function(){
@@ -889,7 +1006,6 @@ var refresh = function(){
 
     //update nodes
     circles.classed("selected", function(d){
-    	   	//TODO go to darker color from here rgb bla bla
     	   	 return d === selectedNode;
     	   })
     	   .attr("transform", function(d){
@@ -904,10 +1020,16 @@ var refresh = function(){
     			  return "translate(" + d.x + "," + d.y + ")";
     		   })
     		   .on("mouseover", function(d){
-    		   	//TODO
+    		   	//enlarge the circle
+    		   	 d3.select(this)
+    		   	   .select("circle")
+    		   	   .attr("r", radius + 2);
     		   })
     		   .on("mouseout", function(d){
-    		   	//TODO
+    		   	//shrink the circle
+    		   	 d3.select(this)
+    		   	   .select("circle")
+    		   	   .attr("r", radius- 2);
     		   })
 			   .on("mousedown", function(d){
     		      d3.event.stopPropagation();
@@ -918,19 +1040,18 @@ var refresh = function(){
 			   	  nodeMouseUp(d, d3.select(this));
     		   })
     		   .on("dblclick", function(d){
-    		   	  if(!editNodeTextMode) {
-	    		   	  displayCPTInitialisation(d);
+    		   	  if(!editNodeTextMode && editNodeMode) {
+	    		   	  displayCPT(d);
 	    		  }
     		   })
     		   .call(drag);
 
     //add circle for each group
     circleGroup.append("circle")
-    		   .attr("r", r)
+    		   .attr("r", radius)
     		   .call(function(d) {
     		   	  d.each(function(e) {
-    		   	  	createCPTInitialisation(e);
-    		   	  	// displayCPTInitialisation(e);
+    		   	  	createCPT(e);
     		   	  })
     		   	  uploaded = false;
     		   });
@@ -945,12 +1066,6 @@ var refresh = function(){
 };
 
 var svgMouseDown = function(){
-	//TODO test
-	// if(zoomed) {
-	// 	zoomed = false;
-	// 	return;
-	// }
-
 	if(!nodeMode) {
 		return;
 	}
@@ -963,11 +1078,18 @@ var svgMouseDown = function(){
 	var circleCenter = d3.mouse(graph.node()),
 		xPos = circleCenter[0],
 		yPos = circleCenter[1],
-		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos};
+		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos, values:['1', '0']};
 
 
 	nodes.push(newNode);
 	refresh();
+	//change?
+	selectedNode = newNode;
+	refresh();
+
+	//when a new node is added get out of add node mode and go to edit mode for this node
+	setMode("edit")
+	displayNodeInfo(newNode);
 };
 
 var svgMouseUp = function(){
@@ -1000,7 +1122,7 @@ var recalculateCPT = function(edgesArray, sourceNode) {
 	}
 	console.log(targetNodes);
 	for (var tn in targetNodes) {
-		createCPTInitialisation(targetNodes[tn]);
+		createCPT(targetNodes[tn]);
 	}
 }
 
@@ -1273,7 +1395,7 @@ var displaySamples = function(samples) {
 	clearDisplayField();
 
 	//download button
-	d3.select("#control")
+	control
 	  .append("button")
 	  .attr("class", "btn btn-default")
 	  .attr("id", "sampleDownloadBtn")
@@ -1283,7 +1405,7 @@ var displaySamples = function(samples) {
 	  });
 
 	//apend table for the results
-	d3.select("#control")
+	control
 	  .append("table")
 	  .attr("class", "sampleTbl");
 
@@ -1295,7 +1417,7 @@ var displaySamples = function(samples) {
 		for (var val in samples[s]) {
 			accumulator += '<td>' + samples[s][val] + '</td>';
 		}
-		d3.select("#control").append("tr").html(accumulator);
+		control.append("tr").html(accumulator);
 		accumulator = "";
 	}
 }
@@ -1316,16 +1438,15 @@ var checkExistingCpts = function() {
 
 var ancestralSampling = function() {
 	//remove previous error messages
-	d3.selectAll(".errorTxt").remove();
+	d3.selectAll(".error-text").remove();
 
 	//get the number of samples to be made
 	var noOfSamples = parseInt(d3.select("#numSamplesInput").node().value);
 	if(isNaN(noOfSamples)) {
-		d3.select("#control")
+		control
 		  .insert("p", "#numSamplesInput")
 		  .text("Please enter a valid number of samples.")
-		  .classed("errorTxt", true)
-		  .style("color", "red"); //TODO
+		  .classed("error-text", true);
 
 		return;
 	}
@@ -1351,15 +1472,19 @@ var ancestralSampling = function() {
 }
 
 var samplingSettings = function(){
-	d3.select("#control")
-	  .html("");
+	clearDisplayField();
 
-	d3.select("#control")
+	//instructions
+	control
+	  .append("p")
+	  .classed("help-text", true)
+	  .text("Choose number of samples:");
+	control
 	  .append("input")
 	  .attr("id", "numSamplesInput")
 	  .attr("type", "number")
 	  .attr("min", "1");
-	d3.select("#control")
+	control
 	  .append("button")
 	  .attr("class", "btn btn-default")
 	  .attr("id", "runSamplingBtn")
@@ -1375,7 +1500,7 @@ svg.on("mousedown", svgMouseDown)
    .on("mouseout", function() {
    	   focused = false;
    })
-   .call(zoom); //TODO uncomment
+   .call(zoom); 
 
 
 svg.on("dblclick.zoom", null);
@@ -1396,17 +1521,22 @@ window.onresize = function() {
 	svg.attr("width", updatedSvgWidth);
 }
 
-//TODO temporary
-d3.select("#nodeMode")
+//button controls
+d3.select("#node-mode")
   .on("click", function(){
   	setMode("node");
+  	addNodeEnter();
   });
-d3.select("#connMode")
+d3.select("#conn-mode")
   .on("click", function(){
   	setMode("conn");
+  	addLinkEnter();
   })
-d3.select("#editNode")
-  .on("click", editNodeValues);
+d3.select("#edit-mode")
+  .on("click", function() {
+  	setMode("edit");
+  	editNodeEnter();
+  });
 d3.select("#downloadNet")
   .on("click", downloadNetwork);
 d3.select("#deleteNet")

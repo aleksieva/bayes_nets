@@ -6,36 +6,55 @@
 		<meta name="viewport" content="width=device-width initial-scale=1">
 		<title> Bayesian networks tool </title>
 		<link rel="stylesheet" href="css/bootstrap.min.css">
-		<link rel="stylesheet" href="css/stylesheet.css">
+		<!-- <link rel="stylesheet" href="css/stylesheet.css"> -->
+		<link rel="stylesheet" href="css/stylesheet2.css">		
 	</head>
 	<body>
-		<div class="page-header">
-			<h3 id="header"> Bayesian networks tool </h3>
+		<nav class="navbar navbar-default" role="navigation">
+			<div class="container-fluid">
+				<!-- TODO add toggle button ??-->
+				<a class="navbar-title navbar-brand" href="#"> <b> Bayesian Networks Tool </b> </a>
+			</div>
+		</nav>
+		<div class="container-fluid">
+			<div class="row">
+				<!-- Side menu -->
+				<div class="col-sm-3 col-md-2 sidebar-offcanvas" id="menu" role="navigation">
+					<ul class="nav nav-sidebar">
+						<li><a href='#' id='node-mode'>Add Node</a></li>
+						<li><a href='#' id='edit-mode'>Edit Node</a></li>
+						<li><a href='#' id='conn-mode'>Add Link</a></li>
+					</ul>
+					<hr>
+					<ul class="nav nav-sidebar">
+						<li><a href='#' id='sampleNet'>Sample Network</a></li>
+						<li><a href='#' id='uploadNet'>Upload Network</a></li>
+						<li><input type="file" id="hiddenUpload"> </li>
+						<li><a href='#' id='downloadNet'>Download Network</a></li>
+						<li><a href='#' id='deleteNet'>Delete Network</a></li>	
+					</ul>
+					<hr>
+					<ul class="nav nav-sidebar">
+						<li><a href='#' id='help'>Help</a></li>
+					</ul>
+				</div>
+				<!-- Workfield -->
+				<div class="col-sm-6 col-md-7" id="workspace"> </div>
+				<div class="col-sm-3 col-md-3" id="control"> </div>
+			</div>
 		</div>
-		<div class="btn-group" role="group">
-			<button type="button" class="btn btn-default" id="nodeMode"> Add Node </button>
-			<button type="button" class="btn btn-default" id="editNode"> Edit Node </button>
-			<button type="button" class="btn btn-default" id="connMode"> Add Link </button>
-			<button type="button" class="btn btn-default" id="downloadNet"> Download Network</button>
-			<button type="button" class="btn btn-default" id="uploadNet"> Upload Network</button>
-			<input type="file" id="hiddenUpload">
-			<button type="button" class="btn btn-default" id="deleteNet"> Delete Network</button>
-			<button type="button" class="btn btn-default" id="sampleNet"> Sample Network </button>
-		</div>
-		<div id="workspace"> </div>
-		<!-- <div id="error"> </div> -->
-		<div id="control"> </div>
 
+		<!-- TODO add footer -->
+<!-- 		<footer> 
+			<p class="pull-right"> Anna Aleksieva @ School of Computer Science </p>
+			<p class="pull-right"> University of Manchester </p>
+		</footer>
+ -->
 		<script src="lib/d3.min.js"> </script>
 		<script src="lib/jquery-1.11.1.min.js"></script>
 		<script src="lib/bootstrap.min.js"></script>
 		<script src="lib/FileSaver.min.js"></script>
 		<script src="js/app.js"></script>
-<!--	<script type="text/javascript" src="js/my.js"></script>  -->
-<!--		<script type="text/javascript" src="js/skeleton.js"></script> 
-		<script type="text/javascript" src="js/circles.js"></script> 
-		<script type="text/javascript" src="js/lines.js"></script> 
--->
-<!--		<script type="text/javascript" src="js/nodes.js"></script> -->
+
 	</body>
 </html>

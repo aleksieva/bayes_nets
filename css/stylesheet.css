@@ -1,3 +1,16 @@
+body {
+	background-color: #F9F9F9;
+}
+
+.navbar-title {
+	/*change to color of the left menu text?*/
+	color: #0489B1;
+}
+
+#hiddenUpload {
+	display:none;
+}
+
 /*NEW*/
 #header {
 	margin-top: 10px;
@@ -11,9 +24,7 @@
 	margin-right: auto;
 }
 
-#hiddenUpload {
-	display:none;
-}
+
 
 /****** Style for table display ******/
 #control {

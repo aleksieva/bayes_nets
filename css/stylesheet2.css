@@ -1,0 +1,123 @@
+body {
+	background-color: #F9F9F9;
+}
+
+.navbar-title {
+	/*change to color of the left menu text?*/
+	color: #0489B1;
+	font-size: 24px;
+	padding-left: 28px;
+}
+
+.nav-sidebar > li> a.selected {
+	background-color: #01A9DB;
+	color: #F9F9F9;
+}
+
+#hiddenUpload {
+	display:none;
+}
+
+.btn-bayes {
+	color:white;
+	background-color: #01A9DB;
+}
+
+.btn-bayes:hover {
+	background-color: #63CEED;	
+}
+
+.btn-bayes:focus {
+	background-color: #63CEED;	
+}
+
+.btn-bayes:focus {
+	background-color: #63CEED;	
+}
+
+/*SVG elements*/
+#svg {
+	/*border:1px solid black;*/
+	background: #DFF5F9;
+	-webkit-user-select:none;
+	-moz-user-select:none;
+	-ms-user-select:none;
+	-o-user-select:none;
+	user-select:none;
+	/*float:left;	*/
+}
+
+g.node circle{
+	fill: #01A9DB;
+	stroke:#0489B1;
+	stroke-width:1px;
+}
+
+g.node:hover circle {
+	fill: #C5DEE4;
+}
+
+g.node.selected circle{
+	fill:#D265A5 !important; /*change */
+	stroke:#CC0B7C;
+	stroke-width:2px !important;
+}
+
+g.node.selected:hover circle {
+	fill: #EFC9DF !important;
+}
+
+path.conn{
+	fill:none;
+	stroke:#01A9DB;
+	stroke-width:5px;
+	cursor:default;
+}
+
+path.conn:hover {
+	/*stroke: #C5DEE4;*/
+	stroke-width:6px;
+}
+
+path.conn.hidden{
+	stroke-width: 0;
+}
+
+path.conn.dragline{
+	pointer-events:none;
+}
+
+path.conn.selected{
+	stroke:#CC0B7C !important; /* change */
+}
+
+path.conn.selected:hover {
+	stroke:#D265A5 !important;
+}
+
+path.arrow {
+	fill:#01A9DB;
+}
+
+/*Text */
+.node-title {
+	color: #0489B1;	
+}
+
+.help-text {
+	font-size: 16px;
+	font-family: sans-serif;
+	color : gray;
+	padding-top:18px;
+}
+
+.label-text {
+	font-size:14px;
+	font-family: sans-serif;
+	font-weight: 100;
+	color : gray;	
+}
+
+.error-text {
+	color : red;
+}
