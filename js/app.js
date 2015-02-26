@@ -889,12 +889,14 @@ var displayCPT = function(d) {
 }
 
 var displayNodeOption = function(option, node) {
-	console.log(option)
+	var tblDiv = control.append("div");
+	console.log(tblDiv);
+
 	if(option === "cpt") {
-		displayCPT(node);
+		displayCPT(node, tblDiv);
 	}
 	else if(option === "val") {
-		displayNodeValues(node);
+		displayNodeValues(node, tblDiv);
 	}
 }
 
@@ -950,9 +952,8 @@ var displayNodeInfo = function(node) {
 		   .attr("id", "delete-node-btn")
 		   .html("Delete Node")
 		   .on("click", function() {
-		   	//TODO
 		   	//delete this node
-		   	//remove info
+		   	deleteNode(node);
 		   })
 
 }
@@ -1126,6 +1127,24 @@ var recalculateCPT = function(edgesArray, sourceNode) {
 	}
 }
 
+var deleteNode = function(node) {
+	nodes.splice(nodes.indexOf(node),1);
+	var incidentEgdes = removeIncidentEdges(node);
+	//recalculate the cpts for all nodes that are target nodes for the selected node
+	recalculateCPT(incidentEgdes, node);
+
+	//if node info is displayed remove it
+	if(editNodeMode) {
+		editNodeEnter();
+	}
+}
+
+var deleteEdge = function(path) {
+	edges.splice(edges.indexOf(path), 1);
+	//recalculate the cpt of the target node of this edge
+	recalculateCPT([path], path.source);
+}
+
 var keyDown = function() {
 	if(pressedKey !== -1)
 	  return;
@@ -1138,15 +1157,10 @@ var keyDown = function() {
 				//prevent default only for these keys
 				d3.event.preventDefault();
 				if(selectedNode) {
-					nodes.splice(nodes.indexOf(selectedNode),1);
-					var incidentEgdes = removeIncidentEdges(selectedNode);
-					//recalculate the cpts for all nodes that are target nodes for the selected node
-					recalculateCPT(incidentEgdes, selectedNode);
+					deleteNode(selectedNode);
 				}
 				else if(selectedPath) {
-					edges.splice(edges.indexOf(selectedPath), 1);
-					//recalculate the cpt of the target node of this edge
-					recalculateCPT([selectedPath], selectedPath.source);
+					deleteEdge(selectedPath);
 				}
       			selectedNode = null;
       			selectedPath = null;
@@ -1514,12 +1528,12 @@ d3.select(window)
 // 	return "Any progress you have made is not going to be saved.";
 // }
 
-window.onresize = function() {
-	var updatedSvgWidth = 0.7 * window.innerWidth,
-		updatedControlWidth = 0.2 * window.innerWidth;
+// window.onresize = function() {
+// 	var updatedSvgWidth = 0.7 * window.innerWidth,
+// 		updatedControlWidth = 0.2 * window.innerWidth;
 
-	svg.attr("width", updatedSvgWidth);
-}
+// 	svg.attr("width", updatedSvgWidth);
+// }
 
 //button controls
 d3.select("#node-mode")
