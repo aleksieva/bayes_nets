@@ -83,7 +83,8 @@ var defaultMode = true,
 	nodeMode = false,
 	connMode = false,
 	editNodeTextMode = false,
-	editNodeMode = false;
+	editNodeMode = false,
+	sampleMode = false;
 
 var setMode = function(mode){
 	//clear the display field
@@ -94,7 +95,8 @@ var setMode = function(mode){
 			defaultMode = false;
 			nodeMode = true;
 			connMode = false;
-			editNodeMode = false
+			editNodeMode = false;
+			sampleMode = false;
 
 			//indicate the mode as selected
 			d3.select("#node-mode")
@@ -103,6 +105,8 @@ var setMode = function(mode){
 			  .classed("selected", false);
 			d3.select("#edit-mode")
 			  .classed("selected", false);
+			d3.select("#sample-net")
+			  .classed("selected", false);			  
 			return;
 		}
 	}
@@ -112,6 +116,7 @@ var setMode = function(mode){
 			nodeMode = false;
 			connMode = true;
 			editNodeMode = false
+			sampleMode = false;
 
 			//indicate the mode as selected
 			d3.select("#conn-mode")
@@ -119,7 +124,9 @@ var setMode = function(mode){
 			d3.select("#node-mode")
 			  .classed("selected", false);
 			d3.select("#edit-mode")
-			  .classed("selected", false);			  		  
+			  .classed("selected", false);
+			d3.select("#sample-net")
+			  .classed("selected", false);				  			  		  
 			return;
 		}
 	}
@@ -129,6 +136,7 @@ var setMode = function(mode){
 			nodeMode = false;
 			connMode = false;
 			editNodeMode = true;
+			sampleMode = false;
 
 			//indicate the mode as selected
 			d3.select("#edit-mode")
@@ -136,21 +144,45 @@ var setMode = function(mode){
 			d3.select("#conn-mode")
 			  .classed("selected", false);
 			d3.select("#node-mode")
-			  .classed("selected", false);			  
+			  .classed("selected", false);
+			d3.select("#sample-net")
+			  .classed("selected", false);				  			  
+			return;
+		}
+	}
+	else if (mode === "sample") {
+		if(!sampleMode) {
+			sampleMode = true;
+			nodeMode = false;
+			connMode = false;
+			editNodeMode = false;
+			defaultMode = false;
+			d3.select("#node-mode")
+			  .classed("selected", false);
+			d3.select("#conn-mode")
+			  .classed("selected", false);
+			d3.select("#edit-mode")
+			  .classed("selected", false);
+			d3.select("#sample-net")
+			  .classed("selected", true);	
 			return;
 		}
 	}
 	defaultMode = true;
 	nodeMode = false;
 	connMode = false;
-	editNodeMode = false
+	editNodeMode = false;
+	sampleMode = false;
 	d3.select("#node-mode")
 	  .classed("selected", false);
 	d3.select("#conn-mode")
 	  .classed("selected", false);
 	d3.select("#edit-mode")
 	  .classed("selected", false);
-	  
+	d3.select("#sample-net")
+	  .classed("selected", false);		  
+	
+	// displayHelp();
 };
 
 //handle drag behaviour
@@ -195,9 +227,12 @@ var zoom = d3.behavior.zoom()
 			 	//TODO cursor
 			 // })
 			 .on("zoom", zoomBehavior)
-			 // .on("zoomend", function(){
+			 .on("zoomend", function(){
 			 	//TODO cursor
-			 // });
+			 	//recalculate the zoom scale
+				d3.select("#zoom-scale")
+				  .text("Zoom Scale: " + zoom.scale().toFixed(2));			 	
+			 });
 
 var clearDisplayField = function() {
 	control.html("");
@@ -207,8 +242,8 @@ var clearDisplayField = function() {
 var multipleLinesText = function(text, d3elem) {
 	var wordsLines = text.split(/\s+/g);
 	var txtElem = d3elem.append("text")
+						.attr("class", "node-title")
 						.attr("text-anchor", "middle")
-						.style("font-size", "16px")
 						//TODO change
 			            .attr("dy", "-" + (wordsLines.length-1)*7.5);
 
@@ -224,6 +259,26 @@ var multipleLinesText = function(text, d3elem) {
 
 var isEmptyString = function(text) {
 	return text.length === 0 || /^\s*$/.test(text);
+}
+
+//if the new name is a duplicate of another node name - new name -> name(1).. name(2) etc.
+var duplicateNodeTitles = function(newTitle, node) {
+	var flag;
+	var i = 1;
+	var name = newTitle;
+
+	do {
+		flag = false;
+		for(var n in nodes) {
+			if(nodes[n] !== node && nodes[n].title === name) {
+				name = newTitle + '(' + i + ')';
+				i++;
+				flag = true;
+			}
+		}
+	} while(flag);
+
+	return name;
 }
 
 var editNodeText = function(d, d3Group){
@@ -258,7 +313,8 @@ var editNodeText = function(d, d3Group){
  					   	d.title = this.value.trim();
  					   	//capitalize every node title
  					   	d.title = d.title.charAt(0).toUpperCase() + d.title.slice(1);
- 					   	console.log(d.title);
+ 					   	//check for duplicates
+ 					   	d.title = duplicateNodeTitles(d.title, d);
 					   	multipleLinesText(d.title, d3Group);
 				   	 }
 				   	 else {
@@ -386,7 +442,7 @@ var appendNodeValues = function(num) {
 	//count # of old input fields
 	var progress = d3.selectAll("tr.nodeValueRow")[0].length;
 
-	var nodeInfo = d3.select("table.nodeEditTbl");
+	var nodeInfo = d3.select("table.node-edit-tbl");
 
 	if(progress < num) {
 		//add new rows
@@ -396,12 +452,14 @@ var appendNodeValues = function(num) {
 			currRow.append("td")
 				   .text("Value " + i);
 			currRow.append("td")
+				   .attr("class", "editable")
 				   .append("input")
 				   .classed("nodeValue", true)
 				   .attr("type", "text");
 		}		
 	}
 	else if(progress > num) {
+		//TODO alert?
 		//remove rows
 		while(progress > num) {
 			d3.selectAll("tr.nodeValueRow")[0][progress-1].remove();
@@ -411,7 +469,7 @@ var appendNodeValues = function(num) {
 
 	d3.selectAll("input.nodeValue")
 	  .on("blur", function() {
-	  	alert("lose focus");
+	  	// alert("lose focus");
 	  	//TODO
 	  	//updateValue
 	  })
@@ -440,7 +498,7 @@ var checkNodeValuesDuplicates = function(values) {
 //change the values that a particular node can take
 var updateNodeValues = function(node){
 	//remove error text
-	control.selectAll(".error-text")
+	control.selectAll(".alert-text")
 		   .remove();
 
 	var newValues = [];
@@ -450,14 +508,12 @@ var updateNodeValues = function(node){
 				  	console.log(this.value);
 				  	if(!isEmptyString(this.value)) {
 					  	newValues.push(this.value);
-					  	//TODO classed 
 				  		d3.select(this)
-				  		  .style("border-color","gray");						  	
+				  		  .classed("invalid", false);
 				  	}
 				  	else {
-					  	//TODO classed 
 				  		d3.select(this)
-				  		  .style("border-color","red");	
+				  		  .classed("invalid", true);
 				  		isValid = false;			  		
 				  	}
 				  })
@@ -473,11 +529,31 @@ var updateNodeValues = function(node){
 		children.forEach(function(child){
 			createCPT(child);
 		})
+
+		//success message
+		var successDiv = control.insert("div", "#edit-div-tbl")
+							   .attr("class", "alert-text alert alert-success");
+		successDiv.append("span")
+				.attr("class", "glyphicon glyphicon-ok")
+				.attr("aria-hidden", "true");
+		successDiv.append("span")
+				.attr("class", "sr-only")
+				.text("Success");
+		var text = successDiv.html() + " Successfully updated.";
+		successDiv.html(text);
 	}
 	else {
-		control.insert("p", ".nodeEditTbl")
-			   .classed("error-text", true) //TODO add styles
-			   .text("Enter a non-empty value.");
+		//error message
+		var errorDiv = control.insert("div", "#edit-div-tbl")
+							   .attr("class", "alert-text alert alert-danger");
+		errorDiv.append("span")
+				.attr("class", "glyphicon glyphicon-exclamation-sign")
+				.attr("aria-hidden", "true");
+		errorDiv.append("span")
+				.attr("class", "sr-only")
+				.text("Error");
+		var text = errorDiv.html() + " Enter a non-empty value.";
+		errorDiv.html(text);						
 	}
 
 }
@@ -487,22 +563,17 @@ var updateSingleValue = function(input, node) {
 	//TODO
 }
 
-var displayNodeValues = function(d, field) {
-	var nodeInfo = field.append("div")
-						  .append("table")
-						  .attr("class", "table nodeEditTbl");
-
-					 //TODO
-					 // .attr("class", "table table-striped nodeEditTbl")
-					 // .classed("nodeEditTbl", true);
-
-	//add node title
-	nodeInfo.append("tr").html("<td> Node: </td> <td> " + d.title + " </td>")
+var displayNodeValues = function(d) {
+	d3.select("#edit-div-tbl").html("");
+	var nodeInfo = d3.select("#edit-div-tbl")
+					 .append("table")
+					 .attr("class", "table table-bayes node-edit-tbl");
 
 	//add num of values
 	var numOfValues = nodeInfo.append("tr");
-	numOfValues.append("td").text("# values");
-	numOfValues.append("td")
+	numOfValues.append("th").text("# values");
+	numOfValues.append("th")
+			   .attr("class", "editable")
 			   .append("input")
 			   .attr("type", "number")
 			   .attr("id", "numValues")
@@ -510,11 +581,6 @@ var displayNodeValues = function(d, field) {
 			   .attr("max", 10)
 			   .attr("value", d.values.length)
 			   .on("input", function() {
-			   	  // var dataset = d.values;
-			   	  // for (var i=d.values.length+1; i<=this.value; i++) {
-			   	  // 	dataset.push(i);
-			   	  // }
-			   	  // appendNodeValues(dataset);
 			   	  appendNodeValues(this.value);
 			   })
 			   .on("keydown", function() {
@@ -528,12 +594,13 @@ var displayNodeValues = function(d, field) {
 		currRow.append("td")
 			   .text("Value " + i);
 		currRow.append("td")
+			   .attr("class", "editable")
 			   .append("input")
 			   .classed("nodeValue", true)			   
 			   .attr("type", "text")
 			   .attr("value", d.values[i-1])
 			   .on("blur", function() {
-			   	 console.log("lose focus");
+			   	 // console.log("lose focus");
 			   	 console.log(this);
 			   	 //TODO
 			   	 //Update value
@@ -541,15 +608,45 @@ var displayNodeValues = function(d, field) {
 			   });
 	}
 
-	field.append("button")
-		   .classed("btn btn-default", true) //TODO style
-		   .attr("id", "updateNodeValues")
-		   .html("Update Values")
-	  	   .on("click", function() {
-	  	   	updateNodeValues(d);
-	  	   });
+	d3.select("#edit-div-tbl")
+	  .append("button")
+	  .classed("btn btn-default btn-bayes", true)
+	  .attr("id", "update-node-values")
+	  .html("Update Values")
+	  .on("click", function() {
+	   	updateNodeValues(d);
+	  });
 }
 
+var displayHelp = function() {
+	clearDisplayField();
+	setMode("");
+	//help page
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("<b> Add a Node: </b> Select the \'Add Node\' mode and click on the work field.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")	
+		   .html("<b> Edit Node Name: </b> Shift-click on the node.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")	
+		   .html("<b> Edit Node: </b> Select the \'Edit Node \' mode and click on the node to edit.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")	
+		   .html("<b> Delete Node: </b> In \'Edit Node \' mode for the node you want to delete - click \'Delete Node \' button or press Backspace");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")	
+		   .html("<b> Add Link: </b> In \'Add Link \' mode drag a line from one node to another.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")	
+		   .html("<b> Reverse Link: </b>");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")	
+		   .html("<b> Delete Link: </b>");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")	
+		   .html("<b> Sample Data: </b>");			   		   	   		   		   		   
+}
 //display instructions for edit node mode
 var editNodeEnter = function() {
 	if(editNodeMode) {
@@ -563,7 +660,7 @@ var editNodeEnter = function() {
 		//instructions
 		control.append("p")
 			   .classed("help-text", true)
-			   .text("Select a node to edit: ");
+			   .text("Select a node to edit.");
 	}
 }
 
@@ -622,7 +719,7 @@ var validateUpdate = function() {
 	var validEntries = true;
 	var validRowSums = true;
 
-	var rows = d3.selectAll(".editableCptRow")
+	var rows = d3.selectAll(".editable-cpt-row")
 				 .each(function(d, i) {
 				 	var sumProb = 0;
 				 	d3.select(this)
@@ -631,38 +728,48 @@ var validateUpdate = function() {
 				 	  .each(function(d, i) {
 				 	  	if(isValidCPTEntry(this.value) && !isEmptyString(this.value)) {
 				 	  		sumProb += parseFloat(this.value);
-				 	  		//TODO add class instead
 				 	  		d3.select(this)
-					  		  .style("border-color","gray");
+				 	  		  .classed("invalid", false);
 				 	  	}
 				 	  	else {
 				 	  		validEntries = false;
-  					  		//TODO add class instead
 					  		d3.select(this)
-					  		  .style("border-color","red");
+					  		  .classed("invalid", true);
 				 	  	}
 				 	  });
 				 	  console.log(sumProb);
 				 	  if (sumProb !== 1) {
 				 	  	validRowSums = false;
-						//TODO change color of row if it does not sum to 1??			 	  	
 				 	  }
 				 });
 
 
 	if (!validEntries) {
-		// alert("Enter a valid probability value between 0 and 1.")
-		control
-		  .insert("p", ".cptTable")
-		  .classed("error-text", true)
-		  .text("Enter a valid probability value between 0 and 1.\n");
+		//error message
+		var errorDiv = control.insert("div", "#edit-div-tbl")
+							   .attr("class", "alert-text alert alert-danger")
+		errorDiv.append("span")
+				.attr("class", "glyphicon glyphicon-exclamation-sign")
+				.attr("aria-hidden", "true");
+		errorDiv.append("span")
+				.attr("class", "sr-only")
+				.text("Error");
+		var text = errorDiv.html() + " Enter a valid probability value between 0 and 1.";
+		errorDiv.html(text);				
 	}
 
 	if(!validRowSums) {
-		control
-		  .insert("p", ".cptTable")
-		  .classed("error-text", true)
-		  .text("Probabilities on one row must sum up to 1.\n");
+		//error message
+		var errorDiv = control.insert("div", "#edit-div-tbl")
+							   .attr("class", "alert-text alert alert-danger");
+		errorDiv.append("span")
+				.attr("class", "glyphicon glyphicon-exclamation-sign")
+				.attr("aria-hidden", "true");
+		errorDiv.append("span")
+				.attr("class", "sr-only")
+				.text("Error");
+		var text = errorDiv.html() + " Probabilities on one row must sum up to 1.";
+		errorDiv.html(text);				
 	}
 
 	return validEntries && validRowSums;
@@ -670,9 +777,9 @@ var validateUpdate = function() {
 //update table values when edited
 var updateTbl = function(){
 	//clear previous error messages
-	control.selectAll(".error-text").remove();
+	control.selectAll(".alert-text").remove();
 
-	var tblId = d3.select(".cptTable").attr("id");
+	var tblId = d3.select(".cpt-table").attr("id");
 	if(!tblId) {
 		alert ("Table does not exist.")
 	}
@@ -700,6 +807,17 @@ var updateTbl = function(){
 					}
 		 			nestedCpt[path[path.length-1]] = parseFloat(this.value);
 				  });
+
+	var successDiv = control.insert("div", "#edit-div-tbl")
+						   .attr("class", "alert-text alert alert-success");
+	successDiv.append("span")
+			.attr("class", "glyphicon glyphicon-ok")
+			.attr("aria-hidden", "true");
+	successDiv.append("span")
+			.attr("class", "sr-only")
+			.text("Success");
+	var text = successDiv.html() + " Successfully updated.";
+	successDiv.html(text);							  
 }
 
 var updateCell = function(){
@@ -758,9 +876,9 @@ var displayCPTRows = function(cpt, list, level, chain) {
 			html += '<td class="editable"> <input type="text" id="' + currChain + '" value="' + currVal + '"></td> ';
 		})
 
-		d3.select(".cptTable")
+		d3.select(".cpt-table")
 		  .append("tr")
-		  .classed("editableCptRow", true)
+		  .classed("editable-cpt-row", true)
 		  .html(html);
 
 	}
@@ -812,7 +930,7 @@ var cptColumnNames = function(parents, values){
 	// it defines the columns
 	var conditionalVariables = ""
 	for (var i=0; i<names.length-1; i++) {		
-		html += '<td>' + names[i] + '</td>';
+		html += '<th>' + names[i] + '</th>';
 		conditionalVariables += names[i] + ',';
 	}
 	conditionalVariables = conditionalVariables.substring(0, conditionalVariables.length-1)
@@ -821,14 +939,14 @@ var cptColumnNames = function(parents, values){
 	//append different value columns for this node
 	nodeNameValues.forEach(function(option) {
 		if(names.length === 1) {
-			html += '<td>' + option + ')</td>';
+			html += '<th>' + option + ')</th>';
 		}
 		else if (names.length > 1) {
-			html += '<td>' + option + "|" + conditionalVariables + ')</td>';
+			html += '<th>' + option + "|" + conditionalVariables + ')</th>';
 		}
 	})
 
-	d3.select(".cptTable").append("tr").html(html);
+	d3.select(".cpt-table").append("thead").append("tr").html(html);
 	html = "";
 }
 
@@ -850,20 +968,24 @@ var createCPT = function(d) {
 	}
 }
 
-var displayCPT = function(d, field) {
+var displayCPT = function(d) {
+	//clear table display
+	d3.select("#edit-div-tbl").html("");
+
 	html = "";
 	//attach a new table
-	field
+	d3.select("#edit-div-tbl")
 	  .append("table")
 	  .attr("id", d.id)
-	  .classed("cptTable", true);
-	
+	  .attr("class", "cpt-table table table-bayes");
+
+	//get parents for this node that its cpt is going to depend on	
 	var parents = getNodeParents(d);
-	// console.log(parents);	
 	parents.push(d.id);
 
 	//CPT column names
 	cptColumnNames(parents, d.values);
+	
 	var cpt = d.tbl;
 
 	//display the cpt
@@ -872,30 +994,26 @@ var displayCPT = function(d, field) {
 	d3.selectAll("td.editable")
 	  .selectAll("input")
 	  .on("blur", function() {
-	  	// alert("lose focus");
 	  	//TODO
 	  	updateCell();
 	  })
 	
 	// Handling editing CPTs events
- 	// d3.select(".cptTable")
- 	field
+ 	d3.select("#edit-div-tbl")
+ 	// d3.select(".cpt-table")
  	  .append("button")
- 	  .attr("class", "btn btn-default")
- 	  .attr("id", "tblUpdateBtn")
- 	  .html("Update")
+ 	  .attr("class", "btn btn-default btn-bayes")
+ 	  .attr("id", "cpt-update-btn")
+ 	  .html("Update CPT")
  	  .on("click", updateTbl);
 }
 
 var displayNodeOption = function(option, node) {
-	var tblDiv = control.append("div");
-	console.log(tblDiv);
-
 	if(option === "cpt") {
-		displayCPT(node, tblDiv);
+		displayCPT(node);
 	}
 	else if(option === "val") {
-		displayNodeValues(node, tblDiv);
+		displayNodeValues(node);
 	}
 }
 
@@ -905,7 +1023,7 @@ var displayNodeInfo = function(node) {
 	//append node title
 	control.append("h3")
 		   .text(node.title + ":")
-		   .classed("node-title", true);
+		   .classed("node-label", true);
 
 	control.append("hr");
 
@@ -938,11 +1056,16 @@ var displayNodeInfo = function(node) {
 	control.append("hr");
 
 	//display the relevant data
-	displayNodeOption(d3.select("#node-options").node().options[d3.select("#node-options").node().selectedIndex].value, node);
+	var tblDiv = control.append("div")
+						.attr("class", "table-responsive div-table")
+						.attr("id", "edit-div-tbl");	
+	var selOption = d3.select("#node-options").node().options[d3.select("#node-options").node().selectedIndex].value;
+	displayNodeOption(selOption, node);
 	control.append("hr");
 
 	// delete button
 	control.append("p")
+		   // .attr("for", "delete-node-btn")
 		   .attr("class", "label-text")
 		   .text("Delete the node:" );
 
@@ -1082,6 +1205,7 @@ var svgMouseDown = function(){
 
 
 	nodes.push(newNode);
+	newNode.title = duplicateNodeTitles(newNode.title, newNode);
 	refresh();
 	//change?
 	selectedNode = newNode;
@@ -1127,21 +1251,29 @@ var recalculateCPT = function(edgesArray, sourceNode) {
 }
 
 var deleteNode = function(node) {
-	nodes.splice(nodes.indexOf(node),1);
-	var incidentEgdes = removeIncidentEdges(node);
-	//recalculate the cpts for all nodes that are target nodes for the selected node
-	recalculateCPT(incidentEgdes, node);
+	// var confirm = false;
+	// confirm = window.confirm("Are you sure you want to delete this node?");
+	// if(confirm) {	
+			nodes.splice(nodes.indexOf(node),1);
+			var incidentEgdes = removeIncidentEdges(node);
+			//recalculate the cpts for all nodes that are target nodes for the selected node
+			recalculateCPT(incidentEgdes, node);
 
-	//if node info is displayed remove it
-	if(editNodeMode) {
-		editNodeEnter();
-	}
+			//if node info is displayed remove it
+			if(editNodeMode) {
+				editNodeEnter();
+			}
+	// }
 }
 
 var deleteEdge = function(path) {
-	edges.splice(edges.indexOf(path), 1);
-	//recalculate the cpt of the target node of this edge
-	recalculateCPT([path], path.source);
+	// var confirm = false;
+	// confirm = window.confirm("Are you sure you want to delete this link?");
+	// if(confirm) {
+		edges.splice(edges.indexOf(path), 1);
+		//recalculate the cpt of the target node of this edge
+		recalculateCPT([path], path.source);		
+	// }
 }
 
 var keyDown = function() {
@@ -1187,11 +1319,28 @@ var deleteNetwork = function(isConfirm) {
 	}
 }
 
-var specifyDownloadName = function() {
-//TODO
+var specifyDownloadName = function(ext) {
+   clearDisplayField();
+   var inputGroup = control.append("div")
+   						   .attr("class", "input-group");
+
+   	inputGroup.append("input")
+   			  .attr("type", "text")
+   			  .attr("class", "form-control")
+   			  .attr("placeholder", "Network file name")
+   			  .attr("aria-describedby", "file-ext")
+   			  .on("change", function(){
+   			  	//TODO verify file name
+   			  	downloadNetwork(this.value + ext);
+   			  });
+
+   	inputGroup.append("span")
+   			  .attr("class", "input-group-addon")
+   			  .attr("id", "file-ext")
+   			  .text(ext);
 }
 
-var downloadNetwork = function(){
+var downloadNetwork = function(filename){
 	var compactEdges = []
 	edges.forEach(function(e) {
 		var compactEdge = {source: e.source.id, target:e.target.id};
@@ -1200,22 +1349,23 @@ var downloadNetwork = function(){
 	var netObject = JSON.stringify({
 		"nodes":nodes,
 		"edges":edges
-	});
+	}, null, 2);
 	// console.log(netObject);
 	var blob = new Blob([netObject], {type:"text/plain;charset=utf-8"});
-	saveAs(blob, "bayesnet.json");
+	// saveAs(blob, "bayesnet.json");
+	saveAs(blob, filename);
+
 	// http://stackoverflow.com/questions/17868643/save-javascript-data-to-excel
-	//TODO uncomment
     // var filename = prompt("Please enter the filename:");
     // if(filename!=null && filename!="")
-    //     saveAs(blob, [filename+'.json']);
-
+    //     saveAs(blob, [filename+'.json']);	
 }
 
 var maxNodeId = function(){
 	return Math.max.apply(Math, nodes.map(function(n) {return n.id}));
 }
 
+//TODO code taken from
 var uploadNetwork = function(){
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
 		var fileReader = new window.FileReader();
@@ -1226,22 +1376,19 @@ var uploadNetwork = function(){
 			try {
 				var netObj = JSON.parse(txt);
 				deleteNetwork(false);
+
+				//clear the display field
 				clearDisplayField();
+
 				nodes = netObj.nodes;
 				var rawEdges = netObj.edges;
 				rawEdges.forEach(function(e, index){
-					// console.log(e);
-					// console.log(index);
 					var src = nodes.filter(function(n) {
 						return n.id === e.source.id;
 					})[0];
-					// console.log("source");
-					// console.log(src);
 					var tgt = nodes.filter(function(n) {
 						return n.id === e.target.id; 
 					})[0];	
-					// console.log("target");
-					// console.log(tgt);
 					rawEdges[index] = {source: src, target:tgt}; 
 				})
 				edges = rawEdges;
@@ -1250,6 +1397,11 @@ var uploadNetwork = function(){
 				//set the status to uploaded
 				uploaded = true;
 				refresh();
+				//set mode to default
+				setMode("");
+				//display instructions
+				displayHelp();
+
 			}
 			catch(err){
 				alert("Error occured while parsing the file.")
@@ -1263,7 +1415,6 @@ var uploadNetwork = function(){
 		alert("Your browser does not support this functionality.")
 	}
 }
-
 
 var doSampling = function(node, parents, sample){
 	var randVal = Math.random();
@@ -1330,18 +1481,34 @@ var sampleNode = function(node, sample) {
 	node.sampled = true;
 }
 
-var setSamplingStatus = function() {
+var setSamplingStatus = function(fixed) {
 	//set all nodes state to not sampled
 	for (var n in nodes) {
 		nodes[n].sampled = false;
 	}
+	console.log(fixed);
+	for(var id in fixed) {
+		var fixedNode = nodes.filter(function(node){
+			return node.id === parseInt(id);
+		})[0];
+		fixedNode.sampled = true;
+		// nodes[id].sampled = true;
+	}
 	return true;
 }
 
-var singleSample = function() {
-	//set nodes status to not sampled
-	setSamplingStatus();
+var singleSample = function(fixed) {
 	var currSample = {};
+	//fix any values if any have been chosen
+	for (var id in fixed) {
+		if(fixed[id] !== "none") {
+			currSample[id] = fixed[id];
+		}
+	}
+	// console.log(currSample);
+
+	//set nodes status to not sampled if not fixed
+	setSamplingStatus(currSample);
 
 	//sample each node that has not been sampled
 	nodes.forEach(function(n) {
@@ -1349,7 +1516,22 @@ var singleSample = function() {
 			sampleNode(n, currSample);
 		}
 	})
+
 	return currSample;
+}
+
+var resample = function(numSamples, fSample) {
+	var samples = [];
+	for (var i=0; i< numSamples; i++) {
+		// console.log(fSample);
+		var sample = singleSample(fSample);
+		samples.push(sample);
+	}
+
+	//get nodes status back to false
+	setSamplingStatus();
+	//display the samples
+	displaySamples(samples, numSamples, fSample);
 }
 
 var sampleTblColumnNames = function(){
@@ -1361,76 +1543,104 @@ var sampleTblColumnNames = function(){
 	}
 
 	for (var name in names) {
-		columns += '<td>' + names[name] + '</td>';
+		columns += '<th>' + names[name] + '</th>';
 	}
 
-	d3.select(".sampleTbl")
+	d3.select(".sample-tbl")
+	  .append("thead")
 	  .append("tr")
 	  .html(columns);
 }
 
 var formatSamplesDownload = function(samples) {
-	var samplesObject = {}
+	var sampleArray = [];
 
-	//node titles as properties
-	for (var n in nodes) {
-		samplesObject[nodes[n].title] = [];
-	}
+	//first row is the titles
+	var titles = [];
+	nodes.forEach(function(node) {
+		titles.push(node.title);
+	})
+	sampleArray.push(titles);
 
-	//for every node put each sample for it in an array
-	for (var s in samples) {
-		for (var v in  samples[s]) {
-			// console.log(nodes[v].title);
-			// console.log(samples[s][v]);
-			samplesObject[nodes[v].title].push(samples[s][v]);
+	//the actual samples
+	samples.forEach(function(sample) {
+		var newRow = [];
+		for (var val in sample) {
+			// console.log(sample[val]);
+			newRow.push(sample[val]);
 		}
-	}
+		sampleArray.push(newRow);
+	})
 
-	// console.log(samplesObject);
-	return samplesObject;
+	//example used from http://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
+	var csvData = "";
+	sampleArray.forEach(function(singleRow, index){
+		var currRow = singleRow.join(",");
+		csvData += index < sampleArray.length ? currRow + '\n' : currRow;
+	})
+
+	return csvData;
 }
 
 var downloadSamples = function(samples) {
 	//format the data to be downloaded
 	var sampleData = formatSamplesDownload(samples);
 
-	var sampleObject = JSON.stringify({
-		"samples":sampleData
-	});
-	// console.log(netObject);
-	var blob = new Blob([sampleObject], {type:"text/plain;charset=utf-8"});
-	saveAs(blob, "sample_bayes.json");
-
+	var blob = new Blob([sampleData], {type:"text/csv;charset=utf-8"});
+	saveAs(blob, "sample_bayes.csv");
 }
 
-var displaySamples = function(samples) {
+var displaySamples = function(samples, noSample, fSample) {
 	//clear the display space
 	clearDisplayField();
 
+	var btnGroup = control.append("div")
+		   				  .attr("class", "btn-group")
+						  .attr("role", "group");
+	//sample again btn 	   
+	btnGroup.append("button")
+		   .attr("class", "btn btn-default btn-bayes-grp")
+		   .html("Resample")
+		   .on("click", function(){
+		   	resample(noSample, fSample);
+		   });
+
 	//download button
-	control
-	  .append("button")
-	  .attr("class", "btn btn-default")
-	  .attr("id", "sampleDownloadBtn")
-	  .html("Download Samples")
-	  .on("click", function() {
-	  	downloadSamples(samples);
-	  });
+	btnGroup.append("button")
+		   .attr("class", "btn btn-default btn-bayes-grp")
+		   .attr("id", "sampleDownloadBtn")
+		   .html("Download")
+		   .on("click", function() {
+		   	downloadSamples(samples);
+		   });
+	//reset btn
+	btnGroup.append("button")
+		   .attr("class", "btn btn-default btn-bayes-grp")
+		   .html("Reset")
+		   .on("click", function(){
+		   	samplingSettings();
+		   });			   
+
+	control.append("hr");
+
+	mySamples = samples;
 
 	//apend table for the results
-	control
-	  .append("table")
-	  .attr("class", "sampleTbl");
+	var sampleTbl = control.append("div")
+						   .attr("class", "table-responsive sample-table")
+						   .append("table")
+	  	   				   .attr("class", "table table-bayes sample-tbl");
 
 	//append the columns names
 	sampleTblColumnNames();
 
+	var sampleTblBody = sampleTbl.append("tbody");
 	var accumulator = "";
 	for (var s in samples) {
 		for (var val in samples[s]) {
 			accumulator += '<td>' + samples[s][val] + '</td>';
 		}
-		control.append("tr").html(accumulator);
+		sampleTblBody.append("tr").html(accumulator);
 		accumulator = "";
 	}
 }
@@ -1449,60 +1659,235 @@ var checkExistingCpts = function() {
 	return true; 
 }
 
-var ancestralSampling = function() {
+var ancestralSampling = function(fSample) {
 	//remove previous error messages
-	d3.selectAll(".error-text").remove();
+	d3.selectAll(".alert-text").remove();
 
 	//get the number of samples to be made
-	var noOfSamples = parseInt(d3.select("#numSamplesInput").node().value);
+	var noOfSamples = parseInt(d3.select("#num-samples-input").node().value);
 	if(isNaN(noOfSamples)) {
-		control
-		  .insert("p", "#numSamplesInput")
-		  .text("Please enter a valid number of samples.")
-		  .classed("error-text", true);
-
+		//error message
+		var errorDiv = control.insert("div", "#num-samples-input")
+							   .attr("class", "alert-text alert alert-danger");
+		errorDiv.append("span")
+				.attr("class", "glyphicon glyphicon-exclamation-sign")
+				.attr("aria-hidden", "true");
+		errorDiv.append("span")
+				.attr("class", "sr-only")
+				.text("Error");
+		var text = errorDiv.html() + " Enter a valid number of samples.";
+		errorDiv.html(text);			
 		return;
 	}
 
 	var success = checkExistingCpts();
 	if (!success) {
 		return;
-	}	
-
-	samples = [];
-	for (var i=0; i< noOfSamples; i++) {
-		var sample = singleSample();
-		console.log(sample);
-		samples.push(sample);
 	}
 
-	console.log(samples);
+	var samples = [];
+	for (var i=0; i< noOfSamples; i++) {
+		// console.log(fSample);
+		var sample = singleSample(fSample);
+		samples.push(sample);
+	}
 
 	//get nodes status back to false
 	setSamplingStatus();
 	//display the samples
-	displaySamples(samples);
+	displaySamples(samples, noOfSamples, fSample);
 }
 
 var samplingSettings = function(){
-	clearDisplayField();
+	if(sampleMode) {
+		clearDisplayField();
 
-	//instructions
-	control
-	  .append("p")
-	  .classed("help-text", true)
-	  .text("Choose number of samples:");
-	control
-	  .append("input")
-	  .attr("id", "numSamplesInput")
-	  .attr("type", "number")
-	  .attr("min", "1");
-	control
-	  .append("button")
-	  .attr("class", "btn btn-default")
-	  .attr("id", "runSamplingBtn")
-	  .html("Run")
-	  .on("click", ancestralSampling);
+		//keep the fixed values here
+		var fixedSamples = {};
+		nodes.forEach(function(node){
+			fixedSamples[node.id] = "none";
+		})
+
+		//number of samples
+		control.append("label")
+			.attr("for", "num-samples-input")
+			.attr("class", "label-text")
+			.text("Choose number of samples:")
+		control.append("input")
+		  	   .attr("id", "num-samples-input")
+			   .attr("type", "number")
+			   .attr("min", "1");
+		control.append("button")
+			   .attr("class", "btn btn-default btn-bayes-short")
+			   .attr("id", "runSamplingBtn")
+			   .html("Run")
+			   .on("click", function(){
+					ancestralSampling(fixedSamples);
+			   });
+
+		//fixed ancestral sampling
+		control.append("hr");
+		control.append("label")
+			   .attr("for", "fixed-sampling-div")
+			   .attr("class", "label-text")
+			   .text("Fix the values of any of the nodes:");
+		var fixedTbl = control.append("div")
+			   .attr("class", "table-responsive sample-table")
+			   .attr("id", "fixed-sampling-div")
+			   .append("table")
+			   .attr("class", "table table-bayes");
+		nodes.forEach(function(node) {
+			var row = fixedTbl.append("tr");
+
+			//append node titles
+			row.append("td").text(node.title);
+			//append selects with values
+			var select = row.append("td")
+								 .append("select")
+								 .attr("id", node.id)
+								 .attr("class", "form-control")
+								 .on("change", function(){
+								 	fixedSamples[this.id] = this.options[this.selectedIndex].value;
+								 	console.log(fixedSamples);
+								 });
+
+			//default option
+			select.append("option")
+				  .attr("value", "none")
+				  .attr("selected", true)
+				  .text("Not fixed")//?
+			//all possible values for this node	  
+			node.values.forEach(function(value) {
+				select.append("option")
+				      .attr("value", value)
+				      .text(value);
+			});
+		})
+	}
+
+}
+
+var formatUploadSample = function(data) {
+	var formattedData = {};
+	data.forEach(function(row) {
+		for(var cName in row) {
+			if(cName in formattedData) {
+				formattedData[cName].push(row[cName]);
+			}
+			else {
+				formattedData[cName] = [];
+				formattedData[cName].push(row[cName]);
+			}
+		}
+	})
+
+	return formattedData;
+}
+
+var recalculateValues = function(fdata) {
+	//for each node name in the formatted data
+	for (var nodeName in fdata) {
+		//find if there is a node with that name
+		var node = nodes.filter(function(n) {
+			return n.title === nodeName;
+		})[0];
+		var newValues = _.uniq(fdata[nodeName]);
+		node.values = newValues;
+		createCPT(node);
+	}
+}
+
+var learnCPTSingleNode = function(level, parents, csv, cpt) {
+	if (level === parents.length-1) {
+		var leafId = parents[level];
+
+		var leaf = nodes.filter(function(node) {
+			return node.id === leafId;
+		})[0];
+		var values = leaf.values;
+
+		values.forEach(function(value) {
+			var occurrences = _.filter(csv, function(row) {
+				return row[leaf.title] === value;
+			});
+			var entry = leafId + value;
+			cpt[entry] = occurrences.length / csv.length
+
+		});
+	}
+	else if(level < parents.length-1) {
+		//get the current parent 
+		var parentId = parents[level];
+		level++;
+
+		//get this node
+		var parent = nodes.filter(function(node) {
+			return node.id === parentId;
+		})[0];
+		var values = parent.values;
+
+		//go through each value
+		values.forEach(function(value){
+			var occurrences = _.filter(csv, function(row){
+				return row[parent.title] === value;
+			});
+			var entry = parentId + value;
+			learnCPTSingleNode(level, parents, occurrences, cpt[entry]);
+		});
+	}
+	else {
+		alert("Something unexpected has happened!")
+	}
+}
+
+var learnCPTValues = function(fdata, csvdata) {
+	for(var key in fdata) {
+		var node = nodes.filter(function(n){
+			return n.title === key;
+		})[0];
+		if(node) {
+			var parents = getNodeParents(node);
+			parents.push(node.id);
+			learnCPTSingleNode(0, parents, csvdata, node.tbl);
+		}
+	}
+}
+
+var uploadSample = function(){
+	//if edit node mode - remove tables of the nodes
+	if(editNodeMode) {
+		editNodeEnter();
+	}
+
+	if(window.File && window.FileReader && window.FileList && window.Blob) {
+		var fileReader = new window.FileReader();
+		var uploadFile = this.files[0];
+		// console.log(uploadFile);
+		fileReader.readAsText(uploadFile);		
+		fileReader.onload = function(event){
+			var txt = fileReader.result;
+			// console.log(txt);
+			csvData = d3.csv.parse(txt);
+
+			//reformat the data
+			fData = formatUploadSample(csvData);
+			//assign the values from the sample to the nodes
+			//recalculate the cpts
+			recalculateValues(fData);
+			//learn the cpt values from the sample data
+			learnCPTValues(fData, csvData);
+		
+		}
+		fileReader.onerror = function() {
+			alert("Unable to read the file " + uploadFile.fileName);
+		}
+
+		//reset the value
+		document.getElementById("hiddenUpload2").value = "";
+	}
+	else {
+		alert("The File APIs are not supported in this browser. Please try again in a different one.")
+	}
 }
 
 svg.on("mousedown", svgMouseDown)
@@ -1551,18 +1936,42 @@ d3.select("#edit-mode")
   	editNodeEnter();
   });
 d3.select("#downloadNet")
-  .on("click", downloadNetwork);
+  .on("click", function() {
+  	specifyDownloadName(".json")
+  });
 d3.select("#deleteNet")
   .on("click", function(){
   	deleteNetwork(true);
   });
 d3.select("#uploadNet")
   .on("click", function(){
-  	document.getElementById("hiddenUpload").click()
+  	document.getElementById("hiddenUpload").click();
   });
 d3.select("#hiddenUpload")
   .on("change", uploadNetwork);
-d3.select("#sampleNet")
-  .on("click", samplingSettings);
-	
+d3.select("#sample-net")
+  .on("click", function() {
+  	setMode("sample");
+  	samplingSettings();
+  });
+d3.select("#uploadSample")
+  .on("click", function(){
+  	document.getElementById("hiddenUpload2").click();
+  });
+d3.select("#hiddenUpload2")
+  .on("change", uploadSample)	
+
+d3.select("#help")
+  .on("click", function(){
+  	//display instructions
+  	displayHelp();
+  })
 refresh();
+//display instructions
+displayHelp();
+//display zoom scale
+d3.select("#workspace")
+  .append("p")
+  .attr("id", "zoom-scale")
+  .attr("class", "pull-right zoom-text")
+  .text("Zoom Scale: " + zoom.scale().toFixed(2));  

@@ -7,6 +7,8 @@ body {
 	color: #0489B1;
 	font-size: 24px;
 	padding-left: 28px;
+	font-weight: 500;
+	/*margin-top: 20px;*/
 }
 
 .nav-sidebar > li> a.selected {
@@ -14,27 +16,113 @@ body {
 	color: #F9F9F9;
 }
 
+.navbar-nav > li > a {
+	color:#428bca !important; 
+	text-decoration: none !important;
+}
+
 #hiddenUpload {
 	display:none;
 }
 
+#hiddenUpload2 {
+	display: none;
+}
+
+.alert-text {
+	padding: 5px;
+}
+
+/* Buttons */
 .btn-bayes {
 	color:white;
 	background-color: #01A9DB;
+	width: 120px;
 }
 
 .btn-bayes:hover {
-	background-color: #63CEED;	
+	background-color: #63CEED;
+	color:gray;		
 }
 
 .btn-bayes:focus {
 	background-color: #63CEED;	
+	color:gray;
 }
 
-.btn-bayes:focus {
+.btn-bayes-short {
+	color:white;
+	background-color: #01A9DB;
+	width: 70px;
+}
+
+.btn-bayes-short:hover {
+	background-color: #63CEED;
+	color:gray;		
+}
+
+.btn-bayes-short:focus {
+	background-color: #63CEED;
+	color:gray;	
+}
+
+.btn-bayes-grp {
+	color:white;
+	background-color: #01A9DB;
+	width: 90px;	
+}
+
+.btn-bayes-grp:hover {
+	background-color: #63CEED;
+	color:gray;		
+}
+
+.btn-bayes-grp:focus {
 	background-color: #63CEED;	
+	color:gray;
 }
 
+/* Tables and Components */
+.div-table {
+	width :100%;
+	/*height: 158px;*/
+	/*width: 200px;*/
+	/*height:250px;	*/
+	overflow: scroll;
+}
+
+.sample-table {
+	width :100%;
+	/*height: 328px;*/
+	overflow: scroll;	
+}
+.table-bayes {
+    /*table-layout: fixed;*/
+    /*word-wrap: break-word;*/
+}
+
+th {
+	text-align: center;
+}
+
+td {
+	text-align: center;
+}
+
+/* table inputs */
+td.editable > input {
+	width:60px;
+	text-align: center;
+}
+
+th.editable > input {
+	width:60px;
+	text-align: center;	
+}
+
+input.invalid {
+	border-color: red;
+}
 /*SVG elements*/
 #svg {
 	/*border:1px solid black;*/
@@ -44,6 +132,11 @@ body {
 	-ms-user-select:none;
 	-o-user-select:none;
 	user-select:none;
+	-webkit-border-radius:none;
+	-moz-border-radius:none;
+	-ms-border-radius:none;
+	-o-border-radius:none;
+	border-radius: 4px;
 	/*float:left;	*/
 }
 
@@ -101,6 +194,13 @@ path.arrow {
 
 /*Text */
 .node-title {
+	font-size:16px;
+	font-family: sans-serif;
+	fill : rgb(76, 69, 69);
+	font-weight:400;	
+}
+
+.node-label {
 	color: #0489B1;	
 }
 
@@ -111,6 +211,14 @@ path.arrow {
 	padding-top:18px;
 }
 
+.instructions-text {
+	font-size: 14px;
+	font-family: sans-serif;
+	color : gray;
+	padding-top: 5px;
+	font-weight:150px;	
+}
+
 .label-text {
 	font-size:14px;
 	font-family: sans-serif;
@@ -118,6 +226,13 @@ path.arrow {
 	color : gray;	
 }
 
-.error-text {
+/*.error-text {
 	color : red;
+}*/
+
+.zoom-text {
+	font-size:12px;
+	font-family: sans-serif;
+	/*font-weight: 100;*/
+	color : #428bca;
 }
