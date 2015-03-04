@@ -182,7 +182,6 @@ var setMode = function(mode){
 	d3.select("#sample-net")
 	  .classed("selected", false);		  
 	
-	// displayHelp();
 };
 
 //handle drag behaviour
@@ -316,6 +315,17 @@ var editNodeText = function(d, d3Group){
  					   	//check for duplicates
  					   	d.title = duplicateNodeTitles(d.title, d);
 					   	multipleLinesText(d.title, d3Group);
+					   	//update edit info if this node has been edited
+					   	if(editNodeMode) {
+					   		var editedNode = d3.select("h3.node-label");
+					   		//check if any node info has been displayed
+					   		if(editedNode[0][0]) {
+						   		var id = editedNode.attr("id");
+						   		if(parseInt(id) === d.id) {
+						   			editedNode.text(d.title);
+						   		}
+						   	}
+					   	}
 				   	 }
 				   	 else {
 				   	 	multipleLinesText(backupTxt.text(), d3Group);
@@ -390,6 +400,7 @@ var nodeMouseUp = function(d, groupNode){
 	if(mousedownNode !== mouseupNode) {
 		if(connMode) {
 			createNewEdge(mousedownNode, mouseupNode);
+			dragged =false;
 		}
 	}
 	//the node on mouse up and on mouse down is the same
@@ -469,7 +480,6 @@ var appendNodeValues = function(num) {
 
 	d3.selectAll("input.nodeValue")
 	  .on("blur", function() {
-	  	// alert("lose focus");
 	  	//TODO
 	  	//updateValue
 	  })
@@ -492,7 +502,7 @@ var getNodeChildren = function(node) {
 }
 
 var checkNodeValuesDuplicates = function(values) {
-	//TODO
+	return _.uniq(values).length === values.length;	
 }
 
 //change the values that a particular node can take
@@ -507,7 +517,9 @@ var updateNodeValues = function(node){
 				  .each(function(d, i) {
 				  	console.log(this.value);
 				  	if(!isEmptyString(this.value)) {
-					  	newValues.push(this.value);
+				  		var fValue = this.value.toLowerCase();
+				  		newValues.push(fValue);
+					  	// newValues.push(this.value);
 				  		d3.select(this)
 				  		  .classed("invalid", false);
 				  	}
@@ -518,32 +530,47 @@ var updateNodeValues = function(node){
 				  	}
 				  })
 
-	checkNodeValuesDuplicates(newValues);
+	var isNotDuplicated = checkNodeValuesDuplicates(newValues);
 
 	if (isValid) {
-		node.values = newValues;
-		//recreate cpts
-		createCPT(node);
-		//recreate cpts of this node children
-		var children = getNodeChildren(node);
-		children.forEach(function(child){
-			createCPT(child);
-		})
+		if(isNotDuplicated) {
+			node.values = newValues;
+			//recreate cpts
+			createCPT(node);
+			//recreate cpts of this node children
+			var children = getNodeChildren(node);
+			children.forEach(function(child){
+				createCPT(child);
+			})
 
-		//success message
-		var successDiv = control.insert("div", "#edit-div-tbl")
-							   .attr("class", "alert-text alert alert-success");
-		successDiv.append("span")
-				.attr("class", "glyphicon glyphicon-ok")
-				.attr("aria-hidden", "true");
-		successDiv.append("span")
-				.attr("class", "sr-only")
-				.text("Success");
-		var text = successDiv.html() + " Successfully updated.";
-		successDiv.html(text);
+			//success message
+			var successDiv = control.insert("div", "#edit-div-tbl")
+								   .attr("class", "alert-text alert alert-success");
+			successDiv.append("span")
+					.attr("class", "glyphicon glyphicon-ok")
+					.attr("aria-hidden", "true");
+			successDiv.append("span")
+					.attr("class", "sr-only")
+					.text("Success");
+			var text = successDiv.html() + " Successfully updated.";
+			successDiv.html(text);
+		}
+		else {
+			//error message for duplicate values
+			var errorDiv = control.insert("div", "#edit-div-tbl")
+								   .attr("class", "alert-text alert alert-danger");
+			errorDiv.append("span")
+					.attr("class", "glyphicon glyphicon-exclamation-sign")
+					.attr("aria-hidden", "true");
+			errorDiv.append("span")
+					.attr("class", "sr-only")
+					.text("Error");
+			var text = errorDiv.html() + " Enter non-duplicate values.";
+			errorDiv.html(text);					
+		}
 	}
 	else {
-		//error message
+		//error message for empty values
 		var errorDiv = control.insert("div", "#edit-div-tbl")
 							   .attr("class", "alert-text alert alert-danger");
 		errorDiv.append("span")
@@ -620,7 +647,7 @@ var displayNodeValues = function(d) {
 
 var displayHelp = function() {
 	clearDisplayField();
-	setMode("");
+	// setMode("");
 	//help page
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
@@ -774,6 +801,7 @@ var validateUpdate = function() {
 
 	return validEntries && validRowSums;
 }
+
 //update table values when edited
 var updateTbl = function(){
 	//clear previous error messages
@@ -781,14 +809,30 @@ var updateTbl = function(){
 
 	var tblId = d3.select(".cpt-table").attr("id");
 	if(!tblId) {
-		alert ("Table does not exist.")
+		bootbox.dialog({
+		  message: "Table does not exist.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 	}
 
 	var currCpt = nodes.filter(function(node) {
 		return node.id === parseInt(tblId);
 	})[0].tbl;
 	if(!currCpt){
-		alert("The CPT for this nodes cannot be accessed.");
+		bootbox.dialog({
+		  message: "The CPT for this nodes cannot be accessed.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 	}
 
 	var valid = validateUpdate();
@@ -820,8 +864,17 @@ var updateTbl = function(){
 	successDiv.html(text);							  
 }
 
-var updateCell = function(){
+var updateCell = function(cell, node){
 	//TODO
+	console.log(node);
+	console.log(cell);
+	myNode= node;
+	myCell = cell;
+
+	var row = cell.node().parentNode.parentNode;
+	var allCells = d3.select(row).selectAll("input");
+
+	
 }
 
 var html = "";
@@ -857,7 +910,15 @@ var createCPTRows = function(dataStr, idsList, level) {
 		})
 	}
 	else {
-		alert("Something unexpected has happened!")
+		bootbox.dialog({
+		  message: "Something unexpected has happened!",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});		
 	}
 }
 
@@ -905,7 +966,15 @@ var displayCPTRows = function(cpt, list, level, chain) {
 	}
 	//Error
 	else {
-		alert("Something unexpected happened!");
+		bootbox.dialog({
+		  message: "Something unexpected has happened!",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 	}
 }
 
@@ -995,7 +1064,7 @@ var displayCPT = function(d) {
 	  .selectAll("input")
 	  .on("blur", function() {
 	  	//TODO
-	  	updateCell();
+	  	updateCell(d3.select(this), d);
 	  })
 	
 	// Handling editing CPTs events
@@ -1019,11 +1088,12 @@ var displayNodeOption = function(option, node) {
 
 var displayNodeInfo = function(node) {
 	clearDisplayField();
-	
+
 	//append node title
 	control.append("h3")
 		   .text(node.title + ":")
-		   .classed("node-label", true);
+		   .classed("node-label", true)
+		   .attr("id", node.id);
 
 	control.append("hr");
 
@@ -1319,26 +1389,35 @@ var deleteNetwork = function(isConfirm) {
 	}
 }
 
-var specifyDownloadName = function(ext) {
-   clearDisplayField();
-   var inputGroup = control.append("div")
-   						   .attr("class", "input-group");
+//TODO code taken from
+var specifyDownloadName = function(ext, samples) {
+	var filename = "";
+	bootbox.dialog({
+	  message: "<input type='text' id='filename' class='alert-input'></input> " + ext,
+	  title: "Specify file name:",
+	  value: "bayesnet",
+	  buttons: {
+	    main: {
+	      label: "Download",
+	      className: "btn-bayes",
+	      callback: function() {
+	        filename = $('#filename').val();
+	        if(ext === ".json") {
+		        downloadNetwork(filename);	
+	        }
+	        else if(ext === ".csv") {
+	        	downloadSamples(filename, samples);
+	        }
+	      }
+	    },
+	    cancel: {
+	    	label: "Cancel",
+	    	className: "btn-bayes",
+	    }
+	  }
+	});
 
-   	inputGroup.append("input")
-   			  .attr("type", "text")
-   			  .attr("class", "form-control")
-   			  .attr("placeholder", "Network file name")
-   			  .attr("aria-describedby", "file-ext")
-   			  .on("change", function(){
-   			  	//TODO verify file name
-   			  	downloadNetwork(this.value + ext);
-   			  });
-
-   	inputGroup.append("span")
-   			  .attr("class", "input-group-addon")
-   			  .attr("id", "file-ext")
-   			  .text(ext);
-}
+};
 
 var downloadNetwork = function(filename){
 	var compactEdges = []
@@ -1350,15 +1429,25 @@ var downloadNetwork = function(filename){
 		"nodes":nodes,
 		"edges":edges
 	}, null, 2);
-	// console.log(netObject);
-	var blob = new Blob([netObject], {type:"text/plain;charset=utf-8"});
-	// saveAs(blob, "bayesnet.json");
-	saveAs(blob, filename);
 
-	// http://stackoverflow.com/questions/17868643/save-javascript-data-to-excel
-    // var filename = prompt("Please enter the filename:");
-    // if(filename!=null && filename!="")
-    //     saveAs(blob, [filename+'.json']);	
+	var blob = new Blob([netObject], {type:"text/plain;charset=utf-8"});
+
+	// console.log(filename);	
+	if (!isEmptyString(filename)) {
+		filename = filename + ".json";
+		saveAs(blob, filename);	
+	}
+	else {
+		bootbox.dialog({
+		  message: "Specify a name for the file.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});		
+	}
 }
 
 var maxNodeId = function(){
@@ -1404,7 +1493,15 @@ var uploadNetwork = function(){
 
 			}
 			catch(err){
-				alert("Error occured while parsing the file.")
+				bootbox.dialog({
+				  message: "Error occured while parsing the file.",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-bayes-short",
+				    },
+				  }
+				});					
 			}
 		}
 
@@ -1412,7 +1509,15 @@ var uploadNetwork = function(){
 		document.getElementById("hiddenUpload").value = "";
 	}
 	else {
-		alert("Your browser does not support this functionality.")
+		bootbox.dialog({
+		  message: "Your browser does not support this functionality.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 	}
 }
 
@@ -1582,12 +1687,28 @@ var formatSamplesDownload = function(samples) {
 	return csvData;
 }
 
-var downloadSamples = function(samples) {
+var downloadSamples = function(filename, samples) {
 	//format the data to be downloaded
 	var sampleData = formatSamplesDownload(samples);
 
 	var blob = new Blob([sampleData], {type:"text/csv;charset=utf-8"});
-	saveAs(blob, "sample_bayes.csv");
+	// saveAs(blob, "sample_bayes.csv");
+
+	if (!isEmptyString(filename)) {
+		filename = filename + ".csv";
+		saveAs(blob, filename);	
+	}
+	else {
+		bootbox.dialog({
+		  message: "Specify a name for the file.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});		
+	}
 }
 
 var displaySamples = function(samples, noSample, fSample) {
@@ -1611,7 +1732,8 @@ var displaySamples = function(samples, noSample, fSample) {
 		   .attr("id", "sampleDownloadBtn")
 		   .html("Download")
 		   .on("click", function() {
-		   	downloadSamples(samples);
+		   	specifyDownloadName(".csv", samples);
+		   	// downloadSamples(samples);
 		   });
 	//reset btn
 	btnGroup.append("button")
@@ -1622,8 +1744,6 @@ var displaySamples = function(samples, noSample, fSample) {
 		   });			   
 
 	control.append("hr");
-
-	mySamples = samples;
 
 	//apend table for the results
 	var sampleTbl = control.append("div")
@@ -1653,7 +1773,16 @@ var checkExistingCpts = function() {
 			titles.push(nodes[n].title);
 	}
 	if(titles.length !== 0) {
-		alert("Nodes \"" + titles + "\" need their CPTs initialised.");
+		// alert("Nodes \"" + titles + "\" need their CPTs initialised.");
+		bootbox.dialog({
+		  message: "Nodes \"" + titles + "\" need their CPTs initialised.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 		return false;
 	}
 	return true; 
@@ -1784,6 +1913,12 @@ var formatUploadSample = function(data) {
 	return formattedData;
 }
 
+var checkNamesSample = function(data) {
+	var dataNames = Object.keys(data);
+	var nodesNames = nodes.map(function(node) {return node.title});
+	return _.isEqual(dataNames.sort(), nodesNames.sort());
+}
+
 var recalculateValues = function(fdata) {
 	//for each node name in the formatted data
 	for (var nodeName in fdata) {
@@ -1836,7 +1971,15 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 		});
 	}
 	else {
-		alert("Something unexpected has happened!")
+		bootbox.dialog({
+		  message: "Something unexpected has happened!",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 	}
 }
 
@@ -1866,27 +2009,73 @@ var uploadSample = function(){
 		fileReader.readAsText(uploadFile);		
 		fileReader.onload = function(event){
 			var txt = fileReader.result;
-			// console.log(txt);
-			csvData = d3.csv.parse(txt);
+			var csvData = d3.csv.parse(txt);
 
 			//reformat the data
-			fData = formatUploadSample(csvData);
+			var fData = formatUploadSample(csvData);
 			//assign the values from the sample to the nodes
-			//recalculate the cpts
-			recalculateValues(fData);
-			//learn the cpt values from the sample data
-			learnCPTValues(fData, csvData);
+			var matching = checkNamesSample(fData);
+
+			clearDisplayField();
+			if(matching) {
+				//recalculate the cpts
+				recalculateValues(fData);
+				//learn the cpt values from the sample data
+				learnCPTValues(fData, csvData);
+
+				//success message
+				var successDiv = control.append("div")
+										.attr("class", "alert-text alert alert-success");
+				successDiv.append("span")
+						 	.attr("class", "glyphicon glyphicon-ok")
+							.attr("aria-hidden", "true");
+				successDiv.append("span")
+							.attr("class", "sr-only")
+							.text("Success");
+				var text = successDiv.html() + " CPT values have been succesfully learned.";
+				successDiv.html(text);							
+			}
+			else {
+				//error message
+				var errorDiv = control.append("div")
+							   .attr("class", "alert-text alert alert-danger");
+				errorDiv.append("span")
+						.attr("class", "glyphicon glyphicon-exclamation-sign")
+						.attr("aria-hidden", "true");
+				errorDiv.append("span")
+						.attr("class", "sr-only")
+						.text("Error");
+				var text = errorDiv.html() + " The node names in the uploaded sample data do not match the node names in the current network.";
+				errorDiv.html(text);				
+			}
 		
 		}
 		fileReader.onerror = function() {
-			alert("Unable to read the file " + uploadFile.fileName);
+			bootbox.dialog({
+			  message: "Unable to read the file " + uploadFile.fileName,
+			  buttons: {
+			    main: {
+			      label: "OK",
+			      className: "btn-bayes-short",
+			    },
+			  }
+			});				
+			// alert("Unable to read the file " + uploadFile.fileName);
 		}
 
 		//reset the value
 		document.getElementById("hiddenUpload2").value = "";
 	}
 	else {
-		alert("The File APIs are not supported in this browser. Please try again in a different one.")
+		bootbox.dialog({
+		  message: "The File APIs are not supported in this browser. Please try again in a different one.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 	}
 }
 
@@ -1935,9 +2124,12 @@ d3.select("#edit-mode")
   	setMode("edit");
   	editNodeEnter();
   });
+// d3.select("#downloadNet")
+//   .on("click", downloadNetwork); 
 d3.select("#downloadNet")
   .on("click", function() {
   	specifyDownloadName(".json")
+  	// downloadNetwork();
   });
 d3.select("#deleteNet")
   .on("click", function(){
@@ -1959,13 +2151,19 @@ d3.select("#uploadSample")
   	document.getElementById("hiddenUpload2").click();
   });
 d3.select("#hiddenUpload2")
-  .on("change", uploadSample)	
-
+  .on("change", uploadSample);
 d3.select("#help")
   .on("click", function(){
   	//display instructions
   	displayHelp();
-  })
+  });
+d3.select("about")
+  .on("click", function(){
+  	//TODO
+  });
+
+//Initialise
+//render  
 refresh();
 //display instructions
 displayHelp();

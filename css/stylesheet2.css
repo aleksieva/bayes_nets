@@ -33,6 +33,10 @@ body {
 	padding: 5px;
 }
 
+.alert-input {
+	width: 200px;
+}
+
 /* Buttons */
 .btn-bayes {
 	color:white;
