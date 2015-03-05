@@ -2,9 +2,14 @@ body {
 	background-color: #F9F9F9;
 }
 
+/*.navbar-main {
+	background-color: #01A9DB;
+}*/
+
 .navbar-title {
 	/*change to color of the left menu text?*/
-	color: #0489B1;
+	color: #0489B1 !important;
+	/*color: red !important;*/
 	font-size: 24px;
 	padding-left: 28px;
 	font-weight: 500;
@@ -35,6 +40,11 @@ body {
 
 .alert-input {
 	width: 200px;
+}
+
+hr {
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 /* Buttons */
@@ -89,16 +99,15 @@ body {
 /* Tables and Components */
 .div-table {
 	width :100%;
-	/*height: 158px;*/
-	/*width: 200px;*/
-	/*height:250px;	*/
-	overflow: scroll;
+	height: 188px;
+	overflow: auto;
+	margin-bottom: 10px;
 }
 
 .sample-table {
 	width :100%;
-	/*height: 328px;*/
-	overflow: scroll;	
+	height: 328px;
+	overflow: auto;	
 }
 .table-bayes {
     /*table-layout: fixed;*/
@@ -205,6 +214,7 @@ path.arrow {
 }
 
 .node-label {
+	margin: 0;
 	color: #0489B1;	
 }
 
@@ -229,10 +239,6 @@ path.arrow {
 	font-weight: 100;
 	color : gray;	
 }
-
-/*.error-text {
-	color : red;
-}*/
 
 .zoom-text {
 	font-size:12px;

@@ -590,9 +590,13 @@ var updateSingleValue = function(input, node) {
 	//TODO
 }
 
-var displayNodeValues = function(d) {
-	d3.select("#edit-div-tbl").html("");
-	var nodeInfo = d3.select("#edit-div-tbl")
+var displayNodeValues = function(d) {	
+	d3.select("#div-update-btn").html("");
+	
+	var nodeInfo = d3.select("#div-update-btn")
+					 .append("div")
+					 .attr("class", "table-responsive div-table")
+					 .attr("id", "edit-div-tbl")	
 					 .append("table")
 					 .attr("class", "table table-bayes node-edit-tbl");
 
@@ -635,7 +639,7 @@ var displayNodeValues = function(d) {
 			   });
 	}
 
-	d3.select("#edit-div-tbl")
+	d3.select("#div-update-btn")
 	  .append("button")
 	  .classed("btn btn-default btn-bayes", true)
 	  .attr("id", "update-node-values")
@@ -865,16 +869,17 @@ var updateTbl = function(){
 }
 
 var updateCell = function(cell, node){
-	//TODO
-	console.log(node);
-	console.log(cell);
-	myNode= node;
-	myCell = cell;
-
 	var row = cell.node().parentNode.parentNode;
-	var allCells = d3.select(row).selectAll("input");
+	var allCells = d3.select(row).selectAll("input")[0];
 
-	
+	//true false values
+    if(_.isEqual(node.values.sort(), ["0", "1"])) {
+    	allCells.forEach(function(c) {
+    		if(c !== cell.node()) {
+    			c.value = 1 - parseFloat(cell.node().value);
+    		}
+    	});
+    }	
 }
 
 var html = "";
@@ -1039,11 +1044,16 @@ var createCPT = function(d) {
 
 var displayCPT = function(d) {
 	//clear table display
-	d3.select("#edit-div-tbl").html("");
+	// d3.select("#edit-div-tbl").html("");
+	d3.select("#div-update-btn").html("");
 
 	html = "";
+
 	//attach a new table
-	d3.select("#edit-div-tbl")
+	d3.select("#div-update-btn")
+	  .append("div")
+	  .attr("class", "table-responsive div-table")
+	  .attr("id", "edit-div-tbl")
 	  .append("table")
 	  .attr("id", d.id)
 	  .attr("class", "cpt-table table table-bayes");
@@ -1063,12 +1073,11 @@ var displayCPT = function(d) {
 	d3.selectAll("td.editable")
 	  .selectAll("input")
 	  .on("blur", function() {
-	  	//TODO
 	  	updateCell(d3.select(this), d);
 	  })
 	
 	// Handling editing CPTs events
- 	d3.select("#edit-div-tbl")
+ 	d3.select("#div-update-btn")
  	// d3.select(".cpt-table")
  	  .append("button")
  	  .attr("class", "btn btn-default btn-bayes")
@@ -1126,9 +1135,9 @@ var displayNodeInfo = function(node) {
 	control.append("hr");
 
 	//display the relevant data
-	var tblDiv = control.append("div")
-						.attr("class", "table-responsive div-table")
-						.attr("id", "edit-div-tbl");	
+	var infoDiv = control.append("div")
+						 .attr("id", "div-update-btn");
+	
 	var selOption = d3.select("#node-options").node().options[d3.select("#node-options").node().selectedIndex].value;
 	displayNodeOption(selOption, node);
 	control.append("hr");
@@ -1378,14 +1387,20 @@ var keyUp = function() {
 };
 
 var deleteNetwork = function(isConfirm) {
-	var confirmed = true;
 	if(isConfirm) {
-		confirmed = window.confirm("Are you sure you want to delete the network?");
+		bootbox.confirm("Are you sure you want to delete the network?", function(result) {
+	  		console.log(result);
+	  		if(result) {
+				nodes = [];
+				edges = [];
+				refresh();	  			
+	  		}
+		});		
 	}
-	if(confirmed) {
+	else {
 		nodes = [];
 		edges = [];
-		refresh();
+		refresh();		
 	}
 }
 
@@ -1746,10 +1761,21 @@ var displaySamples = function(samples, noSample, fSample) {
 	control.append("hr");
 
 	//apend table for the results
+	// var sampleTbl;
+	// if(noSample <= 10) {
+	// 	sampleTbl = control.append("div");
+	// }
+	// else {
+	// 	sampleTbl = d3.select("#long-sample").append("div");
+	// }
+	// sampleTbl.attr("class", "table-responsive sample-table")
+	// 		 .append("table")
+	// 		 .attr("class", "table table-bayes sample-tbl");	
 	var sampleTbl = control.append("div")
 						   .attr("class", "table-responsive sample-table")
 						   .append("table")
 	  	   				   .attr("class", "table table-bayes sample-tbl");
+
 
 	//append the columns names
 	sampleTblColumnNames();
