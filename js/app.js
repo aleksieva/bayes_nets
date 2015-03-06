@@ -856,7 +856,8 @@ var updateTbl = function(){
 		 			nestedCpt[path[path.length-1]] = parseFloat(this.value);
 				  });
 
-	var successDiv = control.insert("div", "#edit-div-tbl")
+	// var successDiv = d3.select("#div-update-btn").insert("div", "#edit-div-tbl")
+	var successDiv = d3.select("#edit-div-tbl").insert("div", ".cpt-table")	
 						   .attr("class", "alert-text alert alert-success");
 	successDiv.append("span")
 			.attr("class", "glyphicon glyphicon-ok")
