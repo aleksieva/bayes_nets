@@ -6,6 +6,7 @@
 		<meta name="viewport" content="width=device-width initial-scale=1">
 		<title> Bayesian networks tool </title>
 		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/bootstrap-tour.min.css">    
 		<!-- <link rel="stylesheet" href="css/stylesheet.css"> -->
 		<link rel="stylesheet" href="css/stylesheet2.css">		
 	</head>
@@ -14,10 +15,11 @@
 			<div class="container-fluid">
 				<div class="navbar-header">
 					<!-- TODO add toggle button ??-->
-					<a class="navbar-title navbar-brand" href="#">Bayesian Networks Tool</a>
+					<a class="navbar-title navbar-brand tour-step tour-step-one" href="#">Bayesian Networks Tool</a>
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
+						<li><a href='#' id='tutorial'>Tutorial</a></li>					
 						<li><a href='#' id='help'>Help</a></li>
 						<li><a href='#' id='about'>About</a></li>
 					</ul>
@@ -27,20 +29,23 @@
 		<div class="container-fluid">
 			<div class="row">
 				<!-- Side menu -->
-				<div class="col-sm-3 col-md-2 sidebar-offcanvas" id="menu" role="navigation">
+				<div class="col-sm-3 col-md-2 sidebar-offcanvas tour-step tour-step-two" id="menu" role="navigation">
 					<ul class="nav nav-sidebar">
-						<li><a href='#' id='node-mode'>Add Node</a></li>
-						<li><a href='#' id='edit-mode'>Edit Node</a></li>
-						<li><a href='#' id='conn-mode'>Add Link</a></li>
-						<li><a href='#' id='sample-net'>Sample from Network</a></li>
+						<li><a href='#' id='node-mode' class="tour-step tour-step-five">Add Node</a></li>
+						<li><a href='#' id='edit-mode' class="tour-step tour-step-nine">Edit Node</a></li>
+						<li><a href='#' id='conn-mode' class="tour-step tour-step-eight">Add Link</a></li>
 					</ul>
 					<hr>
 					<ul class="nav nav-sidebar">
+						<li><a href='#' id='sample-net' class="tour-step tour-step-thirteen">Sample from Network</a></li>
 						<li><a href='#' id='uploadSample'>Learn from Sample</a></li>
-						<li><input type="file" id="hiddenUpload2"> </li>
+						<li><input type="file" id="hiddenUpload2"> </li>				
+					</ul>
+					<hr>
+					<ul class="nav nav-sidebar">
 						<li><a href='#' id='uploadNet'>Upload Network</a></li>
 						<li><input type="file" id="hiddenUpload"> </li>
-						<li><a href='#' id='downloadNet'>Download Network</a></li>
+						<li><a href='#' id='downloadNet' class="tour-step tour-step-eighteen">Download Network</a></li>
 						<li><a href='#' id='deleteNet'>Delete Network</a></li>	
 					</ul>
 					<hr>
@@ -50,8 +55,8 @@
 					</ul> -->
 				</div>
 				<!-- Workfield -->
-				<div class="col-sm-6 col-md-7" id="workspace"> </div>
-				<div class="col-sm-3 col-md-3" id="control"> </div>
+				<div class="col-sm-6 col-md-7 tour-step tour-step-three" id="workspace"> </div>
+				<div class="col-sm-3 col-md-3 tour-step tour-step-four" id="control"> </div>
 			</div>
 			<div class="row">
 				<div class="col-sm-9 col-md-10" id="long-sample"> </div>
@@ -68,9 +73,10 @@
 		<script src="lib/jquery-1.11.1.min.js"></script>
 		<script src="lib/bootstrap.min.js"></script>
 		<script src="lib/FileSaver.min.js"></script>
-<!--		<script src="lib/jquery.csv-0.71.min.js"></script> -->
 		<script src="lib/bootbox.min.js"></script>
+		<script src="lib/bootstrap-tour.min.js"></script>
 		<script src="js/app.js"></script>
+		<script src="js/tour.js"></script>		
 
 	</body>
 </html>

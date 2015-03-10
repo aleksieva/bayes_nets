@@ -16,7 +16,8 @@ var svg = d3.select("#workspace")
 			.attr("height", height)
 			// .attr("width", width)
 			// .attr("height", height)
-			.attr("id", "svg");
+			.attr("id", "svg")
+			.attr("class", "tour-step tour-step-six");
 
 var control = d3.select("#control");
 
@@ -225,7 +226,11 @@ var zoom = d3.behavior.zoom()
 			 // .on("zoomstart", function(){
 			 	//TODO cursor
 			 // })
-			 .on("zoom", zoomBehavior)
+			 .on("zoom", function() {
+			 	if(!editNodeTextMode) {
+				 	zoomBehavior();			 		
+			 	}
+			 })
 			 .on("zoomend", function(){
 			 	//TODO cursor
 			 	//recalculate the zoom scale
@@ -544,7 +549,8 @@ var updateNodeValues = function(node){
 			})
 
 			//success message
-			var successDiv = control.insert("div", "#edit-div-tbl")
+			// var successDiv = control.insert("div", "#edit-div-tbl")
+			var successDiv = d3.select("#edit-div-tbl").insert("div", ".node-edit-tbl")	
 								   .attr("class", "alert-text alert alert-success");
 			successDiv.append("span")
 					.attr("class", "glyphicon glyphicon-ok")
@@ -557,7 +563,8 @@ var updateNodeValues = function(node){
 		}
 		else {
 			//error message for duplicate values
-			var errorDiv = control.insert("div", "#edit-div-tbl")
+			// var errorDiv = control.insert("div", "#edit-div-tbl")
+			var errorDiv = d3.select("#edit-div-tbl").insert("div", ".node-edit-tbl")	
 								   .attr("class", "alert-text alert alert-danger");
 			errorDiv.append("span")
 					.attr("class", "glyphicon glyphicon-exclamation-sign")
@@ -571,7 +578,8 @@ var updateNodeValues = function(node){
 	}
 	else {
 		//error message for empty values
-		var errorDiv = control.insert("div", "#edit-div-tbl")
+		// var errorDiv = control.insert("div", "#edit-div-tbl")
+		var errorDiv = d3.select("#edit-div-tbl").insert("div", ".node-edit-tbl")	
 							   .attr("class", "alert-text alert alert-danger");
 		errorDiv.append("span")
 				.attr("class", "glyphicon glyphicon-exclamation-sign")
@@ -651,6 +659,10 @@ var displayNodeValues = function(d) {
 
 var displayHelp = function() {
 	clearDisplayField();
+	//if sample mode - turn it off
+	if(sampleMode) {
+		setMode("sample");
+	}
 	// setMode("");
 	//help page
 	control.append("p")
@@ -777,7 +789,8 @@ var validateUpdate = function() {
 
 	if (!validEntries) {
 		//error message
-		var errorDiv = control.insert("div", "#edit-div-tbl")
+		// var errorDiv = control.insert("div", "#edit-div-tbl")
+		var errorDiv = d3.select("#edit-div-tbl").insert("div", ".cpt-table")	
 							   .attr("class", "alert-text alert alert-danger")
 		errorDiv.append("span")
 				.attr("class", "glyphicon glyphicon-exclamation-sign")
@@ -791,7 +804,8 @@ var validateUpdate = function() {
 
 	if(!validRowSums) {
 		//error message
-		var errorDiv = control.insert("div", "#edit-div-tbl")
+		// var errorDiv = control.insert("div", "#edit-div-tbl")
+		var errorDiv = d3.select("#edit-div-tbl").insert("div", ".cpt-table")	
 							   .attr("class", "alert-text alert alert-danger");
 		errorDiv.append("span")
 				.attr("class", "glyphicon glyphicon-exclamation-sign")
@@ -870,17 +884,18 @@ var updateTbl = function(){
 }
 
 var updateCell = function(cell, node){
-	var row = cell.node().parentNode.parentNode;
-	var allCells = d3.select(row).selectAll("input")[0];
+	// var row = cell.node().parentNode.parentNode;
+	// var allCells = d3.select(row).selectAll("input")[0];
 
-	//true false values
-    if(_.isEqual(node.values.sort(), ["0", "1"])) {
-    	allCells.forEach(function(c) {
-    		if(c !== cell.node()) {
-    			c.value = 1 - parseFloat(cell.node().value);
-    		}
-    	});
-    }	
+	// //two values only
+ //    // if(_.isEqual(node.values.sort(), ["0", "1"])) {
+ //    if(node.values.length === 2) {
+ //    	allCells.forEach(function(c) {
+ //    		if(c !== cell.node()) {
+ //    			c.value = (1 - parseFloat(cell.node().value)).toFixed(2);
+ //    		}
+ //    	});
+ //    }	
 }
 
 var html = "";
@@ -1268,7 +1283,8 @@ var refresh = function(){
     circles.exit().remove();		   
 };
 
-var svgMouseDown = function(){
+//Added predefinedCircle for Jasmine tests
+var svgMouseDown = function(predefinedCircle){
 	if(!nodeMode) {
 		return;
 	}
@@ -1278,11 +1294,10 @@ var svgMouseDown = function(){
 	}
 
 	//add new node
-	var circleCenter = d3.mouse(graph.node()),
+	var circleCenter = predefinedCircle ? [100, 200] : d3.mouse(graph.node()),
 		xPos = circleCenter[0],
 		yPos = circleCenter[1],
 		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos, values:['1', '0']};
-
 
 	nodes.push(newNode);
 	newNode.title = duplicateNodeTitles(newNode.title, newNode);
@@ -1557,24 +1572,17 @@ var doSampling = function(node, parents, sample){
 
 	//reached the deepest level in the cpt
 	//go through the possible values and get the corresponding probabilities
-	for (var val in cpt) {
-		probabValues.push(parseFloat(cpt[val]));
-	}
-	// console.log(probabValues);
-
 	//go through the probability ranges for each possible value 
 	//and check if the random number is in one of this ranges
 	//return the value associated with this range 
-	var numPossibleValues = node.values.length;
 	var sum = 0.0;
-	for(var i=0; i<numPossibleValues; i++) {
-		var currProb = probabValues[i];
-		// console.log(currProb);
+	for(var val in cpt) {
+		var currProb = parseFloat(cpt[val]);
 		var lowerBound = sum;
-		sum += currProb
+		sum+= currProb;
 		var upperBound = sum;
-		if (randVal >= lowerBound && randVal < upperBound) {
-			return node.values[i]
+		if (lowerBound <= randVal && randVal < upperBound) {
+			return val.replace(node.id.toString(), "");
 		}
 	}	
 }
@@ -1607,7 +1615,7 @@ var setSamplingStatus = function(fixed) {
 	for (var n in nodes) {
 		nodes[n].sampled = false;
 	}
-	console.log(fixed);
+	// console.log(fixed);
 	for(var id in fixed) {
 		var fixedNode = nodes.filter(function(node){
 			return node.id === parseInt(id);
@@ -1737,6 +1745,7 @@ var displaySamples = function(samples, noSample, fSample) {
 	//sample again btn 	   
 	btnGroup.append("button")
 		   .attr("class", "btn btn-default btn-bayes-grp")
+		   .attr("id", "resample")
 		   .html("Resample")
 		   .on("click", function(){
 		   	resample(noSample, fSample);
@@ -1754,6 +1763,7 @@ var displaySamples = function(samples, noSample, fSample) {
 	//reset btn
 	btnGroup.append("button")
 		   .attr("class", "btn btn-default btn-bayes-grp")
+		   .attr("id", "reset")
 		   .html("Reset")
 		   .on("click", function(){
 		   	samplingSettings();
@@ -1821,7 +1831,7 @@ var ancestralSampling = function(fSample) {
 
 	//get the number of samples to be made
 	var noOfSamples = parseInt(d3.select("#num-samples-input").node().value);
-	if(isNaN(noOfSamples)) {
+	if(isNaN(noOfSamples) || noOfSamples <= 0) {
 		//error message
 		var errorDiv = control.insert("div", "#num-samples-input")
 							   .attr("class", "alert-text alert alert-danger");
@@ -1831,7 +1841,7 @@ var ancestralSampling = function(fSample) {
 		errorDiv.append("span")
 				.attr("class", "sr-only")
 				.text("Error");
-		var text = errorDiv.html() + " Enter a valid number of samples.";
+		var text = errorDiv.html() + " Enter a positive integer for a number of samples.";
 		errorDiv.html(text);			
 		return;
 	}
@@ -2106,6 +2116,43 @@ var uploadSample = function(){
 	}
 }
 
+//Initialise
+var loadDefaultNetwork = function() {
+	d3.json("files/burglaryNet.json", function(error, netData) {
+	  // console.log(netData);
+	  nodes = netData.nodes;
+	  console.log(nodes);
+	  var rawEdges = netData.edges;
+	  rawEdges.forEach(function(e, index){
+	  	var src = nodes.filter(function(n) {
+	  		return n.id === e.source.id;
+	  	})[0];
+	  	var tgt = nodes.filter(function(n) {
+	  		return n.id === e.target.id; 
+	  	})[0];	
+	  	rawEdges[index] = {source: src, target:tgt}; 
+	  })
+	  edges = rawEdges;
+	  //find the max index in the nodes
+	  lastID = maxNodeId();
+	  //set the status to uploaded
+	  uploaded = true;
+
+	  //render  
+	  refresh();
+	  //set mode to default
+	  setMode("");
+	  //display instructions
+	  displayHelp();
+	  //display zoom scale
+	  d3.select("#workspace")
+	    .append("p")
+	    .attr("id", "zoom-scale")
+	    .attr("class", "pull-right zoom-text")
+	    .text("Zoom Scale: " + zoom.scale().toFixed(2)); 		  
+	  	});
+};
+
 svg.on("mousedown", svgMouseDown)
    .on("mouseup", svgMouseUp)
    .on("mouseover", function() {
@@ -2190,13 +2237,15 @@ d3.select("about")
   });
 
 //Initialise
-//render  
-refresh();
-//display instructions
-displayHelp();
-//display zoom scale
-d3.select("#workspace")
-  .append("p")
-  .attr("id", "zoom-scale")
-  .attr("class", "pull-right zoom-text")
-  .text("Zoom Scale: " + zoom.scale().toFixed(2));  
+loadDefaultNetwork();
+
+// //render  
+// refresh();
+// //display instructions
+// displayHelp();
+// //display zoom scale
+// d3.select("#workspace")
+//   .append("p")
+//   .attr("id", "zoom-scale")
+//   .attr("class", "pull-right zoom-text")
+//   .text("Zoom Scale: " + zoom.scale().toFixed(2));  
