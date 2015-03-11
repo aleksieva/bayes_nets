@@ -1,6 +1,5 @@
 //svg width & height
-var width = 0.7 * window.innerWidth,
-	height = 450,
+var height = 0.78 * window.innerHeight,
 	radius=20,
 	pressedKey = -1;
 
@@ -14,8 +13,6 @@ var svg = d3.select("#workspace")
 			.append("svg")
 			.attr("width", "100%")
 			.attr("height", height)
-			// .attr("width", width)
-			// .attr("height", height)
 			.attr("id", "svg")
 			.attr("class", "tour-step tour-step-six");
 
@@ -884,18 +881,17 @@ var updateTbl = function(){
 }
 
 var updateCell = function(cell, node){
-	// var row = cell.node().parentNode.parentNode;
-	// var allCells = d3.select(row).selectAll("input")[0];
+	var row = cell.node().parentNode.parentNode;
+	var allCells = d3.select(row).selectAll("input")[0];
 
-	// //two values only
- //    // if(_.isEqual(node.values.sort(), ["0", "1"])) {
- //    if(node.values.length === 2) {
- //    	allCells.forEach(function(c) {
- //    		if(c !== cell.node()) {
- //    			c.value = (1 - parseFloat(cell.node().value)).toFixed(2);
- //    		}
- //    	});
- //    }	
+	//two values only
+    if(node.values.length === 2) {
+    	allCells.forEach(function(c) {
+    		if(c !== cell.node()) {
+    			c.value = (1 - parseFloat(cell.node().value)).toFixed(cell.node().value.length -2);
+    		}
+    	});
+    }	
 }
 
 var html = "";
@@ -2175,12 +2171,11 @@ d3.select(window)
 // 	return "Any progress you have made is not going to be saved.";
 // }
 
-// window.onresize = function() {
-// 	var updatedSvgWidth = 0.7 * window.innerWidth,
-// 		updatedControlWidth = 0.2 * window.innerWidth;
+window.onresize = function() {
+	var updatedHeight = 0.78 * window.innerHeight;
 
-// 	svg.attr("width", updatedSvgWidth);
-// }
+	svg.attr("height", updatedHeight);
+}
 
 //button controls
 d3.select("#node-mode")
