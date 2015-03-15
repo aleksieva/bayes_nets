@@ -193,7 +193,12 @@ var startTour = function() {
         reflex: true,
         onShown: function(tour) {
           $(".popover.tour-tour .popover-navigation .btn-group .btn[data-role=next]").prop("disabled", true);
-        },              
+        },
+        onPrev: function(tour) {
+          if(!editNodeMode) {
+            setMode("edit");
+          }
+        }                        
       },
       {
         element: ".tour-step.tour-step-fourteen",

@@ -24,6 +24,12 @@ body {
 .navbar-nav > li > a {
 	color:#428bca !important; 
 	text-decoration: none !important;
+	/*cursor:help;*/
+}
+
+#control {
+	height:78%;
+	overflow-y:auto; 
 }
 
 #hiddenUpload {
@@ -116,10 +122,12 @@ hr {
 
 th {
 	text-align: center;
+	color : gray;
 }
 
 td {
 	text-align: center;
+	color : gray;
 }
 
 /* table inputs */
@@ -230,8 +238,17 @@ path.arrow {
 	font-family: sans-serif;
 	color : gray;
 	padding-top: 5px;
-	font-weight:150px;	
+	font-weight:150px;
+	margin:0;	
 }
+
+.instructions-text-title {
+	font-size: 15px;
+	font-family: sans-serif;
+	color : #428bca;
+	padding-top: 5px;
+	font-weight:200px;
+}	
 
 .label-text {
 	font-size:14px;

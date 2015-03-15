@@ -24,7 +24,7 @@ describe("Node", function() {
 
   it("should be able to create a node", function() {
     expect(nodes[nodes.length-1].title).toEqual("Bronchitis");
-    svgMouseDown(true);
+    addNewNode(true);
     expect(lastID).toEqual(2);
     expect(nodes[nodes.length-1].title).toEqual("New Node");
   });
