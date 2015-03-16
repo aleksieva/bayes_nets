@@ -1,3 +1,112 @@
+//TODO code taken from
+var multipleLinesText = function(text, d3elem) {
+	var wordsLines = text.split(/\s+/g);
+	var txtElem = d3elem.append("text")
+						.attr("class", "node-title")
+						.attr("text-anchor", "middle")
+						//TODO change
+			            .attr("dy", "-" + (wordsLines.length-1)*7.5);
+
+	for (var i=0; i<wordsLines.length; i++) {
+		var tspanElem = txtElem.append("tspan")
+							   .text(wordsLines[i]);
+		if (i > 0) {
+			tspanElem.attr("x", 0).attr("dy", 15);
+		}
+	}
+
+}
+
+//if the new name is a duplicate of another node name - new name -> name(1).. name(2) etc.
+var duplicateNodeTitles = function(newTitle, node) {
+	var flag;
+	var i = 1;
+	var name = newTitle;
+
+	do {
+		flag = false;
+		for(var n in nodes) {
+			if(nodes[n] !== node && nodes[n].title === name) {
+				name = newTitle + '(' + i + ')';
+				i++;
+				flag = true;
+			}
+		}
+	} while(flag);
+
+	return name;
+}
+
+var editNodeText = function(d, d3Group){
+	editNodeTextMode = true;
+
+	var offsetX = 3,
+		offsetY = 3;
+
+	//remove the current text
+	var backupTxt = d3Group.select("text");
+	d3Group.select("text")
+		   .remove();
+
+	var textP = d3Group.append("foreignObject")
+				   .attr("x", offsetX)
+				   .attr("y", offsetY)
+				   .attr("width", radius*6)
+				   .attr("height", radius*3)
+				   .attr("id", "nodeTxtInput")
+				   .append("xhtml:textarea")
+				   .attr("type", "text")
+				   .attr("class", "form-control")
+				   .text(d.title)
+				   .on("keypress", function(){
+				      if(d3.event.keyCode === constants.ENTER) {
+				   	 	 d3.event.preventDefault();
+				   		 this.blur();
+				   	  }
+				   })
+				   .on("blur", function(){
+				   	 if(!isEmptyString(this.value)) {
+ 					   	d.title = this.value.trim();
+ 					   	//capitalize every node title
+ 					   	d.title = d.title.charAt(0).toUpperCase() + d.title.slice(1);
+ 					   	//check for duplicates
+ 					   	d.title = duplicateNodeTitles(d.title, d);
+					   	multipleLinesText(d.title, d3Group);
+					   	//update edit info if this node has been edited
+					   	if(editNodeMode) {
+					   		var editedNode = d3.select("h3.node-label");
+					   		//check if any node info has been displayed
+					   		if(editedNode[0][0]) {
+						   		var id = editedNode.attr("id");
+						   		if(parseInt(id) === d.id) {
+						   			editedNode.text(d.title);
+						   		}
+						   	}
+					   	}
+				   	 }
+				   	 else {
+				   	 	multipleLinesText(backupTxt.text(), d3Group);
+				   	 }
+				     d3.select(document.getElementById("nodeTxtInput")).remove();
+				     editNodeTextMode = false;
+				     focused = true;
+				   })
+				   .on("mouseover", function(){
+				   	  //enable deleting with backspace as long as it is not on the svg
+				   	  d3.event.stopPropagation();
+				   	  focused = false;
+				   })
+				   .on("mouseout", function(){
+				   	  focused = true;
+				   })
+				   .on("mousedown", function(){
+				   	  d3.event.stopPropagation();
+				   });
+
+	textP.node().focus();
+
+}
+
 //append number of input fields depending on the value of input type number
 var appendNodeValues = function(num) {
 	//count # of old input fields
@@ -31,6 +140,8 @@ var appendNodeValues = function(num) {
 	  .on("blur", function() {
 	  	//TODO
 	  	//updateValue
+   	 // updateSingleValue(this, d);
+
 	  })
 	
 }
@@ -140,6 +251,8 @@ var updateNodeValues = function(node){
 //update a single value on blur of the input field
 var updateSingleValue = function(input, node) {
 	//TODO
+	console.log(input);
+	console.log(node);
 }
 
 var displayNodeValues = function(d) {	
@@ -368,7 +481,7 @@ var addNewNode = function(predefinedCircle) {
 	var circleCenter = predefinedCircle ? [100, 200] : d3.mouse(graph.node()),
 		xPos = circleCenter[0],
 		yPos = circleCenter[1],
-		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos, values:['1', '0']};
+		newNode = {id:lastID++, title:"New Node", x:xPos, y:yPos, values:['1', '0']};
 
 	nodes.push(newNode);
 	newNode.title = duplicateNodeTitles(newNode.title, newNode);

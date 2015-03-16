@@ -190,117 +190,8 @@ var clearDisplayField = function() {
 	control.html("");
 }
 
-//TODO code taken from
-var multipleLinesText = function(text, d3elem) {
-	var wordsLines = text.split(/\s+/g);
-	var txtElem = d3elem.append("text")
-						.attr("class", "node-title")
-						.attr("text-anchor", "middle")
-						//TODO change
-			            .attr("dy", "-" + (wordsLines.length-1)*7.5);
-
-	for (var i=0; i<wordsLines.length; i++) {
-		var tspanElem = txtElem.append("tspan")
-							   .text(wordsLines[i]);
-		if (i > 0) {
-			tspanElem.attr("x", 0).attr("dy", 15);
-		}
-	}
-
-}
-
 var isEmptyString = function(text) {
 	return text.length === 0 || /^\s*$/.test(text);
-}
-
-//if the new name is a duplicate of another node name - new name -> name(1).. name(2) etc.
-var duplicateNodeTitles = function(newTitle, node) {
-	var flag;
-	var i = 1;
-	var name = newTitle;
-
-	do {
-		flag = false;
-		for(var n in nodes) {
-			if(nodes[n] !== node && nodes[n].title === name) {
-				name = newTitle + '(' + i + ')';
-				i++;
-				flag = true;
-			}
-		}
-	} while(flag);
-
-	return name;
-}
-
-var editNodeText = function(d, d3Group){
-	editNodeTextMode = true;
-
-	var offsetX = 3,
-		offsetY = 3;
-
-	//remove the current text
-	var backupTxt = d3Group.select("text");
-	d3Group.select("text")
-		   .remove();
-
-	var textP = d3Group.append("foreignObject")
-				   .attr("x", offsetX)
-				   .attr("y", offsetY)
-				   .attr("width", radius*6)
-				   .attr("height", radius*3)
-				   .attr("id", "nodeTxtInput")
-				   .append("xhtml:textarea")
-				   .attr("type", "text")
-				   .attr("class", "form-control")
-				   .text(d.title)
-				   .on("keypress", function(){
-				      if(d3.event.keyCode === constants.ENTER) {
-				   	 	 d3.event.preventDefault();
-				   		 this.blur();
-				   	  }
-				   })
-				   .on("blur", function(){
-				   	 if(!isEmptyString(this.value)) {
- 					   	d.title = this.value.trim();
- 					   	//capitalize every node title
- 					   	d.title = d.title.charAt(0).toUpperCase() + d.title.slice(1);
- 					   	//check for duplicates
- 					   	d.title = duplicateNodeTitles(d.title, d);
-					   	multipleLinesText(d.title, d3Group);
-					   	//update edit info if this node has been edited
-					   	if(editNodeMode) {
-					   		var editedNode = d3.select("h3.node-label");
-					   		//check if any node info has been displayed
-					   		if(editedNode[0][0]) {
-						   		var id = editedNode.attr("id");
-						   		if(parseInt(id) === d.id) {
-						   			editedNode.text(d.title);
-						   		}
-						   	}
-					   	}
-				   	 }
-				   	 else {
-				   	 	multipleLinesText(backupTxt.text(), d3Group);
-				   	 }
-				     d3.select(document.getElementById("nodeTxtInput")).remove();
-				     editNodeTextMode = false;
-				     focused = true;
-				   })
-				   .on("mouseover", function(){
-				   	  //enable deleting with backspace as long as it is not on the svg
-				   	  d3.event.stopPropagation();
-				   	  focused = false;
-				   })
-				   .on("mouseout", function(){
-				   	  focused = true;
-				   })
-				   .on("mousedown", function(){
-				   	  d3.event.stopPropagation();
-				   });
-
-	textP.node().focus();
-
 }
 
 var displayHelp = function() {
@@ -322,20 +213,34 @@ var displayHelp = function() {
 		   .html("<span class='instructions-text-title'> Edit Node: </span> Select the \'Edit Node \' mode and click on the node to edit.");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Delete Node: </span> In \'Edit Node \' mode for the node you want to delete - click \'Delete Node \' button or press Backspace");
+		   .html("<span class='instructions-text-title'> Delete Node: </span> In \'Edit Node \' mode for the node you want to delete - click \'Delete Node \' button or in any mode press Backspace/Delete");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")	
 		   .html("<span class='instructions-text-title'> Add Link: </span> In \'Add Link \' mode drag a line from one node to another.");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Reverse Link: </span>");
+		   .html("<span class='instructions-text-title'> Reverse Link: </span> Drag a link in the opposite direction of the already existing link to reverse it.");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Delete Link: </span>");
+		   .html("<span class='instructions-text-title'> Delete Link: </span> Select a link by clicking on it and press Backspace/Delete.");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Sample Data: </span>");			   		   	   		   		   		   
+		   .html("<span class='instructions-text-title'> Sample Data: </span> Select \'Sample from Network\' mode and in the settings menu that will appear on the right side of the screen select any values that you want to be fixed and the number of samples and click \'Run\'.");			   		   	   		   		   		   
 }
+
+var displayAbout = function() {
+	clearDisplayField();
+	//if sample mode - turn it off
+	if(sampleMode) {
+		setMode("sample");
+	}
+
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("Bayesian Networks are graphical models for reasoning under uncertainty. BNs are represented by nodes and arcs, where the nodes are random variables and the arcs show a direct causal connections between ");
+
+}
+
 //display instructions for edit node mode
 var editNodeEnter = function() {
 	if(editNodeMode) {
@@ -487,23 +392,6 @@ var refresh = function(){
     circles.exit().remove();		   
 };
 
-// //Added predefinedCircle for Jasmine tests
-// var addNewNode = function(predefinedCircle) {
-// 	//add new node
-// 	var circleCenter = predefinedCircle ? [100, 200] : d3.mouse(graph.node()),
-// 		xPos = circleCenter[0],
-// 		yPos = circleCenter[1],
-// 		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos, values:['1', '0']};
-
-// 	nodes.push(newNode);
-// 	newNode.title = duplicateNodeTitles(newNode.title, newNode);
-// 	//refresh to add the node
-// 	refresh();
-// 	selectedNode = newNode;	
-// 	//refresh to select the node
-// 	refresh();
-// };
-
 var svgMouseDown = function(){
 	if(!nodeMode) {
 		return;
@@ -602,7 +490,7 @@ var specifyDownloadName = function(ext, samples) {
 	    }
 	  }
 	});
-
+	d3.select("#filename").focus();
 };
 
 var downloadNetwork = function(filename){
@@ -643,8 +531,8 @@ var maxNodeId = function(){
 //TODO code taken from
 var uploadNetwork = function(){
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
-		var fileReader = new window.FileReader();
-		var uploadFile = this.files[0];
+		var fileReader = new FileReader();
+		var uploadFile = d3.select("#hiddenUpload").node().files[0];
 
 		fileReader.onload = function(){
 			var txt = fileReader.result;
@@ -707,189 +595,6 @@ var uploadNetwork = function(){
 	}
 }
 
-var formatUploadSample = function(data) {
-	var formattedData = {};
-	data.forEach(function(row) {
-		for(var cName in row) {
-			if(cName in formattedData) {
-				formattedData[cName].push(row[cName]);
-			}
-			else {
-				formattedData[cName] = [];
-				formattedData[cName].push(row[cName]);
-			}
-		}
-	})
-
-	return formattedData;
-}
-
-var checkNamesSample = function(data) {
-	var dataNames = Object.keys(data);
-	var nodesNames = nodes.map(function(node) {return node.title});
-	return _.isEqual(dataNames.sort(), nodesNames.sort());
-}
-
-var recalculateValues = function(fdata) {
-	//for each node name in the formatted data
-	for (var nodeName in fdata) {
-		//find if there is a node with that name
-		var node = nodes.filter(function(n) {
-			return n.title === nodeName;
-		})[0];
-		var newValues = _.uniq(fdata[nodeName]);
-		node.values = newValues;
-		createCPT(node);
-	}
-}
-
-var learnCPTSingleNode = function(level, parents, csv, cpt) {
-	if (level === parents.length-1) {
-		var leafId = parents[level];
-
-		var leaf = nodes.filter(function(node) {
-			return node.id === leafId;
-		})[0];
-		var values = leaf.values;
-
-		values.forEach(function(value) {
-			var occurrences = _.filter(csv, function(row) {
-				return row[leaf.title] === value;
-			});
-			var entry = leafId + value;
-			cpt[entry] = occurrences.length / csv.length
-
-		});
-	}
-	else if(level < parents.length-1) {
-		//get the current parent 
-		var parentId = parents[level];
-		level++;
-
-		//get this node
-		var parent = nodes.filter(function(node) {
-			return node.id === parentId;
-		})[0];
-		var values = parent.values;
-
-		//go through each value
-		values.forEach(function(value){
-			var occurrences = _.filter(csv, function(row){
-				return row[parent.title] === value;
-			});
-			var entry = parentId + value;
-			learnCPTSingleNode(level, parents, occurrences, cpt[entry]);
-		});
-	}
-	else {
-		bootbox.dialog({
-		  message: "Something unexpected has happened!",
-		  buttons: {
-		    main: {
-		      label: "OK",
-		      className: "btn-bayes-short",
-		    },
-		  }
-		});			
-	}
-}
-
-var learnCPTValues = function(fdata, csvdata) {
-	for(var key in fdata) {
-		var node = nodes.filter(function(n){
-			return n.title === key;
-		})[0];
-		if(node) {
-			var parents = getNodeParents(node);
-			parents.push(node.id);
-			learnCPTSingleNode(0, parents, csvdata, node.tbl);
-		}
-	}
-}
-
-var uploadSample = function(){
-	//if edit node mode - remove tables of the nodes
-	if(editNodeMode) {
-		editNodeEnter();
-	}
-
-	if(window.File && window.FileReader && window.FileList && window.Blob) {
-		var fileReader = new window.FileReader();
-		var uploadFile = this.files[0];
-		// console.log(uploadFile);
-		fileReader.readAsText(uploadFile);		
-		fileReader.onload = function(event){
-			var txt = fileReader.result;
-			var csvData = d3.csv.parse(txt);
-
-			//reformat the data
-			var fData = formatUploadSample(csvData);
-			//assign the values from the sample to the nodes
-			var matching = checkNamesSample(fData);
-
-			clearDisplayField();
-			if(matching) {
-				//recalculate the cpts
-				recalculateValues(fData);
-				//learn the cpt values from the sample data
-				learnCPTValues(fData, csvData);
-
-				//success message
-				var successDiv = control.append("div")
-										.attr("class", "alert-text alert alert-success");
-				successDiv.append("span")
-						 	.attr("class", "glyphicon glyphicon-ok")
-							.attr("aria-hidden", "true");
-				successDiv.append("span")
-							.attr("class", "sr-only")
-							.text("Success");
-				var text = successDiv.html() + " CPT values have been succesfully learned.";
-				successDiv.html(text);							
-			}
-			else {
-				//error message
-				var errorDiv = control.append("div")
-							   .attr("class", "alert-text alert alert-danger");
-				errorDiv.append("span")
-						.attr("class", "glyphicon glyphicon-exclamation-sign")
-						.attr("aria-hidden", "true");
-				errorDiv.append("span")
-						.attr("class", "sr-only")
-						.text("Error");
-				var text = errorDiv.html() + " The node names in the uploaded sample data do not match the node names in the current network.";
-				errorDiv.html(text);				
-			}
-		
-		}
-		fileReader.onerror = function() {
-			bootbox.dialog({
-			  message: "Unable to read the file " + uploadFile.fileName,
-			  buttons: {
-			    main: {
-			      label: "OK",
-			      className: "btn-bayes-short",
-			    },
-			  }
-			});				
-			// alert("Unable to read the file " + uploadFile.fileName);
-		}
-
-		//reset the value
-		document.getElementById("hiddenUpload2").value = "";
-	}
-	else {
-		bootbox.dialog({
-		  message: "The File APIs are not supported in this browser. Please try again in a different one.",
-		  buttons: {
-		    main: {
-		      label: "OK",
-		      className: "btn-bayes-short",
-		    },
-		  }
-		});			
-	}
-}
-
 //TODO uncomment
 // window.onbeforeunload = function() {
 // 	return "Any progress you have made is not going to be saved.";
@@ -902,8 +607,8 @@ window.onresize = function() {
 }
 
 //Initialise
-var loadDefaultNetwork = function() {
-	d3.json("files/burglaryNet.json", function(error, netData) {
+var loadDefaultNetwork = function(filepath) {
+	d3.json(filepath, function(error, netData) {
 	  // console.log(netData);
 	  nodes = netData.nodes;
 	  console.log(nodes);
@@ -1086,15 +791,18 @@ var init = function() {
 	  	document.getElementById("hiddenUpload2").click();
 	  });
 	d3.select("#hiddenUpload2")
-	  .on("change", uploadSample);
+	  .on("change", function() {
+	  	uploadSample();
+	  });
 	d3.select("#help")
 	  .on("click", function(){
 	  	//display instructions
 	  	displayHelp();
 	  });
-	d3.select("about")
+	d3.select("#about")
 	  .on("click", function(){
-	  	//TODO
+	  	//display info
+	  	displayAbout();
 	  });
 
 	//display zoom scale
@@ -1106,4 +814,4 @@ var init = function() {
 }();
 
 //Initialise
-loadDefaultNetwork();
+loadDefaultNetwork("files/burglaryNet.json");

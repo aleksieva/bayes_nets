@@ -105,10 +105,10 @@ var uploadSample = function(){
 	}
 
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
-		var fileReader = new window.FileReader();
-		var uploadFile = this.files[0];
+		var fileReader = new FileReader();
+		var uploadFile = d3.select("#hiddenUpload2").node().files[0];
 		// console.log(uploadFile);
-		fileReader.readAsText(uploadFile);		
+		// fileReader.readAsText(uploadFile);		
 		fileReader.onload = function(event){
 			var txt = fileReader.result;
 			var csvData = d3.csv.parse(txt);
@@ -164,6 +164,7 @@ var uploadSample = function(){
 			});				
 			// alert("Unable to read the file " + uploadFile.fileName);
 		}
+		fileReader.readAsText(uploadFile);		
 
 		//reset the value
 		document.getElementById("hiddenUpload2").value = "";
