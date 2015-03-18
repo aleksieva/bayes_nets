@@ -481,7 +481,7 @@ var addNewNode = function(predefinedCircle) {
 	var circleCenter = predefinedCircle ? [100, 200] : d3.mouse(graph.node()),
 		xPos = circleCenter[0],
 		yPos = circleCenter[1],
-		newNode = {id:lastID++, title:"New Node", x:xPos, y:yPos, values:['1', '0']};
+		newNode = {id:++lastID, title:"New Node", x:xPos, y:yPos, values:['1', '0']};
 
 	nodes.push(newNode);
 	newNode.title = duplicateNodeTitles(newNode.title, newNode);

@@ -4,7 +4,8 @@ var startTour = function() {
         //TODO change to local storage??
         storage : false,
         onStart : function(tour) {
-          loadDefaultNetwork();
+          //TODO change
+          loadDefaultNetwork("files/burglaryNet.json", true);
         }     
     });
  

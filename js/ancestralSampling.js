@@ -217,19 +217,19 @@ var displaySamples = function(samples, noSample, fSample) {
 
 	// append table for the results
 	var sampleTbl;
-	if(noSample <= 10) {
-		sampleTbl = control.append("div");
-	}
-	else {
-		sampleTbl = d3.select("#long-sample").append("div");
-	}
-	sampleTbl = sampleTbl.attr("class", "table-responsive sample-table")
-			 			 .append("table")
-						 .attr("class", "table table-bayes sample-tbl");	
-	// sampleTbl = control.append("div")
-	// 					   .attr("class", "table-responsive sample-table")
-	// 					   .append("table")
-	//   	   				   .attr("class", "table table-bayes sample-tbl");
+	// if(noSample <= 10) {
+	// 	sampleTbl = control.append("div");
+	// }
+	// else {
+	// 	sampleTbl = d3.select("#long-sample").append("div");
+	// }
+	// sampleTbl = sampleTbl.attr("class", "table-responsive sample-table")
+	// 		 			 .append("table")
+	// 					 .attr("class", "table table-bayes sample-tbl");	
+	sampleTbl = control.append("div")
+						   .attr("class", "table-responsive sample-table")
+						   .append("table")
+	  	   				   .attr("class", "table table-bayes sample-tbl");
 
 
 	//append the columns names

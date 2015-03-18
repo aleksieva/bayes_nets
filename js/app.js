@@ -595,10 +595,9 @@ var uploadNetwork = function(){
 	}
 }
 
-//TODO uncomment
-// window.onbeforeunload = function() {
-// 	return "Any progress you have made is not going to be saved.";
-// }
+window.onbeforeunload = function() {
+	return "Any progress you have made is not going to be saved.";
+}
 
 window.onresize = function() {
 	var updatedHeight = 0.78 * window.innerHeight;
@@ -607,11 +606,13 @@ window.onresize = function() {
 }
 
 //Initialise
-var loadDefaultNetwork = function(filepath) {
-	d3.json(filepath, function(error, netData) {
+var loadDefaultNetwork = function(filepath, isInitial, val) {
+	//delete previous network
+	deleteNetwork(false);
+	d3.json(filepath, function(error, netData) {		
 	  // console.log(netData);
 	  nodes = netData.nodes;
-	  console.log(nodes);
+	  // console.log(nodes); 
 	  var rawEdges = netData.edges;
 	  rawEdges.forEach(function(e, index){
 	  	var src = nodes.filter(function(n) {
@@ -632,16 +633,77 @@ var loadDefaultNetwork = function(filepath) {
 	  refresh();
 	  //set mode to default
 	  setMode("");
-	  //display instructions
-	  displayHelp();
-	  // //display zoom scale
-	  // d3.select("#workspace")
-	  //   .append("p")
-	  //   .attr("id", "zoom-scale")
-	  //   .attr("class", "pull-right zoom-text")
-	  //   .text("Zoom Scale: " + zoom.scale().toFixed(2)); 		  
-	  });
+	  if (isInitial) {
+		//display instructions
+		displayHelp();
+	  }
+	  else {
+	  	loadExampleNetworks(val);
+	  }; 		  
+	});
 };
+
+var identifyExampleNetFilepath = function(val) {
+	if(val === "rain") {
+		loadDefaultNetwork("files/wetGrassNet.json", false, val)		
+	}
+	else if(val === "burglary") {
+		loadDefaultNetwork("files/burglaryNetFull.json", false, val)
+	}
+	else if(val === "cancer") {
+		loadDefaultNetwork("files/cancerNet.json", false, val)		
+	}
+	else if(val === "bronchitis") {
+		loadDefaultNetwork("files/smokerBronchitis.json", false, val)
+	}
+}
+var loadExampleNetworks = function(selValue) {
+	console.log("selValue: " + selValue)
+	clearDisplayField();
+
+	//append select for different example networks
+	var form = control.append("div")
+					  .attr("class", "form-group")
+
+	form.append("label")
+		.attr("for", "example-net")
+		.attr("class", "label-text")
+		.text("Select an example network from the menu: ")
+
+	var select = form.append("select")
+					 .attr("id", "example-net")
+					 .attr("class", "form-control")
+					 .on("change", function() {
+					 	identifyExampleNetFilepath(this.options[this.selectedIndex].value);
+					 });
+	select.append("option")
+		  .attr("value", "none")
+		  .attr("disabled", true)
+		  .attr("selected", true)
+		  .text("Select Network")
+	select.append("option")
+		  .attr("value", "rain")
+		  .text("Rain Network");
+	select.append("option")
+		  .attr("value", "burglary")
+		  .text("Burglary Network");
+	select.append("option")
+		  .attr("value", "cancer")
+		  .text("Cancer Network");
+	select.append("option")
+		  .attr("value", "bronchitis")
+		  .text("Basic Bronchitis Network");
+
+	control.append("hr");
+
+	var options = select.selectAll("option")[0];
+	options.forEach(function(option) {
+		if(option.value === selValue) {
+			d3.select(option)
+			  .attr("selected", true);
+		}
+	})
+}
 
 var init = function() {
 	//svg width & height
@@ -804,6 +866,8 @@ var init = function() {
 	  	//display info
 	  	displayAbout();
 	  });
+	d3.select("#loadNet")
+	  .on("click", loadExampleNetworks);
 
 	//display zoom scale
 	d3.select("#workspace")
@@ -814,4 +878,4 @@ var init = function() {
 }();
 
 //Initialise
-loadDefaultNetwork("files/burglaryNet.json");
+loadDefaultNetwork("files/burglaryNetFull.json", true);
