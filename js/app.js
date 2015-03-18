@@ -225,7 +225,10 @@ var displayHelp = function() {
 		   .html("<span class='instructions-text-title'> Delete Link: </span> Select a link by clicking on it and press Backspace/Delete.");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Sample Data: </span> Select \'Sample from Network\' mode and in the settings menu that will appear on the right side of the screen select any values that you want to be fixed and the number of samples and click \'Run\'.");			   		   	   		   		   		   
+		   .html("<span class='instructions-text-title'> Sample Data: </span> Select \'Sample from Network\' mode and in the settings menu that will appear on the right side of the screen select any values that you want to be fixed and the number of samples and click \'Run\'.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("<span class='instructions-text-title'> Learn Probabilities </span> Click on \'Learn from Sample\' and upload sample data .csv file where the node titles are equivalent to the ones in the network.")
 }
 
 var displayAbout = function() {
@@ -237,8 +240,22 @@ var displayAbout = function() {
 
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
-		   .html("Bayesian Networks are graphical models for reasoning under uncertainty. BNs are represented by nodes and arcs, where the nodes are random variables and the arcs show a direct causal connections between ");
-
+		   .html("Bayesian Networks are graphical models for reasoning under uncertainty.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("Bayesian Networks are directed acyclic graphs(DAGs) so the designed networks should not contain cycles.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("BNs are represented by nodes and arcs, where the nodes are random variables and an arc shows a direct causal connections between a parent node and a child node.");
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("Each node can have up to 10 values. The values need to be discrete, mutually exclisive and exhaustive for the domain. The default values for each node are 1 and 0 (True and False).")
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("To generate sample data from a network Ancestral(Direct) Sampling algorithm is used. If the user needs to, they can fix the values for any of the nodes. Thus the sampling method might also act as a classifier.")
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("If there is a network with known structure but not known probabilities for the random variables, sample data can be used to learn the probabilities for the network.")
 }
 
 //display instructions for edit node mode
