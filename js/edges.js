@@ -21,7 +21,7 @@ var createNewEdge = function(sourceNode, targetNode) {
 	}
 };
 
-//TODO code taken from
+//code taken from this example http://bl.ocks.org/cjrd/6863459
 var removeIncidentEdges = function(node) {
 	var edgesToDelete = edges.filter(function(e) {
 		return (e.source === node || e.target === node);

@@ -4,7 +4,6 @@ var startTour = function() {
         //TODO change to local storage??
         storage : false,
         onStart : function(tour) {
-          //TODO change
           loadDefaultNetwork("files/burglaryNet.json", true);
         }     
     });
@@ -120,8 +119,6 @@ var startTour = function() {
         content: "Click on the node to edit its properties.",
         reflex: true,
         onShow: function(tour) {
-          //TODO change when encapsulating
-          // selectedNode = d3.select(".tour-step-seven").data()[0];
           selectedNode = null;
         },
         onShown: function(tour) {

@@ -295,12 +295,14 @@ var ancestralSampling = function(fSample) {
 		return;
 	}
 
+	console.time("mytimer");
 	var samples = [];
 	for (var i=0; i< noOfSamples; i++) {
 		// console.log(fSample);
 		var sample = singleSample(fSample);
 		samples.push(sample);
 	}
+	console.timeEnd("mytimer");
 
 	//get nodes status back to false
 	setSamplingStatus();

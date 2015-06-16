@@ -410,13 +410,13 @@ var refresh = function(){
 };
 
 var svgMouseDown = function(){
-	if(!nodeMode) {
-		return;
-	}
-	else if(nodeMode && editNodeTextMode) {
-		editNodeTextMode = false;
-		return;
-	}
+	// if(!nodeMode) {
+	// 	return;
+	// }
+	// else if(nodeMode && editNodeTextMode) {
+	// 	editNodeTextMode = false;
+	// 	return;
+	// }
 
 	addNewNode();
 
@@ -480,7 +480,7 @@ var deleteNetwork = function(isConfirm) {
 	}
 }
 
-//TODO code taken from
+//parts of the code are taken from http://stackoverflow.com/questions/19684318/how-to-customize-bootbox-js-prompt-options
 var specifyDownloadName = function(ext, samples) {
 	var filename = "";
 	bootbox.dialog({
@@ -545,7 +545,7 @@ var maxNodeId = function(){
 	return Math.max.apply(Math, nodes.map(function(n) {return n.id}));
 }
 
-//TODO code taken from
+//parts of the code have been taken from http://blog.teamtreehouse.com/reading-files-using-the-html5-filereader-api
 var uploadNetwork = function(){
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
 		var fileReader = new FileReader();
@@ -613,6 +613,16 @@ var uploadNetwork = function(){
 }
 
 window.onbeforeunload = function() {
+	//NOTE not working - security reasons
+	// bootbox.dialog({
+	// 	message: "Any progress you have made is not going to be saved.",
+	// 	buttons: {
+	// 		main: {
+	// 			label: "OK",
+	// 			className: "btn-bayes-short"
+	// 		}
+	// 	}
+	// });
 	return "Any progress you have made is not going to be saved.";
 }
 
@@ -753,14 +763,6 @@ var init = function() {
 	editNodeMode = false;
 	sampleMode = false;
 
-	//default nodes and links
-	// nodes = [
-	// 	{id: 0, title: "Smoker", x: 450, y: 100, values:['1','0']},
-	// 	{id: 1, title: "Bronchitis", x: 450, y: 250, values:['1', '0']}
-	// ];
-	// edges = [
-	// 	{source: nodes[0], target:nodes[1]}
-	// ];
 	nodes = [];
 	edges = [];
 	lastID=1;
@@ -775,7 +777,7 @@ var init = function() {
 				.attr("class", "tour-step tour-step-six");
 	
 	//arrow markers
-	//TODO code used from
+	//parts of the code used from these examples http://tutorials.jenkov.com/svg/marker-element.html
 	svg.append("defs")
 	   .append("marker")
 	   .attr("id", "arrow")
@@ -811,7 +813,8 @@ var init = function() {
 				 	.attr("d", "M0,0L0,0")
 				 	.style("marker-end", "url(#dragline-arrow)");	
 
-	svg.on("mousedown", svgMouseDown)
+	// svg.on("mousedown", svgMouseDown)
+	svg.on("dblclick", svgMouseDown)
 	   .on("mouseup", svgMouseUp)
 	   .on("mouseover", function() {
 		   focused = true;

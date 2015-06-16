@@ -1,4 +1,4 @@
-//TODO code taken from
+//code taken from http://bl.ocks.org/cjrd/6863459
 var multipleLinesText = function(text, d3elem) {
 	var wordsLines = text.split(/\s+/g);
 	var txtElem = d3elem.append("text")
