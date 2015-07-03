@@ -160,8 +160,8 @@ var downloadSamples = function(filename, samples) {
 	var sampleData = formatSamplesDownload(samples);
 
 	var blob = new Blob([sampleData], {type:"text/csv;charset=utf-8"});
-	// saveAs(blob, "sample_bayes.csv");
 
+	//on empty input - give an alert message
 	if (!isEmptyString(filename)) {
 		filename = filename + ".csv";
 		saveAs(blob, filename);	
@@ -201,7 +201,7 @@ var displaySamples = function(samples, noSample, fSample) {
 		   .attr("id", "sampleDownloadBtn")
 		   .html("Download")
 		   .on("click", function() {
-		   	specifyDownloadName(".csv", samples);
+		   	specifyDownloadName(2, ".csv", samples);
 		   	// downloadSamples(samples);
 		   });
 	//reset btn
@@ -215,8 +215,26 @@ var displaySamples = function(samples, noSample, fSample) {
 
 	control.append("hr");
 
+	//display the first 20 samples only
+	//if more than that -> warn the users to download the rest
+	if(noSample > 20) {
+		//warning message
+		var warningDiv = control.append("div")
+								.attr("class", "alert-text alert alert-warning")
+		warningDiv.append("span")
+				  .attr("class", "glyphicon glyphicon-flag")
+				  .attr("aria-hidden", "true");
+		warningDiv.append("span")
+				  .attr("class", "sr-only")
+				  .text("Warning");
+		var text = warningDiv.html() + "Only the first 20 samples will be displayed. If you wish to view all the samples, download them by clicking the \'Download\' button."				  		  
+		warningDiv.html(text);
+	}
+
 	// append table for the results
 	var sampleTbl;
+
+	//TODO remove?
 	// if(noSample <= 10) {
 	// 	sampleTbl = control.append("div");
 	// }
@@ -237,7 +255,7 @@ var displaySamples = function(samples, noSample, fSample) {
 
 	var sampleTblBody = sampleTbl.append("tbody");
 	var accumulator = "";
-	for (var s in samples) {
+	for (var s in samples.slice(0,20)) {
 		for (var val in samples[s]) {
 			accumulator += '<td>' + samples[s][val] + '</td>';
 		}

@@ -41,6 +41,76 @@ var duplicateNodeTitles = function(newTitle, node) {
 	return name;
 }
 
+// var editNodeText = function(d, d3Group){
+// 	editNodeTextMode = true;
+
+// 	var offsetX = 3,
+// 		offsetY = 3;
+
+// 	//remove the current text
+// 	var backupTxt = d3Group.select("text");
+// 	d3Group.select("text")
+// 		   .remove();
+
+// 	var textP = d3Group.append("foreignObject")
+// 				   .attr("x", offsetX)
+// 				   .attr("y", offsetY)
+// 				   .attr("width", radius*6)
+// 				   .attr("height", radius*3)
+// 				   .attr("id", "nodeTxtInput")
+// 				   .append("xhtml:textarea")
+// 				   .attr("type", "text")
+// 				   .attr("class", "form-control")
+// 				   .text(d.title)
+// 				   .on("keypress", function(){
+// 				      if(d3.event.keyCode === constants.ENTER) {
+// 				   	 	 d3.event.preventDefault();
+// 				   		 this.blur();
+// 				   	  }
+// 				   })
+// 				   .on("blur", function(){
+// 				   	 if(!isEmptyString(this.value)) {
+//  					   	d.title = this.value.trim();
+//  					   	//capitalize every node title
+//  					   	d.title = d.title.charAt(0).toUpperCase() + d.title.slice(1);
+//  					   	//check for duplicates
+//  					   	d.title = duplicateNodeTitles(d.title, d);
+// 					   	multipleLinesText(d.title, d3Group);
+// 					   	//update edit info if this node has been edited
+// 					   	if(editNodeMode) {
+// 					   		var editedNode = d3.select("h3.node-label");
+// 					   		//check if any node info has been displayed
+// 					   		if(editedNode[0][0]) {
+// 						   		var id = editedNode.attr("id");
+// 						   		if(parseInt(id) === d.id) {
+// 						   			editedNode.text(d.title);
+// 						   		}
+// 						   	}
+// 					   	}
+// 				   	 }
+// 				   	 else {
+// 				   	 	multipleLinesText(backupTxt.text(), d3Group);
+// 				   	 }
+// 				     d3.select(document.getElementById("nodeTxtInput")).remove();
+// 				     editNodeTextMode = false;
+// 				     focused = true;
+// 				   })
+// 				   .on("mouseover", function(){
+// 				   	  //enable deleting with backspace as long as it is not on the svg
+// 				   	  d3.event.stopPropagation();
+// 				   	  focused = false;
+// 				   })
+// 				   .on("mouseout", function(){
+// 				   	  focused = true;
+// 				   })
+// 				   .on("mousedown", function(){
+// 				   	  d3.event.stopPropagation();
+// 				   });
+
+// 	textP.node().focus();
+
+// }
+
 //append number of input fields depending on the value of input type number
 var appendNodeValues = function(num) {
 	//count # of old input fields
@@ -78,29 +148,6 @@ var appendNodeValues = function(num) {
 
 	  })
 	
-}
-
-var appendNodeValue = function() {
-	var numValues = d3.selectAll("tr.nodeValueRow")[0].length;
-	if (numValues < 10) {
-		var newRow = d3.select("table.node-edit-tbl")
-					.insert("tr", "#plus-minus-row")
-					.classed("nodeValueRow", true);
-		newRow.append("td")
-				.text("Value");
-		newRow.append("td")
-				.attr("class", "editable")
-				.append("input")
-				.classed("nodeValue", true)
-				.attr("type", "text");		
-	}
-}
-
-var removeNodeValue = function() {
-	var numValues = d3.selectAll("tr.nodeValueRow")[0].length;
-	if(numValues > 2) {
-		d3.selectAll("tr.nodeValueRow")[0][numValues-1].remove();
-	}
 }
 
 var getNodeChildren = function(node) {
@@ -161,9 +208,9 @@ var updateNodeValues = function(node){
 			})
 
 			//success message
-			var successDiv = d3.select("#edit-div-tbl")
-								.insert("div", ".node-edit-tbl")	
-								.attr("class", "alert-text alert alert-success");
+			// var successDiv = control.insert("div", "#edit-div-tbl")
+			var successDiv = d3.select("#edit-div-tbl").insert("div", ".node-edit-tbl")	
+								   .attr("class", "alert-text alert alert-success");
 			successDiv.append("span")
 					.attr("class", "glyphicon glyphicon-ok")
 					.attr("aria-hidden", "true");
@@ -175,6 +222,7 @@ var updateNodeValues = function(node){
 		}
 		else {
 			//error message for duplicate values
+			// var errorDiv = control.insert("div", "#edit-div-tbl")
 			var errorDiv = d3.select("#edit-div-tbl").insert("div", ".node-edit-tbl")	
 								   .attr("class", "alert-text alert alert-danger");
 			errorDiv.append("span")
@@ -189,9 +237,9 @@ var updateNodeValues = function(node){
 	}
 	else {
 		//error message for empty values
-		var errorDiv = d3.select("#edit-div-tbl")
-						.insert("div", ".node-edit-tbl")	
-						.attr("class", "alert-text alert alert-danger");
+		// var errorDiv = control.insert("div", "#edit-div-tbl")
+		var errorDiv = d3.select("#edit-div-tbl").insert("div", ".node-edit-tbl")	
+							   .attr("class", "alert-text alert alert-danger");
 		errorDiv.append("span")
 				.attr("class", "glyphicon glyphicon-exclamation-sign")
 				.attr("aria-hidden", "true");
@@ -221,27 +269,23 @@ var displayNodeValues = function(d) {
 					 .append("table")
 					 .attr("class", "table table-bayes node-edit-tbl");
 
-	// //add num of values
-	// var numOfValues = nodeInfo.append("tr");
-	// numOfValues.append("th").text("# values");
-	// var testCell = numOfValues.append("th")
-	// 		   .attr("class", "editable");
-
-	// testCell.append("input")
-	// 		   .attr("type", "number")
-	// 		   .attr("id", "numValues")
-	// 		   .attr("min", 2)
-	// 		   .attr("max", 10)
-	// 		   .attr("value", d.values.length)
-	// 		   .on("input", function() {
-	// 		   	  appendNodeValues(this.value);
-	// 		   })
-	// 		   .on("keydown", function() {
-	// 		   	 d3.event.preventDefault();
-	// 		   });
-	// testCell.append("button")
-	// 		.attr("value", "add")
-	// 		.attr("text", "+");
+	//add num of values
+	var numOfValues = nodeInfo.append("tr");
+	numOfValues.append("th").text("# values");
+	numOfValues.append("th")
+			   .attr("class", "editable")
+			   .append("input")
+			   .attr("type", "number")
+			   .attr("id", "numValues")
+			   .attr("min", 2)
+			   .attr("max", 10)
+			   .attr("value", d.values.length)
+			   .on("input", function() {
+			   	  appendNodeValues(this.value);
+			   })
+			   .on("keydown", function() {
+			   	 d3.event.preventDefault();
+			   });
 
 	// append options
 	for(var i =1; i<= d.values.length; i++) {
@@ -262,30 +306,9 @@ var displayNodeValues = function(d) {
 			   });
 	}
 
-	var lastRow = nodeInfo.append("tr")
-						  .attr("id", "plus-minus-row");
-	lastRow.append("td");
-	var appendBtns = lastRow.append("td");
-	// TODO styling buttons
-	appendBtns.append("button")
-			.classed("btn btn-default btn-bayes-short", true)
-			.attr("value", "add")
-			.html("+")
-			.on("click", function() {
-				appendNodeValue();
-			});
-
-	appendBtns.append("button")
-			.classed("btn btn-default btn-bayes-short", true)
-			.attr("value", "remove")
-			.html("-")
-			.on("click", function() {
-				removeNodeValue();
-			});
-
 	d3.select("#div-update-btn")
 	  .append("button")
-	  .classed("btn btn-default btn-bayes pull-right", true)
+	  .classed("btn btn-default btn-bayes", true)
 	  .attr("id", "update-node-values")
 	  .html("Update Values")
 	  .on("click", function() {
@@ -411,81 +434,96 @@ var displayNodeInfo = function(node) {
 	
 	var selOption = d3.select("#node-options").node().options[d3.select("#node-options").node().selectedIndex].value;
 	displayNodeOption(selOption, node);
+	control.append("hr");
+
+	// delete button
+	control.append("p")
+		   // .attr("for", "delete-node-btn")
+		   .attr("class", "label-text")
+		   .text("Delete the node:" );
+
+	control.append("button")
+		   .attr("class", "btn btn-default btn-bayes")
+		   .attr("id", "delete-node-btn")
+		   .html("Delete Node")
+		   .on("click", function() {
+		   	//delete this node
+		   	deleteNode(node);
+		   })
 
 }
 
 var nodeMouseDown = function(d){
-	//TODO move to refresh?
 	mousedownNode = d;
 
-	// if(connMode) {
-	// 	//reposition the dragline to the center of the node
-	// 	dragline.classed("hidden", false)
-	// 			.attr("d", "M" + d.x + "," + d.y + "L" + d.x + "," + d.y);
-	// }
+	if(connMode) {
+		//reposition the dragline to the center of the node
+		dragline.classed("hidden", false)
+				.attr("d", "M" + d.x + "," + d.y + "L" + d.x + "," + d.y);
+	}
 }
 
 var nodeMouseUp = function(d, groupNode){
+
 	// console.log(d3.select(d));
 	// console.log(groupNode);
 	//check if mousedownNode is set
 	if(!mousedownNode)
 		return;
 
-	//TODO remove
-	// dragline.classed("hidden", true);
+	dragline.classed("hidden", true);
 
 	//the node that the mouse is located on on mouseup
 	var mouseupNode = d;
 	//if the mouse has moved to a different node and connection mode is on
 	//add a new edge between these 2 nodes
-	// if(mousedownNode !== mouseupNode) {
-	// 	if(connMode) {
-	// 		createNewEdge(mousedownNode, mouseupNode);
-	// 		dragged =false;
-	// 	}
-	// }
+	if(mousedownNode !== mouseupNode) {
+		if(connMode) {
+			createNewEdge(mousedownNode, mouseupNode);
+			dragged =false;
+		}
+	}
 	//the node on mouse up and on mouse down is the same
 	// 4 possible cases when this could happen
 	// 1. node has been dragged
-	// 2. node has been shift clicked to edit its text -TODO REMOVE
-	// 3. editNode mode is on and node has been selected for editing - TODO remove
+	// 2. node has been shift clicked to edit its text
+	// 3. editNode mode is on and node has been selected for editing
 	// 4. select node
-	// else {
+	else {
 		if(dragged) {
 			dragged = false;
 		}
 		else {
-			//select/deselect node
-			if(selectedNode === mousedownNode) {
-				selectedNode = null;
-			}
-			else {
-				selectedNode = mousedownNode;
-			}
-			selectedPath = null;
-			refresh();
+			// if(d3.event.shiftKey) {
+			// 	//deselect node/edge if any are selected
+			// 	selectedNode = null;
+			// 	selectedPath = null;
+			// 	refresh();
+			// 	//edit node title
+			// 	editNodeText(mouseupNode, groupNode);
+			// }
+			else {				
+				//select/deselect node
+				if(selectedNode === mousedownNode) {
+					selectedNode = null;
+				}
+				else {
+					selectedNode = mousedownNode;
+				}
+				selectedPath = null;
+				refresh();
 
-			//hide all linking points - precaution 
-			//alternative -> hide only points that don't belong to the selected node
-			d3.selectAll(".link-node")
-			  .classed("selected", false)
-			  .style("display", "none");
-
-			//display the node info if a node has been selected
-			if (selectedNode) {
-				displayNodeInfo(selectedNode);
-				//TODO display the linking nodes
-				groupNode.selectAll(".link-node")
-				  .classed("selected", true)
-				  .style("display", "initial");
-			}
-			else {
-				//TODO check and remove
-				clearDisplayField();
-			}
+				//display the node info if in editNodeMode && a node has been selected
+				// if(editNodeMode && selectedNode) {
+				if (selectedNode) {
+					displayNodeInfo(selectedNode);
+				}
+				else {
+					editNodeEnter();
+				}
+			// }
 		}
-	// }
+	}
 	
 	mousedownNode = null;
 	mouseupNode = null;
@@ -508,38 +546,13 @@ var addNewNode = function(predefinedCircle) {
 	refresh();
 };
 
-var nodeMenu = [
-	{
-		title: 'Remove Node',
-		action: function(elm, d, i) {
-			deleteNode(d);
-		}
-	}
-]
-
-var deleteNode = function(node) {
-	//if node info for this node is displayed remove it it
-	if (d3.select(".node-label")[0][0] !== null) {
-		var id = parseInt(d3.select(".node-label").attr("id"));
-		if(id === node.id) {
-			clearDisplayField();
-		}
-		else {
-			//check if info about one of the to-be-removed node's children is displayed in the info field
-			//if so, update its table
-			var children = getNodeChildren(node);
-			var res = children.filter(function(c){
-				return c.id === parseInt(d3.select(".node-label").attr("id"));
-			});
-			//TODO
-			// update its table
-		}
-	}
-
+var deleteNode = function(node) {	
 	nodes.splice(nodes.indexOf(node),1);
 	var incidentEgdes = removeIncidentEdges(node);
 	//recalculate the cpts for all nodes that are target nodes for the selected node
 	recalculateCPT(incidentEgdes, node);
-	refresh();
-
+	//if node info is displayed remove it
+	if(editNodeMode) {
+		editNodeEnter();
+	}
 }

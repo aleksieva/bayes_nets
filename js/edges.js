@@ -34,8 +34,19 @@ var removeIncidentEdges = function(node) {
 	return edgesToDelete;
 };
 
+var edgeMenu = [
+	{
+		title: 'Remove Connection',
+		action: function(elm, d, i) {
+			deleteEdge(d);
+		}
+	}
+]
+
 var deleteEdge = function(path) {
 	edges.splice(edges.indexOf(path), 1);
 	//recalculate the cpt of the target node of this edge
-	recalculateCPT([path], path.source);		
+	recalculateCPT([path], path.source);
+	//update the view
+	refresh();		
 }

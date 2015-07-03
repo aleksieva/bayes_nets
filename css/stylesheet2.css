@@ -1,30 +1,51 @@
 body {
-	background-color: #F9F9F9;
+	/*background-color: #F9F9F9;*/
+	background-color: white;
 }
 
-/*.navbar-main {
-	background-color: #01A9DB;
-}*/
+.navbar-main {
+	background-color: #0489B1;
+	margin-bottom: 0 !important;
+}
 
 .navbar-title {
 	/*change to color of the left menu text?*/
-	color: #0489B1 !important;
-	/*color: red !important;*/
+	/*color: #0489B1 !important;*/
+	color: #F1F4F5 !important;
 	font-size: 24px;
 	padding-left: 28px;
 	font-weight: 500;
 	/*margin-top: 20px;*/
 }
 
+.container-header {
+	margin-top:4px;
+	margin-bottom: 4px;
+}
+
+/*.navbar-controls{
+	height: 30px;
+}*/
+
+/*TODO Why*/
 .nav-sidebar > li> a.selected {
 	background-color: #01A9DB;
 	color: #F9F9F9;
 }
 
 .navbar-nav > li > a {
-	color:#428bca !important; 
+	color:#F1F4F5 !important; 
 	text-decoration: none !important;
-	/*cursor:help;*/
+}
+
+/*TODO change appearance when clicked */
+li > a.control {
+	color:#0489B1 !important; 
+	text-decoration: none !important;
+}
+
+li > a.control:hover, li>a.control:focus {
+	background-color: #e7e7e7 !important;
 }
 
 #control {
@@ -36,12 +57,8 @@ body {
 	margin-right: 30px;
 }
 
-#hiddenUpload {
-	display:none;
-}
-
-#hiddenUpload2 {
-	display: none;
+.hidden-upload {
+	display:none !important;
 }
 
 .alert-text {
@@ -123,26 +140,35 @@ hr {
     /*table-layout: fixed;*/
     /*word-wrap: break-word;*/
 }
-
+/*TODO combine these with a class and assign the class to the corresponding elements*/
 th {
 	text-align: center;
 	color : gray;
+	/*padding-top:1px;*/
 }
 
 td {
 	text-align: center;
 	color : gray;
+	padding-top:1px;	
 }
 
 /* table inputs */
+/*TODO combine these with a class and assign the class to the corresponding elements*/
 td.editable > input {
 	width:60px;
 	text-align: center;
+	border: 1px solid gray;
+	border-radius: 5px;
+	padding: 4px;
 }
 
 th.editable > input {
 	width:60px;
 	text-align: center;	
+	border: 1px solid gray;
+	border-radius: 5px;
+	padding: 4px;
 }
 
 input.invalid {
@@ -166,7 +192,8 @@ input.invalid {
 }
 
 g.node circle{
-	fill: #01A9DB;
+	/*fill: #01A9DB;*/
+	fill: #f8f8f8;
 	stroke:#0489B1;
 	stroke-width:1px;
 }
@@ -176,13 +203,32 @@ g.node:hover circle {
 }
 
 g.node.selected circle{
-	fill:#D265A5 !important; /*change */
+	/*fill:#D265A5 !important; */
 	stroke:#CC0B7C;
 	stroke-width:2px !important;
 }
 
 g.node.selected:hover circle {
 	fill: #EFC9DF !important;
+}
+
+g.node circle.link-node{
+	fill:#0489B1;
+	stroke:#0489B1;
+	stroke-width:1px;
+}
+
+g.node:hover circle.link-node{
+	fill:#0489B1 !important;
+}
+
+g.node.selected circle.link-node{
+	fill:#CC0B7C;
+	stroke:#CC0B7C;
+}
+
+g.node.selected:hover circle.link-node{
+	fill:#CC0B7C !important;
 }
 
 path.conn{
@@ -221,13 +267,23 @@ path.arrow {
 .node-title {
 	font-size:16px;
 	font-family: sans-serif;
-	fill : rgb(76, 69, 69);
+	/*fill : rgb(76, 69, 69);*/
+	fill:#0489B1;
 	font-weight:400;	
 }
 
 .node-label {
 	margin: 0;
 	color: #0489B1;	
+}
+.node-label:hover {
+	font-size:28px !important;
+	color: #01A9DB !important;
+}
+
+.node-input {
+	color:#0489B1;
+	font-size:24px;
 }
 
 .help-text {

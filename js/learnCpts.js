@@ -21,6 +21,7 @@ var checkNamesSample = function(data) {
 	return _.isEqual(dataNames.sort(), nodesNames.sort());
 }
 
+//function to assign suitable values from the sample data to the nodes in the network
 var recalculateValues = function(fdata) {
 	//for each node name in the formatted data
 	for (var nodeName in fdata) {
@@ -98,6 +99,19 @@ var learnCPTValues = function(fdata, csvdata) {
 	}
 }
 
+var createMatrixFromCsv = function(csvdata) {
+	var matArray = [];
+	csvdata.forEach(function(row) {
+		var rowArray = [];
+		for (var cell in row) {
+			rowArray.push(row[cell]);
+		}
+		console.log(rowArray);
+		matArray.push(rowArray);
+	});
+
+}
+
 var uploadSample = function(){
 	//if edit node mode - remove tables of the nodes
 	if(editNodeMode) {
@@ -106,50 +120,52 @@ var uploadSample = function(){
 
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
 		var fileReader = new FileReader();
-		var uploadFile = d3.select("#hiddenUpload2").node().files[0];
+		var uploadFile = d3.select("#hidden-upload-2").node().files[0];
 		// console.log(uploadFile);
 		// fileReader.readAsText(uploadFile);		
 		fileReader.onload = function(event){
 			var txt = fileReader.result;
 			var csvData = d3.csv.parse(txt);
 
-			//reformat the data
+			// TODO uncomment
+			// Parameters learning 
+			// //reformat the data
 			var fData = formatUploadSample(csvData);
-			//assign the values from the sample to the nodes
-			var matching = checkNamesSample(fData);
+			// //assign the values from the sample to the nodes
+			// var matching = checkNamesSample(fData);
 
-			clearDisplayField();
-			if(matching) {
-				//recalculate the cpts
-				recalculateValues(fData);
-				//learn the cpt values from the sample data
-				learnCPTValues(fData, csvData);
+			// clearDisplayField();
+			// if(matching) {
+			// 	//recalculate the cpts
+			// 	recalculateValues(fData);
+			// 	//learn the cpt values from the sample data
+			// 	learnCPTValues(fData, csvData);
 
-				//success message
-				var successDiv = control.append("div")
-										.attr("class", "alert-text alert alert-success");
-				successDiv.append("span")
-						 	.attr("class", "glyphicon glyphicon-ok")
-							.attr("aria-hidden", "true");
-				successDiv.append("span")
-							.attr("class", "sr-only")
-							.text("Success");
-				var text = successDiv.html() + " CPT values have been succesfully learned.";
-				successDiv.html(text);							
-			}
-			else {
-				//error message
-				var errorDiv = control.append("div")
-							   .attr("class", "alert-text alert alert-danger");
-				errorDiv.append("span")
-						.attr("class", "glyphicon glyphicon-exclamation-sign")
-						.attr("aria-hidden", "true");
-				errorDiv.append("span")
-						.attr("class", "sr-only")
-						.text("Error");
-				var text = errorDiv.html() + " The node names in the uploaded sample data do not match the node names in the current network.";
-				errorDiv.html(text);				
-			}
+			// 	//success message
+			// 	var successDiv = control.append("div")
+			// 							.attr("class", "alert-text alert alert-success");
+			// 	successDiv.append("span")
+			// 			 	.attr("class", "glyphicon glyphicon-ok")
+			// 				.attr("aria-hidden", "true");
+			// 	successDiv.append("span")
+			// 				.attr("class", "sr-only")
+			// 				.text("Success");
+			// 	var text = successDiv.html() + " CPT values have been succesfully learned.";
+			// 	successDiv.html(text);							
+			// }
+			// else {
+			// 	//error message
+			// 	var errorDiv = control.append("div")
+			// 				   .attr("class", "alert-text alert alert-danger");
+			// 	errorDiv.append("span")
+			// 			.attr("class", "glyphicon glyphicon-exclamation-sign")
+			// 			.attr("aria-hidden", "true");
+			// 	errorDiv.append("span")
+			// 			.attr("class", "sr-only")
+			// 			.text("Error");
+			// 	var text = errorDiv.html() + " The node names in the uploaded sample data do not match the node names in the current network.";
+			// 	errorDiv.html(text);				
+			// }
 		
 		}
 		fileReader.onerror = function() {
@@ -167,7 +183,7 @@ var uploadSample = function(){
 		fileReader.readAsText(uploadFile);		
 
 		//reset the value
-		document.getElementById("hiddenUpload2").value = "";
+		document.getElementById("hidden-upload-2").value = "";
 	}
 	else {
 		bootbox.dialog({
