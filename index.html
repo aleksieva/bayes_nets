@@ -34,7 +34,58 @@
 				</div> 
 				<div class="navbar-collapse collapse"> <!-- id=menu? -->
 					<ul class="nav navbar-nav">
-						<li><a href='#' id='sample-net' class="control tour-step tour-step-thirteen">Sample from Network  
+						<li class="dropdown">
+							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My Network<span class="caret"></span></a>
+          					<ul class="dropdown-menu">
+          						<li><a href='#' id='sample-net' class="control tour-step tour-step-thirteen">Sample from Network  
+									<span class="glyphicon glyphicon-list-alt pull-right" aria-hidden="true"></span>
+								</a></li> 
+								<li><a href='#' id='downloadImg' class="control">Export to PNG
+									<span class="glyphicon glyphicon-picture pull-right" aria-hidden="true"></span>
+								</a></li>
+								<li><a href='#' id='downloadNet' class="control tour-step tour-step-eighteen">Export to JSON
+									<span class="glyphicon glyphicon-download pull-right" aria-hidden="true"></span>
+								</a></li>          					
+            					<li role="separator" class="divider"></li>
+								<li><input type="file" id="hidden-upload" class="hidden-upload"> </li>	
+            					<li><a href='#' id='uploadNet' class="control">Import from JSON
+            						<span class="glyphicon glyphicon-upload pull-right" aria-hidden="true"></span>
+            					</a></li>            					
+            					<li><a href='#' id='loadNet' class="control">Import Example Network
+            						<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+            					</a></li>
+            					<li role="separator" class="divider"></li>
+            					<li><a href='#' id='deleteNet' class="control">Clear the Canvas
+        							<span class="glyphicon glyphicon-trash pull-right" aria-hidden="true"></span>
+		        				</a></li>	
+          					</ul>							
+						</li>
+						<li class="dropdown">
+							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Choose Data<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href='#' id='uploadSample' class="control">Import CSV
+									<span class="glyphicon glyphicon-file pull-right" aria-hidden="true"></span>
+								</a></li>
+								<li><input type="file" id="hidden-upload-2" class="hidden-upload"> </li>
+								<li><a href='#' id='loadData' class="control">Use Toy Dataset
+								</a></li>								
+							</ul>
+						</li>
+						<li class="dropdown">
+							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Learn<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href='#' id='learnStructure' class="control">Learn Structure
+								</a></li>
+								<li><a href='#' id='learnParams' class="control">Learn Parameters
+								</a></li>	
+							</ul>
+						</li>												
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+					<!-- TODO change the text on data upload -->
+						<p id="dataset-name" class="navbar-text">Dataset: (none)</p>
+					</ul>						
+<!-- 						<li><a href='#' id='sample-net' class="control tour-step tour-step-thirteen">Sample from Network  
 							<span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
 						</a></li>
 						<li><a href='#' id='uploadSample' class="control">Learn a Network
@@ -57,7 +108,6 @@
 								</a></li>
           					</ul>
         				</li>
-<!--         				<li><a href='#' id='deleteNet' class="control">Delete Network</a></li>	 -->
 						<li><a href='#' id='downloadImg' class="control">Download PNG
 							<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
 						</a></li>		
@@ -66,36 +116,12 @@
         				<li><a href='#' id='deleteNet' class="control">Delete Network
         					<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
         				</a></li>	
-					</ul>					
+					<!-- </ul>					 -->
 				</div>
 			</div> <!-- container-fluid -->
 		</nav>
 		<div class="container-fluid">
 			<div class="row">
-				<!-- Side menu -->
-<!-- 				<div class="col-sm-3 col-md-2 sidebar-offcanvas tour-step tour-step-two" id="menu" role="navigation"> -->
-					<!-- <ul class="nav nav-sidebar"> -->
-<!-- 						<li><a href='#' id='node-mode' class="tour-step tour-step-five">Add Node</a></li> -->
-<!-- 						<li><a href='#' id='edit-mode' class="tour-step tour-step-nine">Edit Node</a></li> -->
-<!-- 						<li><a href='#' id='conn-mode' class="tour-step tour-step-eight">Add Link</a></li>
-					</ul>
-					<hr> -->
-<!-- 					<ul class="nav nav-sidebar">
-						<li><a href='#' id='sample-net' class="tour-step tour-step-thirteen">Sample from Network</a></li>
-						<li><a href='#' id='uploadSample'>Learn from Sample</a></li>
-						<li><input type="file" id="hidden-upload-2" class="hidden-upload"> </li>				
-					</ul>
-					<hr>
-					<ul class="nav nav-sidebar">
-						<li><a href='#' id='loadNet'>Load Example Network </a></li>
-						<hr>
-						<li><a href='#' id='uploadNet'>Upload Network</a></li>
-						<li><input type="file" id="hidden-upload" class="hidden-upload"> </li>
-						<li><a href='#' id='downloadNet' class="tour-step tour-step-eighteen">Download Network</a></li>
-						<li><a href='#' id='deleteNet'>Delete Network</a></li>	
-						<li><a href='#' id='downloadImg'>Download PNG</a></li>
-					</ul>
-				</div> -->
 				<!-- Workfield -->
 				<!-- col-sm-6 col-md-7 -->
 				<div class="col-sm-8 col-md-8 tour-step tour-step-three" id="workspace"> </div>

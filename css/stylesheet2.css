@@ -136,9 +136,14 @@ hr {
 	height: 328px;
 	overflow: auto;	
 }
+
 .table-bayes {
     /*table-layout: fixed;*/
     /*word-wrap: break-word;*/
+}
+
+.table-dialog {
+	margin-bottom: 0 !important;
 }
 /*TODO combine these with a class and assign the class to the corresponding elements*/
 th {
@@ -305,7 +310,7 @@ path.arrow {
 .instructions-text-title {
 	font-size: 15px;
 	font-family: sans-serif;
-	color : #428bca;
+	color : #0489B1;
 	padding-top: 5px;
 	font-weight:200px;
 }	
@@ -321,11 +326,28 @@ path.arrow {
 	font-size:12px;
 	font-family: sans-serif;
 	/*font-weight: 100;*/
-	color : #428bca;
+	color : #0489B1;
 }
 
 .footer-text {
 	font-size:14px;
 	font-family: sans-serif;
-	color : #428bca;	
+	color : #0489B1;	
+}
+
+.notice-text {
+	font-size: 16px;
+	color:#CC0B7C !important;
+}
+
+/* CSV dialog box*/
+.csv-settings-text {
+	padding-top: 7px;
+	font-size: 16px;
+	color:#0489B1;
+}
+
+input.csv-header {
+	color:#0489B1;
+	text-align: center;
 }

@@ -419,10 +419,13 @@ var nodeMouseDown = function(d){
 	mousedownNode = d;
 
 	// if(connMode) {
-	// 	//reposition the dragline to the center of the node
-	// 	dragline.classed("hidden", false)
-	// 			.attr("d", "M" + d.x + "," + d.y + "L" + d.x + "," + d.y);
-	// }
+	if(selectedNode === d) {
+		//set the connection mode
+		connecting = true;
+		//reposition the dragline to the center of the node
+		dragline.classed("hidden", false)
+				.attr("d", "M" + d.x + "," + d.y + "L" + d.x + "," + d.y);
+	}
 }
 
 var nodeMouseUp = function(d, groupNode){
@@ -433,18 +436,19 @@ var nodeMouseUp = function(d, groupNode){
 		return;
 
 	//TODO remove
-	// dragline.classed("hidden", true);
+	dragline.classed("hidden", true);
 
 	//the node that the mouse is located on on mouseup
 	var mouseupNode = d;
 	//if the mouse has moved to a different node and connection mode is on
 	//add a new edge between these 2 nodes
-	// if(mousedownNode !== mouseupNode) {
+	if(mousedownNode !== mouseupNode && connecting) {
 	// 	if(connMode) {
-	// 		createNewEdge(mousedownNode, mouseupNode);
-	// 		dragged =false;
+			createNewEdge(mousedownNode, mouseupNode);
+			connecting = false;
+			// dragged =false;
 	// 	}
-	// }
+	}
 	//the node on mouse up and on mouse down is the same
 	// 4 possible cases when this could happen
 	// 1. node has been dragged
@@ -452,39 +456,39 @@ var nodeMouseUp = function(d, groupNode){
 	// 3. editNode mode is on and node has been selected for editing - TODO remove
 	// 4. select node
 	// else {
-		if(dragged) {
-			dragged = false;
+	if(dragged) {
+		dragged = false;
+	}
+	else {
+		//select/deselect node
+		if(selectedNode === mousedownNode) {
+			selectedNode = null;
 		}
 		else {
-			//select/deselect node
-			if(selectedNode === mousedownNode) {
-				selectedNode = null;
-			}
-			else {
-				selectedNode = mousedownNode;
-			}
-			selectedPath = null;
-			refresh();
-
-			//hide all linking points - precaution 
-			//alternative -> hide only points that don't belong to the selected node
-			d3.selectAll(".link-node")
-			  .classed("selected", false)
-			  .style("display", "none");
-
-			//display the node info if a node has been selected
-			if (selectedNode) {
-				displayNodeInfo(selectedNode);
-				//TODO display the linking nodes
-				groupNode.selectAll(".link-node")
-				  .classed("selected", true)
-				  .style("display", "initial");
-			}
-			else {
-				//TODO check and remove
-				clearDisplayField();
-			}
+			selectedNode = mousedownNode;
 		}
+		selectedPath = null;
+		refresh();
+
+		//hide all linking points - precaution 
+		//alternative -> hide only points that don't belong to the selected node
+		// d3.selectAll(".link-node")
+		//   .classed("selected", false)
+		//   .style("display", "none");
+
+		//display the node info if a node has been selected
+		if (selectedNode) {
+			displayNodeInfo(selectedNode);
+			//TODO display the linking nodes
+			// groupNode.selectAll(".link-node")
+			//   .classed("selected", true)
+			//   .style("display", "initial");
+		}
+		else {
+			//TODO check and remove
+			clearDisplayField();
+		}
+	}
 	// }
 	
 	mousedownNode = null;
@@ -507,6 +511,18 @@ var addNewNode = function(predefinedCircle) {
 	//refresh to select the node
 	refresh();
 };
+
+var addCsvNode = function(name, values) {
+	//add a new node found from the csv uploaded file
+	//TODO calculate number of unique values
+	var xPos = Math.random() * (svg.attr("width")-radius) + radius,
+		yPos = Math.random() * (svg.attr("height")-radius) + radius,
+		newNode = {id:++lastID, title:name, x:xPos, y:yPos, values:values};
+	nodes.push(newNode);
+	newNode.title = duplicateNodeTitles(newNode.title, newNode);
+	//refresh to add the node ?
+	// refresh();
+}
 
 var nodeMenu = [
 	{

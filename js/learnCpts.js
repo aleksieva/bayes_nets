@@ -1,3 +1,144 @@
+// raw text from the csv
+var rawTxt,
+    csvData,
+    fData;
+
+//format the first 3 rows of the csv data to display in the dialog window
+var tableCsv = function(rows) {
+	var htmlString ='<div class="form-group"><table class="table table-dialog"><tbody>';
+
+	for (var row in rows) {
+		htmlString += '<tr>';
+		for (var item in rows[row]) {
+			htmlString += '<td>' + rows[row][item] + '</td>'
+		}
+		htmlString += '</tr>';
+	}
+
+	htmlString += '</tbody></table></div>';
+	return htmlString;
+};
+
+//add a table with names for the columns to the dialog box
+var columnNames = function(id, firstLine) {	
+	// clear the contents
+	d3.select("#column-names").html("");
+	//label
+	d3.select("#column-names")
+	  .append("label")
+	  .attr("class", "col-md-3 control-label")
+	  .attr("for", "table-node-titles")
+	  .html("Nodes' Titles");
+	// new table 
+	var tblBody = d3.select("#column-names")
+					.append("table")
+					.attr("id", "table-node-titles")
+					.classed("table table-dialog", true)
+					.append("tbody");
+
+	if (id == "yes-header") {
+		for(var name in firstLine) {
+			var row = tblBody.append("tr");
+			var i = parseInt(name) + 1;
+			row.append("td")
+			   .html("Node " + i);
+			row.append("td")
+			   .append("input")
+			   .attr("type", "text")
+			   .attr("class", "csv-header")
+			   .attr("value", firstLine[name]);
+		}
+	}
+	else if (id == "no-header") {
+		for(var i=1; i<=firstLine.length; i++) {
+			var row = tblBody.append("tr");
+			//append the node title
+			row.append("td")
+			   .html("Node " + i);
+			//append the node name cell
+			row.append("td")
+			   .append("input")
+			   .attr("type", "text")
+			   .attr("class", "csv-header")	
+			   .attr("value", "X"+i);
+		}
+	}
+}
+
+//dialog window setting when a csv data file is uploaded
+var datasetDialogSettings = function(filename, table, firstLine) {
+	// var test = firstRow;
+	bootbox.dialog({
+        title: "CSV Dataset Settings",
+        message: '<div class="row">  ' +
+            '<div class="col-md-12"> ' +
+            '<form class="form-horizontal"> ' +
+            
+            '<div class="form-group"> ' +
+            '<label class="col-md-3 control-label" for="datasetName">Dataset: </label> ' +
+            '<div id="datasetName" class="col-md-6 csv-settings-text"> ' + filename + '</div> ' +
+            '</div>' + 
+            table +
+            '<div class="form-group">' +                    
+            '<label class="col-md-4 control-label" for="header">Does the uploaded CSV file have a header?</label> ' +
+            '<div class="col-md-4">' + 
+            '<div class="radio"> <label for="yes-header"> ' +
+            '<input type="radio" name="header" id="yes-header" value="Yes" checked="checked">Yes</label></div>' +
+            '<div class="radio"> <label for="no-header"> ' +
+            '<input type="radio" name="header" id="no-header" value="No">No</label></div>' +
+            '</div></div>' +
+            
+            '<div id="column-names" class="form-group"></div>' +
+            '</form></div></div>',
+        buttons: {
+            success: {
+                label: "Process Data",
+                className: "btn-bayes",
+                callback: function () {
+                	// get the value for the radio button
+                    var headerRadioValue = d3.select("input[name='header']:checked").attr("value")
+                    //get the nodes' names
+                    headers = [];
+                    d3.selectAll("input.csv-header")[0].forEach(function(header) {
+                    	headers.push(header.value);
+                    });
+                	// TODO check for empty and duplicate values 
+
+                	processCsvData(headerRadioValue, headers, firstLine);
+               }
+            }
+        }
+    });
+	d3.select("#yes-header")
+	  .on("click", function() {
+	  	columnNames(this.id, firstLine);
+	  });
+	d3.select("#no-header")
+	  .on("click", function() {
+	  	columnNames(this.id, firstLine);
+	  })
+	document.getElementById("yes-header").click();  
+}
+
+//create nodes based on the dataset
+//node values are the unique values in the dataset for each node  
+var createNodes = function(fdata) {
+	//delete the current network
+	deleteNetwork(false);
+	//clear the dispay field
+	clearDisplayField();
+
+	var colNames = d3.keys(fdata);
+	colNames.forEach(function(name){
+		// find the values that these node can take from the data
+		var nodeValues = _.uniq(fdata[name]);
+		var name = name.charAt(0).toUpperCase() + name.slice(1);
+		//create new node with the column name as title and the possible values it can take
+		addCsvNode(name, nodeValues);
+	});
+	refresh();
+}
+
 var formatUploadSample = function(data) {
 	var formattedData = {};
 	data.forEach(function(row) {
@@ -15,25 +156,48 @@ var formatUploadSample = function(data) {
 	return formattedData;
 }
 
-var checkNamesSample = function(data) {
-	var dataNames = Object.keys(data);
-	var nodesNames = nodes.map(function(node) {return node.title});
-	return _.isEqual(dataNames.sort(), nodesNames.sort());
-}
+// process csv data based on the dialog box settings 
+var processCsvData = function(radioVal, headers, firstLine) {
+	if (radioVal == "Yes") {
+		// compare the headers to the first line of the rawTxt
+		if (headers !== firstLine) {
+			//if different -> replace the first line with the headers
+			rawTxt = rawTxt.replace(firstLine, headers);			 
+		}
+	}
+	else if(radioVal == "No") {
+		rawTxt = headers + '\n' + rawTxt;
+	}
+
+	// parse the updated raw text
+	csvData = d3.csv.parse(rawTxt);
+	//reformat the data
+	fData = formatUploadSample(csvData);
+	//get the variables names and create nodes
+	createNodes(fData);	
+};
+
+// TODO don't need that anymore?
+// var checkNamesSample = function(data) {
+// 	var dataNames = Object.keys(data);
+// 	var nodesNames = nodes.map(function(node) {return node.title});
+// 	return _.isEqual(dataNames.sort(), nodesNames.sort());
+// }
 
 //function to assign suitable values from the sample data to the nodes in the network
-var recalculateValues = function(fdata) {
-	//for each node name in the formatted data
-	for (var nodeName in fdata) {
-		//find if there is a node with that name
-		var node = nodes.filter(function(n) {
-			return n.title === nodeName;
-		})[0];
-		var newValues = _.uniq(fdata[nodeName]);
-		node.values = newValues;
-		createCPT(node);
-	}
-}
+// var recalculateValues = function(fdata) {
+// 	//for each node name in the formatted data
+// 	for (var nodeName in fdata) {
+// 		//find if there is a node with that name
+// 		var node = nodes.filter(function(n) {
+// 			return n.title === nodeName;
+// 		})[0];
+// 		var newValues = _.uniq(fdata[nodeName]);
+// 		node.values = newValues;
+// 		createCPT(node);
+// 	}
+// }
+
 
 var learnCPTSingleNode = function(level, parents, csv, cpt) {
 	if (level === parents.length-1) {
@@ -86,6 +250,7 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 	}
 }
 
+// learn the CPT values for a node based on the data and the current structure 
 var learnCPTValues = function(fdata, csvdata) {
 	for(var key in fdata) {
 		var node = nodes.filter(function(n){
@@ -96,6 +261,66 @@ var learnCPTValues = function(fdata, csvdata) {
 			parents.push(node.id);
 			learnCPTSingleNode(0, parents, csvdata, node.tbl);
 		}
+	}
+}
+
+//remove the success message
+// function used as an argument for the setTimeout
+var removeSuccessMsg = function() {
+	d3.select("#control").select("div.alert-text").remove();
+}
+
+var learnParameters = function() {
+	// if data has not been uploaded, warn the user 
+	if (!csvData || !fData) {
+		bootbox.dialog({
+			message: "Import a CSV dataset before trying to learn the parameters.",
+			buttons: {
+				main: {
+				label: "OK",
+				className: "btn-bayes-short",
+				},
+			}
+		});	
+	}
+	else {
+		//learn the cpt values from the sample data
+		learnCPTValues(fData, csvData);
+
+		// if node table is displayed -> redisplay the updated table
+		var flag = null;
+		if (d3.select("#control").select("h3.node-label")[0][0] !== null) {
+			flag = parseInt(d3.select("#control").select("h3.node-label")[0][0].id);
+		}
+		else {
+			// clear the display field
+			// only clear the display field if it is different from displaying node info
+			clearDisplayField();			
+		}
+
+		//success message
+		var successDiv = control.insert("div", "h3.node-label")
+								.attr("class", "alert-text alert alert-success");
+		successDiv.append("span")
+				 	.attr("class", "glyphicon glyphicon-ok")
+					.attr("aria-hidden", "true");
+		successDiv.append("span")
+					.attr("class", "sr-only")
+					.text("Success");
+		var text = successDiv.html() + " CPT values have been updated successfully.";
+		successDiv.html(text);
+
+		//remove after 3 seconds
+		setTimeout(removeSuccessMsg, 3000);
+
+		//redisplay the table
+		if (flag !== null) {
+			var nodeSelected = nodes.filter(function(node) {
+				return node.id === flag;
+			})[0];
+			displayCPT(nodeSelected);
+			flag=null;
+		}									
 	}
 }
 
@@ -113,24 +338,53 @@ var createMatrixFromCsv = function(csvdata) {
 }
 
 var uploadSample = function(){
-	//if edit node mode - remove tables of the nodes
-	if(editNodeMode) {
-		editNodeEnter();
-	}
-
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
 		var fileReader = new FileReader();
 		var uploadFile = d3.select("#hidden-upload-2").node().files[0];
-		// console.log(uploadFile);
-		// fileReader.readAsText(uploadFile);		
+		//check if it is csv
+		if(!checkUploadFileExtension(uploadFile.type, "text/csv")) {
+			bootbox.dialog({
+			  message: "The uploaded file needs to be .csv",
+			  buttons: {
+			    main: {
+			      label: "OK",
+			      className: "btn-bayes-short",
+			    },
+			  }
+			});					
+			return;
+		}
+
+		//update the dataset name
+		d3.select("#dataset-name")
+		.html("Dataset: " + uploadFile.name)
+		.classed("notice-text", true);
+
 		fileReader.onload = function(event){
-			var txt = fileReader.result;
-			var csvData = d3.csv.parse(txt);
+			rawTxt = fileReader.result;		
+
+			//rows of the csv - no header assumed
+			var rows = d3.csv.parseRows(rawTxt);
+			var tblString = tableCsv(rows.slice(0,3));
+
+			//get settings from the user for the dataset
+			//parameters needed: 
+			// 1)filename
+			// 2)table string of the first 3 rows of the csv
+			// 3)header line
+			var firstLine = rows.slice(0,1)[0];
+			datasetDialogSettings(uploadFile.name, tblString, firstLine);
+
+			//TODO deal with no header csv file
+			// var csvData = d3.csv.parse(rawTxt);
+			//reformat the data
+			// var fData = formatUploadSample(csvData);
+			//get the variables names and create nodes
+			// createNodes(fData);
 
 			// TODO uncomment
 			// Parameters learning 
-			// //reformat the data
-			var fData = formatUploadSample(csvData);
+
 			// //assign the values from the sample to the nodes
 			// var matching = checkNamesSample(fData);
 
@@ -178,7 +432,6 @@ var uploadSample = function(){
 			    },
 			  }
 			});				
-			// alert("Unable to read the file " + uploadFile.fileName);
 		}
 		fileReader.readAsText(uploadFile);		
 
@@ -197,3 +450,8 @@ var uploadSample = function(){
 		});			
 	}
 }
+
+d3.select("#learnParams")
+  .on("click", function(){
+  	learnParameters();
+  });

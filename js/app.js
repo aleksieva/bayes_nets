@@ -25,6 +25,7 @@ var selectedNode,
 //TODO dragged and focused not needed anymore - remove?
 var dragged,
 	zoomed,
+	connecting,
 	focused,
 	uploaded;
 
@@ -136,21 +137,25 @@ var setMode = function(mode){
 
 //handle drag behaviour
 var dragmove = function(d) {
-	//set the state to being dragged
-	dragged = true;
 	//handle when a line is being dragged to connect 2 nodes
 	// if(connMode) {
-	// 	dragline.attr("d", "M" + d.x + "," + d.y + "L" + d3.mouse(graph.node())[0] + "," + d3.mouse(graph.node())[1]);
-	// }
+	if(selectedNode === d && connecting) {
+		// connecting = true;
+		//display the dragline
+		dragline.attr("d", "M" + d.x + "," + d.y + "L" + d3.mouse(graph.node())[0] + "," + d3.mouse(graph.node())[1]);
+	}
 	// //handle node dragging
-	// else {
+	else {
+		//set the state to being dragged
+		dragged = true;			
+		//move the node
 		d.x += d3.event.dx;
 		d.y += d3.event.dy;
 		//disable dragging out of boundaries
 		// d.x = Math.min(width-radius, Math.max(d.x, radius));
 		// d.y = Math.min(height-radius, Math.max(d.y, radius));
 		refresh();		
-	// }
+	}
 };
 
 var drag = d3.behavior.drag()
@@ -262,184 +267,141 @@ var displayAbout = function() {
 		   .html("If there is a network with known structure but not known probabilities for the random variables, sample data can be used to learn the probabilities for the network.")
 }
 
-//display instructions for edit node mode
-// var editNodeEnter = function() {
-// 	if(editNodeMode) {
-// 		//clear display
-// 		clearDisplayField();
-// 		//remove select from node && path
-// 		selectedNode = null;
-// 		selectedPath = null;
-// 		refresh();
-
-// 		//instructions
-// 		control.append("p")
-// 			   .classed("help-text", true)
-// 			   .text("Select a node to edit.");
-// 	}
-// }
-
-// //display instructions for add node mode
-// var addNodeEnter = function() {
-// 	if(nodeMode) {
-// 		//clear display
-// 		clearDisplayField();
-
-// 		//instructions
-// 		control.append("p")
-// 			   .classed("help-text", true)
-// 			   .text("Click on the work field to add a new node.");		
-// 	}
-// }
-
-//display instructions for add node mode
-// var addLinkEnter = function() {
-// 	if(connMode) {
-// 		//clear display
-// 		clearDisplayField();
-
-// 		//instructions
-// 		control.append("p")
-// 			   .classed("help-text", true)
-// 			   .text("Drag from one node to another to place a link between them.");		
-// 	}
+// var dragconnect = function (d) {
+// 	// TODO new 
+// 	// dragged = true;
+// 	// console.log(d);
+// 	//set the start point to be the center of the linking node
+// 	var cx = d.x + parseInt(d3.select(this).attr("cx"));
+// 	var cy = d.y + parseInt(d3.select(this).attr("cy"));
+// 	//handle when a line is being dragged to connect 2 nodes
+// 	//update the line based on the mouse coordinates
+// 	dragline.attr("d", "M" + cx + "," + cy + "L" + d3.mouse(graph.node())[0] + "," + d3.mouse(graph.node())[1]);
+// 	// display the other linking nodes
+// 	d3.selectAll("circle.link-node")
+// 	  .filter(function() {
+// 	  	return d3.select(this).attr("class") !== "link-node selected";
+// 	  })
+// 	  .style("display", "initial");
 // };
 
-var dragconnect = function (d) {
-	// TODO new 
-	// dragged = true;
-	// console.log(d);
-	//set the start point to be the center of the linking node
-	var cx = d.x + parseInt(d3.select(this).attr("cx"));
-	var cy = d.y + parseInt(d3.select(this).attr("cy"));
-	//handle when a line is being dragged to connect 2 nodes
-	//update the line based on the mouse coordinates
-	dragline.attr("d", "M" + cx + "," + cy + "L" + d3.mouse(graph.node())[0] + "," + d3.mouse(graph.node())[1]);
-	// display the other linking nodes
-	d3.selectAll("circle.link-node")
-	  .filter(function() {
-	  	return d3.select(this).attr("class") !== "link-node selected";
-	  })
-	  .style("display", "initial");
-};
+// var dragLink = d3.behavior.drag()
+// 			 .origin(function(d){
+// 			 	// console.log(this);
+// 			 	return {x: d.x + parseInt(d3.select(this).attr("cx")), y: d.y + parseInt(d3.select(this).attr("cy"))};
+// 			 	// return {x: d.x, y:d.y};
+// 			 })
+// 			 .on("dragstart", function(){
+// 			 	d3.event.sourceEvent.stopPropagation();
+// 			 	svg.style("cursor", "pointer");
+// 			 })
+// 			 .on("drag", dragconnect)
+// 			 .on("dragend", function(){
+// 			 	svg.style("cursor", "default");
+// 			 });
 
-var dragLink = d3.behavior.drag()
-			 .origin(function(d){
-			 	// console.log(this);
-			 	return {x: d.x + parseInt(d3.select(this).attr("cx")), y: d.y + parseInt(d3.select(this).attr("cy"))};
-			 	// return {x: d.x, y:d.y};
-			 })
-			 .on("dragstart", function(){
-			 	d3.event.sourceEvent.stopPropagation();
-			 	svg.style("cursor", "pointer");
-			 })
-			 .on("drag", dragconnect)
-			 .on("dragend", function(){
-			 	svg.style("cursor", "default");
-			 });
+// // var linkDownCircle = null;
+// // var linkUpCircle = null;
+// var linkDownNode = null;
+// var linkUpNode = null;			 
+// var linkNodeMouseDown = function (d, point) {
+// 	//set the starting node and linking circle
+// 	linkDownNode = d;
+// 	// linkDownCircle = point;
 
-// var linkDownCircle = null;
-// var linkUpCircle = null;
-var linkDownNode = null;
-var linkUpNode = null;			 
-var linkNodeMouseDown = function (d, point) {
-	//set the starting node and linking circle
-	linkDownNode = d;
-	// linkDownCircle = point;
+// 	var cx = d.x + parseInt(point.attr("cx"));
+// 	var cy = d.y + parseInt(point.attr("cy"));
+// 	dragline.classed("hidden", false)
+// 			.attr("d", "M" + cx + "," + cy + "L" + (cx + 10) + "," + (cy + 10));
+// };
 
-	var cx = d.x + parseInt(point.attr("cx"));
-	var cy = d.y + parseInt(point.attr("cy"));
-	dragline.classed("hidden", false)
-			.attr("d", "M" + cx + "," + cy + "L" + (cx + 10) + "," + (cy + 10));
-};
+// var linkNodeMouseUp = function (d, point) {
+// 	if(!linkDownNode)
+// 		return;
 
-var linkNodeMouseUp = function (d, point) {
-	if(!linkDownNode)
-		return;
+// 	dragline.classed("hidden", true);
 
-	dragline.classed("hidden", true);
+// 	//the node that the mouse is located on on mouseup
+// 	linkUpNode = d;
+// 	//the specific linking circle the mouse is located on mouse up
+// 	// linkUpCircle = point;
 
-	//the node that the mouse is located on on mouseup
-	linkUpNode = d;
-	//the specific linking circle the mouse is located on mouse up
-	// linkUpCircle = point;
+// 	//if the mouse has moved to a different circle
+// 	//add a new edge between these 2 nodes
+// 	if(linkDownNode !== linkUpNode) {
+// 			// create an edge
+// 			createNewEdge(linkDownNode, linkUpNode);
+// 			// dragged =false;
+// 	}
 
-	//if the mouse has moved to a different circle
-	//add a new edge between these 2 nodes
-	if(linkDownNode !== linkUpNode) {
-			// create an edge
-			createNewEdge(linkDownNode, linkUpNode);
-			// dragged =false;
-	}
+// 	//hide only the ones that don't belong to the selected node
+// 	d3.selectAll("circle.link-node")
+// 	  .filter(function() {
+// 	  	return d3.select(this).attr("class") !== "link-node selected";
+// 	  })
+// 	  .style("display", "none");
+// }
 
-	//hide only the ones that don't belong to the selected node
-	d3.selectAll("circle.link-node")
-	  .filter(function() {
-	  	return d3.select(this).attr("class") !== "link-node selected";
-	  })
-	  .style("display", "none");
-}
-
-var addLinkingPoints = function(circleGroup) {
-    var smallR = 3;
-    circleGroup.append("circle")
-    			.attr("r", smallR)
-    			.attr("cx", 17)
-    			.attr("cy", 17)
-    			.classed("link-node", true)
-    			.style("display", "none")
-    			.on("mousedown", function(d) {
-    				d3.event.stopPropagation();
-    				linkNodeMouseDown(d, d3.select(this));
-    			})
-    			.on("mouseup", function(d) {
-    				linkNodeMouseUp(d, d3.select(this));
-    			})
-    			.call(dragLink);
-    circleGroup.append("circle")
-    			.attr("r", smallR)
-    			.attr("cx", -17)
-    			.attr("cy", 17)
-    			.classed("link-node", true)
-    			.style("display", "none")
-    			.on("mousedown", function(d) {
-    				d3.event.stopPropagation();
-    				linkNodeMouseDown(d, d3.select(this));
-    			})
-    			.on("mouseup", function(d) {
-    				d3.event.stopPropagation();
-    				linkNodeMouseUp(d, d3.select(this));
-    			})
-    			.call(dragLink);    			    
-    circleGroup.append("circle")
-    			.attr("r", smallR)
-    			.attr("cx", -17)
-    			.attr("cy", -17)
-    			.classed("link-node", true)
-    			.style("display", "none")
-    			.on("mousedown", function(d) {
-    				d3.event.stopPropagation();
-    				linkNodeMouseDown(d, d3.select(this));
-    			})
-    			.on("mouseup", function(d) {
-    				linkNodeMouseUp(d, d3.select(this));
-    			})
-    			.call(dragLink);    			   			
-    circleGroup.append("circle")
-    			.attr("r", smallR)
-    			.attr("cx", 17)
-    			.attr("cy", -17)
-    			.classed("link-node", true)
-    			.style("display", "none")
-    			.on("mousedown", function(d) {
-    				d3.event.stopPropagation();
-    				linkNodeMouseDown(d, d3.select(this));
-    			})
-    			.on("mouseup", function(d) {
-    				linkNodeMouseUp(d, d3.select(this));
-    			})
-    			.call(dragLink);    			
-}
+// var addLinkingPoints = function(circleGroup) {
+//     var smallR = 3;
+//     circleGroup.append("circle")
+//     			.attr("r", smallR)
+//     			.attr("cx", 17)
+//     			.attr("cy", 17)
+//     			.classed("link-node", true)
+//     			.style("display", "none")
+//     			.on("mousedown", function(d) {
+//     				d3.event.stopPropagation();
+//     				linkNodeMouseDown(d, d3.select(this));
+//     			})
+//     			.on("mouseup", function(d) {
+//     				linkNodeMouseUp(d, d3.select(this));
+//     			})
+//     			.call(dragLink);
+//     circleGroup.append("circle")
+//     			.attr("r", smallR)
+//     			.attr("cx", -17)
+//     			.attr("cy", 17)
+//     			.classed("link-node", true)
+//     			.style("display", "none")
+//     			.on("mousedown", function(d) {
+//     				d3.event.stopPropagation();
+//     				linkNodeMouseDown(d, d3.select(this));
+//     			})
+//     			.on("mouseup", function(d) {
+//     				d3.event.stopPropagation();
+//     				linkNodeMouseUp(d, d3.select(this));
+//     			})
+//     			.call(dragLink);    			    
+//     circleGroup.append("circle")
+//     			.attr("r", smallR)
+//     			.attr("cx", -17)
+//     			.attr("cy", -17)
+//     			.classed("link-node", true)
+//     			.style("display", "none")
+//     			.on("mousedown", function(d) {
+//     				d3.event.stopPropagation();
+//     				linkNodeMouseDown(d, d3.select(this));
+//     			})
+//     			.on("mouseup", function(d) {
+//     				linkNodeMouseUp(d, d3.select(this));
+//     			})
+//     			.call(dragLink);    			   			
+//     circleGroup.append("circle")
+//     			.attr("r", smallR)
+//     			.attr("cx", 17)
+//     			.attr("cy", -17)
+//     			.classed("link-node", true)
+//     			.style("display", "none")
+//     			.on("mousedown", function(d) {
+//     				d3.event.stopPropagation();
+//     				linkNodeMouseDown(d, d3.select(this));
+//     			})
+//     			.on("mouseup", function(d) {
+//     				linkNodeMouseUp(d, d3.select(this));
+//     			})
+//     			.call(dragLink);    			
+// }
 
 var refresh = function(){
 	//data for the paths
@@ -576,61 +538,46 @@ var refresh = function(){
 
     //TODO
     //add linking points
-    addLinkingPoints(circleGroup);
+    // addLinkingPoints(circleGroup);
    			    			    			    			
     //remove old circles
-    circles.exit().remove();		   
+    circles.exit().remove();	   
 };
+
+//on double click on the canvas, create a new node
+var svgDblClick = function(){
+	addNewNode();
+	//when a new node is added, display its info
+	displayNodeInfo(selectedNode);
+}
 
 var svgMouseDown = function(){
-	addNewNode();
-	//when a new node is added get out of add node mode and go to edit mode for this node
-	displayNodeInfo(selectedNode);
-};
-
-var svgMouseUp = function(){
-	//TODO change
-	if(linkDownNode) {
-	// if(mousedownNode && connMode) {
-		dragline.classed("hidden", true);
-		d3.selectAll("circle.link-node")
-		  .filter(function() {
-		  	return d3.select(this).attr("class") !== "link-node selected";
-		  })
-		  .style("display", "none");
+	// deselect a selected node
+	if(selectedNode) {
+		selectedNode = null;
+		refresh();
+		clearDisplayField();
 	}
 };
 
-// var keyDown = function() {
-// 	if(pressedKey !== -1)
-// 	  return;
-// 	pressedKey = d3.event.keyCode;
+var svgMouseUp = function(){
+	// //TODO change
+	// if(linkDownNode) {
+	// // if(mousedownNode && connMode) {
+	// 	dragline.classed("hidden", true);
+	// 	d3.selectAll("circle.link-node")
+	// 	  .filter(function() {
+	// 	  	return d3.select(this).attr("class") !== "link-node selected";
+	// 	  })
+	// 	  .style("display", "none");
+	// }
 
-// 	switch(pressedKey) {
-// 		case constants.BACKSPACE:
-// 		case constants.DELETE:
-// 			if(focused) {
-// 				//prevent default only for these keys
-// 				d3.event.preventDefault();
-// 				if(selectedNode) {
-// 					deleteNode(selectedNode);
-// 				}
-// 				else if(selectedPath) {
-// 					deleteEdge(selectedPath);
-// 				}
-//       			selectedNode = null;
-//       			selectedPath = null;
-//       			refresh();
-// 			}
-
-//       break;
-// 	}
-// };
-
-// var keyUp = function() {
-// 	//reset
-// 	pressedKey = -1;
-// };
+	//if in conn mode, discard the dragline
+	if(connecting) {
+		dragline.classed("hidden", true);
+		connecting=false;
+	}
+};
 
 var deleteNetwork = function(isConfirm) {
 	if(isConfirm) {
@@ -639,6 +586,7 @@ var deleteNetwork = function(isConfirm) {
 	  		if(result) {
 				nodes = [];
 				edges = [];
+				lastID = 0;
 				refresh();	  			
 	  		}
 		});		
@@ -646,6 +594,7 @@ var deleteNetwork = function(isConfirm) {
 	else {
 		nodes = [];
 		edges = [];
+		lastID = 0;
 		refresh();		
 	}
 }
@@ -685,6 +634,10 @@ var specifyDownloadName = function(mode, ext, samples) {
 	  }
 	});
 };
+
+var checkUploadFileExtension = function(filetype, extension) {
+	return filetype == extension;
+}
 
 var downloadNetwork = function(filename){
 	var compactEdges = []
@@ -726,6 +679,20 @@ var uploadNetwork = function(){
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
 		var fileReader = new FileReader();
 		var uploadFile = d3.select("#hidden-upload").node().files[0];
+
+		//check if it is the correct file type 
+		if(!checkUploadFileExtension(uploadFile.type, "application/json")) {
+			bootbox.dialog({
+			  message: "The uploaded file needs to be .json",
+			  buttons: {
+			    main: {
+			      label: "OK",
+			      className: "btn-bayes-short",
+			    },
+			  }
+			});					
+			return;
+		}
 
 		fileReader.onload = function(){
 			var txt = fileReader.result;
@@ -953,6 +920,7 @@ var init = function() {
 	//status states
 	dragged = false;
 	zoomed = false;
+	connecting = false;
 	focused = false;
 	uploaded = false;
 	
@@ -1017,7 +985,8 @@ var init = function() {
 				 	.style("marker-end", "url(#dragline-arrow)");	
 
 	// svg.on("mousedown", svgMouseDown)
-	svg.on("dblclick", svgMouseDown)
+	svg.on("dblclick", svgDblClick)
+	   .on("mousedown", svgMouseDown)
 	   .on("mouseup", svgMouseUp)
 	   .on("mouseover", function() {
 		   focused = true;
@@ -1028,29 +997,6 @@ var init = function() {
 	   .call(zoom); 
 	svg.on("dblclick.zoom", null);
 
-	//TODO get rid of?
-	// //key up and down events
-	// d3.select(window)
-	//   .on("keydown", keyDown)
-	//   .on("keyup", keyUp);
-
-	//TODO get rid of 
-	//button controls
-	// d3.select("#node-mode")
-	//   .on("click", function(){
-	//   	setMode("node");
-	//   	addNodeEnter();
-	//   });
-	// d3.select("#conn-mode")
-	//   .on("click", function(){
-	//   	setMode("conn");
-	//   	addLinkEnter();
-	//   })
-	// d3.select("#edit-mode")
-	//   .on("click", function() {
-	//   	setMode("edit");
-	//   	editNodeEnter();
-	//   });
 	d3.select("#downloadNet")
 	  .on("click", function() {
 	  	specifyDownloadName(1, ".json");
