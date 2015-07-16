@@ -1044,6 +1044,12 @@ var init = function() {
 	  	specifyDownloadName(3, ".png");
 	  });
 
+	// try to learn the parameters
+	d3.select("#learnParams")
+	  .on("click", function(){
+	  	learnParameters();
+	  });
+	  
 	//display zoom scale
 	d3.select("#workspace")
 	  .append("p")

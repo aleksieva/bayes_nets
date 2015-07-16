@@ -8,7 +8,6 @@ var multipleLinesText = function(text, d3elem) {
 	var txtElem = d3elem.append("text")
 						.attr("class", "node-title")
 						.attr("text-anchor", "middle")
-						//TODO change
 			            .attr("dy", "-" + (wordsLines.length-1)*7.5);
 
 	for (var i=0; i<wordsLines.length; i++) {
@@ -39,6 +38,63 @@ var duplicateNodeTitles = function(newTitle, node) {
 	} while(flag);
 
 	return name;
+}
+
+// editable h3 node label
+var editableNodeLabel = function(node) {
+	//append node title
+	control.append("h3")
+		   .text(node.title)
+		   .classed("node-label", true)
+		   .attr("id", node.id)
+		   .on("click", function() {
+		   	//on click of the label - hide it and show the input text field
+		   	d3.select(this)
+		   	  .style("display", "none");
+		   	d3.select("#edit-node-input")
+		   	  .style("display", "initial")
+		   	  .node().focus();
+		   });
+
+	//append input field for user to be able to edit the node name from
+	//TODO shorter + limited number of symbols - 50/30?
+	control.append("input")
+		   .classed("node-input", true)
+		   .attr("id", "edit-node-input")
+		   .attr("type", "text")
+		   .attr("value", node.title)
+		   .style("display", "none")
+		   .on("keypress", function() {
+				if(d3.event.keyCode === constants.ENTER) {
+					d3.event.preventDefault();
+					this.blur();
+				}
+		   })
+		   .on("blur", function(){
+
+		   		//if it is not an empty string -> update the node's title
+				if(!isEmptyString(this.value)) {
+ 					node.title = this.value.trim();
+ 					//capitalize every node title
+ 					node.title = node.title.charAt(0).toUpperCase() + node.title.slice(1);
+ 					//check for duplicates
+ 					node.title = duplicateNodeTitles(node.title, node);
+					   	
+					var circleElem = d3.selectAll(".node")
+									.filter(function(n) { 
+										return (n.id === node.id)
+									});
+					//update the circle title
+					multipleLinesText(node.title, circleElem);
+					//update and display the label
+					d3.select("h3.node-label")
+					  .text(node.title)
+					  .style("display", "initial");
+					//hide the input
+					d3.select(this)
+					  .style("display", "none");
+				}
+		   });	
 }
 
 //append number of input fields depending on the value of input type number
@@ -76,8 +132,7 @@ var appendNodeValues = function(num) {
 	  	//updateValue
    	 	// updateSingleValue(this, d);
 
-	  })
-	
+	  });	
 }
 
 var appendNodeValue = function() {
@@ -320,61 +375,8 @@ var displayNodeOption = function(option, node) {
 var displayNodeInfo = function(node) {
 	clearDisplayField();
 
-	//append node title
-	control.append("h3")
-		   .text(node.title)
-		   .classed("node-label", true)
-		   .attr("id", node.id)
-		   .on("click", function() {
-		   	//on click of the label - hide it and show the input text field
-		   	d3.select(this)
-		   	  .style("display", "none");
-		   	d3.select("#edit-node-input")
-		   	  .style("display", "initial")
-		   	  .node().focus();
-		   });
-
-	//append input field for user to be able to edit the node name from
-	//TODO shorter + limited number of symbols - 50/30?
-	control.append("input")
-		   .classed("node-input", true)
-		   .attr("id", "edit-node-input")
-		   .attr("type", "text")
-		   .attr("value", node.title)
-		   .style("display", "none")
-		   .on("keypress", function() {
-				if(d3.event.keyCode === constants.ENTER) {
-					d3.event.preventDefault();
-					this.blur();
-				}
-		   })
-		   .on("blur", function(){
-
-		   		//if it is not an empty string -> update the node's title
-				if(!isEmptyString(this.value)) {
- 					node.title = this.value.trim();
- 					//capitalize every node title
- 					node.title = node.title.charAt(0).toUpperCase() + node.title.slice(1);
- 					//check for duplicates
- 					node.title = duplicateNodeTitles(node.title, node);
-					   	
-					var circleElem = d3.selectAll(".node")
-									.filter(function(n) { 
-										return (n.id === node.id)
-									});
-					//update the circle title
-					multipleLinesText(node.title, circleElem);
-					//update and display the label
-					d3.select("h3.node-label")
-					  .text(node.title)
-					  .style("display", "initial");
-					//hide the input
-					d3.select(this)
-					  .style("display", "none");
-				}
-		   });
-
-
+	// node label
+	editableNodeLabel(node);	
 	control.append("hr");
 
 	//append select for different options

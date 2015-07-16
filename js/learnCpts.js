@@ -100,7 +100,7 @@ var datasetDialogSettings = function(filename, table, firstLine) {
                     //get the nodes' names
                     headers = [];
                     d3.selectAll("input.csv-header")[0].forEach(function(header) {
-                    	headers.push(header.value);
+                    	headers.push(header.value.charAt(0).toUpperCase() + header.value.slice(1));
                     });
                 	// TODO check for empty and duplicate values 
 
@@ -176,28 +176,6 @@ var processCsvData = function(radioVal, headers, firstLine) {
 	//get the variables names and create nodes
 	createNodes(fData);	
 };
-
-// TODO don't need that anymore?
-// var checkNamesSample = function(data) {
-// 	var dataNames = Object.keys(data);
-// 	var nodesNames = nodes.map(function(node) {return node.title});
-// 	return _.isEqual(dataNames.sort(), nodesNames.sort());
-// }
-
-//function to assign suitable values from the sample data to the nodes in the network
-// var recalculateValues = function(fdata) {
-// 	//for each node name in the formatted data
-// 	for (var nodeName in fdata) {
-// 		//find if there is a node with that name
-// 		var node = nodes.filter(function(n) {
-// 			return n.title === nodeName;
-// 		})[0];
-// 		var newValues = _.uniq(fdata[nodeName]);
-// 		node.values = newValues;
-// 		createCPT(node);
-// 	}
-// }
-
 
 var learnCPTSingleNode = function(level, parents, csv, cpt) {
 	if (level === parents.length-1) {
@@ -374,52 +352,6 @@ var uploadSample = function(){
 			// 3)header line
 			var firstLine = rows.slice(0,1)[0];
 			datasetDialogSettings(uploadFile.name, tblString, firstLine);
-
-			//TODO deal with no header csv file
-			// var csvData = d3.csv.parse(rawTxt);
-			//reformat the data
-			// var fData = formatUploadSample(csvData);
-			//get the variables names and create nodes
-			// createNodes(fData);
-
-			// TODO uncomment
-			// Parameters learning 
-
-			// //assign the values from the sample to the nodes
-			// var matching = checkNamesSample(fData);
-
-			// clearDisplayField();
-			// if(matching) {
-			// 	//recalculate the cpts
-			// 	recalculateValues(fData);
-			// 	//learn the cpt values from the sample data
-			// 	learnCPTValues(fData, csvData);
-
-			// 	//success message
-			// 	var successDiv = control.append("div")
-			// 							.attr("class", "alert-text alert alert-success");
-			// 	successDiv.append("span")
-			// 			 	.attr("class", "glyphicon glyphicon-ok")
-			// 				.attr("aria-hidden", "true");
-			// 	successDiv.append("span")
-			// 				.attr("class", "sr-only")
-			// 				.text("Success");
-			// 	var text = successDiv.html() + " CPT values have been succesfully learned.";
-			// 	successDiv.html(text);							
-			// }
-			// else {
-			// 	//error message
-			// 	var errorDiv = control.append("div")
-			// 				   .attr("class", "alert-text alert alert-danger");
-			// 	errorDiv.append("span")
-			// 			.attr("class", "glyphicon glyphicon-exclamation-sign")
-			// 			.attr("aria-hidden", "true");
-			// 	errorDiv.append("span")
-			// 			.attr("class", "sr-only")
-			// 			.text("Error");
-			// 	var text = errorDiv.html() + " The node names in the uploaded sample data do not match the node names in the current network.";
-			// 	errorDiv.html(text);				
-			// }
 		
 		}
 		fileReader.onerror = function() {
@@ -450,8 +382,3 @@ var uploadSample = function(){
 		});			
 	}
 }
-
-d3.select("#learnParams")
-  .on("click", function(){
-  	learnParameters();
-  });

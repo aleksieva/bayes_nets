@@ -141,7 +141,7 @@ var updateCell = function(cell, node){
     if(node.values.length === 2) {
     	allCells.forEach(function(c) {
     		if(c !== cell.node()) {
-    			c.value = (1 - parseFloat(cell.node().value)).toFixed(cell.node().value.length -2);
+    			c.value = (1 - parseFloat(cell.node().value)).toFixed(cell.node().value.split(".")[1].length);
     		}
     	});
     }	
