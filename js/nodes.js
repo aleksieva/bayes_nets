@@ -71,9 +71,9 @@ var editableNodeLabel = function(node) {
 				}
 		   })
 		   .on("blur", function(){
-
 		   		//if it is not an empty string -> update the node's title
 				if(!isEmptyString(this.value)) {
+					var prevTitle = node.title;
  					node.title = this.value.trim();
  					//capitalize every node title
  					node.title = node.title.charAt(0).toUpperCase() + node.title.slice(1);
@@ -93,6 +93,13 @@ var editableNodeLabel = function(node) {
 					//hide the input
 					d3.select(this)
 					  .style("display", "none");
+					// update the cpt
+					// TODO
+
+					// if csv data is set update the csv column name
+					if(csvData.length !== 0) {
+						// TODO
+					}
 				}
 		   });	
 }
@@ -514,16 +521,14 @@ var addNewNode = function(predefinedCircle) {
 	refresh();
 };
 
-var addCsvNode = function(name, values) {
+var addCsvNode = function(name, values, data) {
 	//add a new node found from the csv uploaded file
-	//TODO calculate number of unique values
 	var xPos = Math.random() * (svg.attr("width")-radius) + radius,
 		yPos = Math.random() * (svg.attr("height")-radius) + radius,
-		newNode = {id:++lastID, title:name, x:xPos, y:yPos, values:values};
+		newNode = {id:++lastID, title:name, x:xPos, y:yPos, values:values};		
+		// newNode = {id:++lastID, title:name, x:xPos, y:yPos, values:values, csvData:data};
 	nodes.push(newNode);
 	newNode.title = duplicateNodeTitles(newNode.title, newNode);
-	//refresh to add the node ?
-	// refresh();
 }
 
 var nodeMenu = [

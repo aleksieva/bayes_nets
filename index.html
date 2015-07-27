@@ -34,6 +34,7 @@
 				</div> 
 				<div class="navbar-collapse collapse"> <!-- id=menu? -->
 					<ul class="nav navbar-nav">
+						<!-- My Network -->
 						<li class="dropdown">
 							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My Network<span class="caret"></span></a>
           					<ul class="dropdown-menu">
@@ -60,6 +61,7 @@
 		        				</a></li>	
           					</ul>							
 						</li>
+						<!-- Datasets -->
 						<li class="dropdown">
 							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Choose Data<span class="caret"></span></a>
 							<ul class="dropdown-menu">
@@ -71,10 +73,11 @@
 								</a></li>								
 							</ul>
 						</li>
+						<!-- Learning -->
 						<li class="dropdown">
 							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Learn<span class="caret"></span></a>
 							<ul class="dropdown-menu">
-								<li><a href='#' id='learnStructure' class="control">Learn Structure
+								<li><a href='#' id='learnStruct' class="control">Learn Structure
 								</a></li>
 								<li><a href='#' id='learnParams' class="control">Learn Parameters
 								</a></li>	
@@ -82,41 +85,9 @@
 						</li>												
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-					<!-- TODO change the text on data upload -->
+					<!-- change the text on data upload -->
 						<p id="dataset-name" class="navbar-text">Dataset: (none)</p>
-					</ul>						
-<!-- 						<li><a href='#' id='sample-net' class="control tour-step tour-step-thirteen">Sample from Network  
-							<span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
-						</a></li>
-						<li><a href='#' id='uploadSample' class="control">Learn a Network
-							<span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-						</a></li>
-						<li><input type="file" id="hidden-upload-2" class="hidden-upload"> </li>
-						<li class="dropdown">
-          					<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">External Nets<span class="caret"></span></a>
-          					<ul class="dropdown-menu">
-            					<li><a href='#' id='loadNet' class="control">Load Example Network
-            						<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
-            					</a></li>
-            					<li role="separator" class="divider"></li>
-            					<li><a href='#' id='uploadNet' class="control">Upload Network
-            						<span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
-            					</a></li>
-								<li><input type="file" id="hidden-upload" class="hidden-upload"> </li>            					
-								<li><a href='#' id='downloadNet' class="control tour-step tour-step-eighteen">Download Network
-									<span class="glyphicon glyphicon-download" aria-hidden="true"></span>
-								</a></li>
-          					</ul>
-        				</li>
-						<li><a href='#' id='downloadImg' class="control">Download PNG
-							<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-						</a></li>		
 					</ul>
-					<ul class="nav navbar-nav navbar-right">
-        				<li><a href='#' id='deleteNet' class="control">Delete Network
-        					<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-        				</a></li>	
-					<!-- </ul>					 -->
 				</div>
 			</div> <!-- container-fluid -->
 		</nav>
@@ -149,12 +120,15 @@
 		<script src="lib/saveSvgAsPng.js"></script>
 		<script src="lib/d3-context-menu-master/js/d3-context-menu.js"></script>
 		<script src="lib/math-1.7.0.min.js"></script>
+		<script src="lib/combinations.js"></script>
+		<script src="lib/statistics-distributions.js"></script>
 		<script src="js/cpts.js"></script>	
 		<script src="js/edges.js"></script>		
 		<script src="js/nodes.js"></script>		
 		<script src="js/app.js"></script>
 		<script src="js/sampling.js"></script>
-		<script src="js/learnCpts.js"></script> 
+		<script src="js/learnCpts.js"></script>
+		<script src="js/learnStruct.js"></script> 
 		<script src="js/tour.js"></script>		
 
 	</body>

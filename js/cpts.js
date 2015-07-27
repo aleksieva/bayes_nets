@@ -141,6 +141,8 @@ var updateCell = function(cell, node){
     if(node.values.length === 2) {
     	allCells.forEach(function(c) {
     		if(c !== cell.node()) {
+    			// (q- value * q) /q
+    			// c.value = (10 - parseFloat(cell.node().value)*10)/10;
     			c.value = (1 - parseFloat(cell.node().value)).toFixed(cell.node().value.split(".")[1].length);
     		}
     	});
@@ -353,14 +355,14 @@ var displayCPT = function(d) {
 
 var recalculateCPT = function(edgesArray, sourceNode) {
 	var targetNodes = [];
-	console.log(edgesArray);
-	console.log(sourceNode);
+	// console.log(edgesArray);
+	// console.log(sourceNode);
 	for (var edge in edgesArray) {
 		if (edgesArray[edge].source === sourceNode) {
 			targetNodes.push(edgesArray[edge].target);
 		}
 	}
-	console.log(targetNodes);
+	// console.log(targetNodes);
 	for (var tn in targetNodes) {
 		createCPT(targetNodes[tn]);
 	}

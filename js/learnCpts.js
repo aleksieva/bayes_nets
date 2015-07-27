@@ -128,14 +128,20 @@ var createNodes = function(fdata) {
 	//clear the dispay field
 	clearDisplayField();
 
+	//create nodes - get the name and the possible values for each node from the fData
 	var colNames = d3.keys(fdata);
 	colNames.forEach(function(name){
 		// find the values that these node can take from the data
 		var nodeValues = _.uniq(fdata[name]);
+		// get the data for this node
+		var data = fdata[name];
 		var name = name.charAt(0).toUpperCase() + name.slice(1);
 		//create new node with the column name as title and the possible values it can take
 		addCsvNode(name, nodeValues);
+		// TODO map the data to each node
+		// addCsvNode(name, nodeValues, data);
 	});
+
 	refresh();
 }
 
@@ -177,7 +183,8 @@ var processCsvData = function(radioVal, headers, firstLine) {
 	createNodes(fData);	
 };
 
-var learnCPTSingleNode = function(level, parents, csv, cpt) {
+// var learnCPTSingleNode = function(level, parents, indexes, cpt) {
+var learnCPTSingleNode = function(level, parents, csv, cpt) {	
 	if (level === parents.length-1) {
 		var leafId = parents[level];
 
@@ -187,12 +194,22 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 		var values = leaf.values;
 
 		values.forEach(function(value) {
+			// TODO remove
 			var occurrences = _.filter(csv, function(row) {
 				return row[leaf.title] === value;
 			});
+			var numOccurrences = _.filter(leaf.csvData, function(rowVal) {
+				return rowVal === value;
+			}).length;
+			// var occurrences = [];
+			// leaf.csvData.forEach(function(val, i) {
+			// 	if(val == value && _.contains(indexes,i)) {
+			// 		occurrences.push(i);
+			// 	}
+			// })
 			var entry = leafId + value;
-			cpt[entry] = occurrences.length / csv.length
-
+			// cpt[entry] = numOccurrences / leaf.csvData.length
+			cpt[entry] = occurrences.length / csv.length;
 		});
 	}
 	else if(level < parents.length-1) {
@@ -208,11 +225,19 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 
 		//go through each value
 		values.forEach(function(value){
+			// TODO remove
 			var occurrences = _.filter(csv, function(row){
 				return row[parent.title] === value;
 			});
 			var entry = parentId + value;
 			learnCPTSingleNode(level, parents, occurrences, cpt[entry]);
+			// var newIndexes = [];
+			// parent.csvData.forEach(function(val, i) {
+			// 	if(val == value && _.contains(indexes,i)) {
+			// 		newIndexes.push(i);
+			// 	}
+			// });
+			// learnCPTSingleNode(level, parents, newIndexes, cpt[entry]);
 		});
 	}
 	else {
@@ -229,17 +254,26 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 }
 
 // learn the CPT values for a node based on the data and the current structure 
-var learnCPTValues = function(fdata, csvdata) {
-	for(var key in fdata) {
+var learnCPTValues = function() {
+	// TODO remove
+	for(var key in fData) {
 		var node = nodes.filter(function(n){
 			return n.title === key;
 		})[0];
 		if(node) {
 			var parents = getNodeParents(node);
 			parents.push(node.id);
-			learnCPTSingleNode(0, parents, csvdata, node.tbl);
+			learnCPTSingleNode(0, parents, csvData, node.tbl);
 		}
 	}
+	// for(var n in nodes) {
+	// 	var node = nodes[n];
+	// 	if(node.csvData) {
+	// 		var parents = getNodeParents(node);
+	// 		parents.push(node.id);
+	// 		learnCPTSingleNode(0, parents, _.range(0, csvData.length), node.tbl);
+	// 	}
+	// }
 }
 
 //remove the success message
@@ -263,7 +297,7 @@ var learnParameters = function() {
 	}
 	else {
 		//learn the cpt values from the sample data
-		learnCPTValues(fData, csvData);
+		learnCPTValues();
 
 		// if node table is displayed -> redisplay the updated table
 		var flag = null;
@@ -302,18 +336,19 @@ var learnParameters = function() {
 	}
 }
 
-var createMatrixFromCsv = function(csvdata) {
-	var matArray = [];
-	csvdata.forEach(function(row) {
-		var rowArray = [];
-		for (var cell in row) {
-			rowArray.push(row[cell]);
-		}
-		console.log(rowArray);
-		matArray.push(rowArray);
-	});
+// TODO why need this?
+// var createMatrixFromCsv = function(csvdata) {
+// 	var matArray = [];
+// 	csvdata.forEach(function(row) {
+// 		var rowArray = [];
+// 		for (var cell in row) {
+// 			rowArray.push(row[cell]);
+// 		}
+// 		console.log(rowArray);
+// 		matArray.push(rowArray);
+// 	});
 
-}
+// }
 
 var uploadSample = function(){
 	if(window.File && window.FileReader && window.FileList && window.Blob) {

@@ -423,6 +423,10 @@ var refresh = function(){
 		 .classed("selected", function(d) {
 		 	return d === selectedPath;
 		 })
+		 // TODO remove?
+		 .classed("orientated", function(d) {
+		 	return d.orientated;
+		 })
 		 .style("marker-end", "url(#arrow)")
 		 .attr("d", function(d) {
 		 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
@@ -953,7 +957,7 @@ var init = function() {
 	   .append("marker")
 	   .attr("id", "arrow")
 	   .attr("viewBox", "0 -5 10 10")
-	   .attr("refX", 21)
+	   .attr("refX", 24.5)
 	   .attr("markerWidth", 3)
 	   .attr("markerHeight", 3)
 	   .attr("orient", "auto")
@@ -1044,12 +1048,17 @@ var init = function() {
 	  	specifyDownloadName(3, ".png");
 	  });
 
-	// try to learn the parameters
+	// learn the parameters
 	d3.select("#learnParams")
 	  .on("click", function(){
 	  	learnParameters();
 	  });
-	  
+
+	// learn the structure
+	d3.select("#learnStruct")
+	  .on("click", function(){
+	  	learnStructure();
+	  })
 	//display zoom scale
 	d3.select("#workspace")
 	  .append("p")
