@@ -329,8 +329,12 @@ var ancestralSampling = function(fSample) {
 }
 
 var samplingSettings = function(){
-	if(sampleMode) {
+	// if(sampleMode) {
+		// clear the display field
 		clearDisplayField();
+		// deselect if there is a selected node
+		selectedNode = null;
+		refresh();	
 
 		//keep the fixed values here
 		var fixedSamples = {};
@@ -348,7 +352,7 @@ var samplingSettings = function(){
 			   .attr("type", "number")
 			   .attr("min", "1");
 		control.append("button")
-			   .attr("class", "btn btn-default btn-bayes-short")
+			   .attr("class", "btn btn-default btn-bayes-short margin-btn")
 			   .attr("id", "runSamplingBtn")
 			   .html("Run")
 			   .on("click", function(){
@@ -393,6 +397,6 @@ var samplingSettings = function(){
 				      .text(value);
 			});
 		})
-	}
+	// }
 
 }

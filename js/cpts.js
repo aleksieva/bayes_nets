@@ -341,16 +341,18 @@ var displayCPT = function(d) {
 	  .selectAll("input")
 	  .on("blur", function() {
 	  	updateCell(d3.select(this), d);
+	  	// enable the save changes btn
+	  	d3.select("#save-changes-btn")[0][0].disabled = false;
 	  })
 	
-	// Handling editing CPTs events
- 	d3.select("#div-update-btn")
- 	// d3.select(".cpt-table")
- 	  .append("button")
- 	  .attr("class", "btn btn-default btn-bayes")
- 	  .attr("id", "cpt-update-btn")
- 	  .html("Update CPT")
- 	  .on("click", updateTbl);
+	// // Handling editing CPTs events
+ // 	d3.select("#div-update-btn")
+ // 	// d3.select(".cpt-table")
+ // 	  .append("button")
+ // 	  .attr("class", "btn btn-default btn-bayes")
+ // 	  .attr("id", "cpt-update-btn")
+ // 	  .html("Save Changes")
+ // 	  .on("click", updateTbl);
 }
 
 var recalculateCPT = function(edgesArray, sourceNode) {

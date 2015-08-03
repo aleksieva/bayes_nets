@@ -18,13 +18,13 @@
 					<!-- TODO add toggle button ??-->
 					<a class="navbar-title navbar-brand tour-step tour-step-one" href="#">Bayesian Networks Tool</a>
 				</div>
-				<div class="navbar-collapse collapse">
+<!-- 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li><a href='#' id='tutorial'>Tutorial</a></li>					
 						<li><a href='#' id='help'>Help</a></li>
 						<li><a href='#' id='about'>About</a></li>
 					</ul>
-				</div>
+				</div> -->
 			</div>
 		</nav>
 		<nav class="navbar navbar-default navbar-controls" role="navigation">
@@ -51,7 +51,11 @@
 								<li><input type="file" id="hidden-upload" class="hidden-upload"> </li>	
             					<li><a href='#' id='uploadNet' class="control">Import from JSON
             						<span class="glyphicon glyphicon-upload pull-right" aria-hidden="true"></span>
-            					</a></li>            					
+            					</a></li>
+								<li><input type="file" id="hidden-upload-3" class="hidden-upload"> </li>
+            					<li><a href='#' id='uploadBif' class="control">Import from BIF
+            						<span class="glyphicon glyphicon-upload pull-right" aria-hidden="true"></span>
+            					</a></li>
             					<li><a href='#' id='loadNet' class="control">Import Example Network
             						<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
             					</a></li>
@@ -82,7 +86,16 @@
 								<li><a href='#' id='learnParams' class="control">Learn Parameters
 								</a></li>	
 							</ul>
-						</li>												
+						</li>
+						<!-- Help -->
+						<li class="dropdown">
+							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tool Info<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href='#' id='about' class='control'>About</a></li>
+								<li><a href='#' id='help' class='control'>Help</a></li>
+								<li><a href='#' id='tutorial' class='control'>Tutorial</a></li>
+							</ul>
+						</li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 					<!-- change the text on data upload -->
@@ -122,6 +135,7 @@
 		<script src="lib/math-1.7.0.min.js"></script>
 		<script src="lib/combinations.js"></script>
 		<script src="lib/statistics-distributions.js"></script>
+		<script src="js/external.js"></script>
 		<script src="js/cpts.js"></script>	
 		<script src="js/edges.js"></script>		
 		<script src="js/nodes.js"></script>		

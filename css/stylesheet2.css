@@ -61,10 +61,6 @@ li > a.control:hover, li>a.control:focus {
 	display:none !important;
 }
 
-.alert-text {
-	padding: 5px;
-}
-
 .alert-input {
 	width: 200px;
 }
@@ -123,6 +119,23 @@ hr {
 	color:gray;
 }
 
+.margin-btn {
+	margin-left: 6px;
+}
+
+.btn-bayes[disabled] {
+	background-color: #777 !important;
+}
+/*#save-changes-btn {
+	width:30%;
+}
+*/
+/*Select*/
+.form-control {
+	width:60%!important;
+	float: left;
+}
+
 /* Tables and Components */
 .div-table {
 	width :100%;
@@ -142,6 +155,9 @@ hr {
     /*word-wrap: break-word;*/
 }
 
+.form-group {
+	overflow-x:scroll;
+}
 .table-dialog {
 	margin-bottom: 0 !important;
 }
@@ -159,18 +175,9 @@ td {
 }
 
 /* table inputs */
-/*TODO combine these with a class and assign the class to the corresponding elements*/
-td.editable > input {
+.editable > input {
 	width:60px;
 	text-align: center;
-	border: 1px solid gray;
-	border-radius: 5px;
-	padding: 4px;
-}
-
-th.editable > input {
-	width:60px;
-	text-align: center;	
 	border: 1px solid gray;
 	border-radius: 5px;
 	padding: 4px;
@@ -179,6 +186,7 @@ th.editable > input {
 input.invalid {
 	border-color: red;
 }
+
 /*SVG elements*/
 #svg {
 	/*border:1px solid black;*/
@@ -323,7 +331,8 @@ path.conn.orientated {
 	font-size:14px;
 	font-family: sans-serif;
 	font-weight: 100;
-	color : gray;	
+	color : gray;
+	display: block;
 }
 
 .zoom-text {
@@ -342,6 +351,10 @@ path.conn.orientated {
 .notice-text {
 	font-size: 16px;
 	color:#CC0B7C !important;
+}
+
+.alert-text {
+	padding: 5px;
 }
 
 /* CSV dialog box*/

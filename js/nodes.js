@@ -17,7 +17,6 @@ var multipleLinesText = function(text, d3elem) {
 			tspanElem.attr("x", 0).attr("dy", 15);
 		}
 	}
-
 }
 
 //if the new name is a duplicate of another node name - new name -> name(1).. name(2) etc.
@@ -75,8 +74,15 @@ var editableNodeLabel = function(node) {
 				if(!isEmptyString(this.value)) {
 					var prevTitle = node.title;
  					node.title = this.value.trim();
- 					//capitalize every node title
- 					node.title = node.title.charAt(0).toUpperCase() + node.title.slice(1);
+ 					//check for multiple words title and capitalize every word first letter
+ 					var wordsTitle = node.title.split(" ");
+ 					node.title = "";
+ 					for (var word in wordsTitle) {
+ 						node.title += wordsTitle[word].charAt(0).toUpperCase() + wordsTitle[word].slice(1) + " ";
+ 					}
+ 					node.title = node.title.slice(0,-1);
+ 					// TODO remove
+ 					// node.title = node.title.charAt(0).toUpperCase() + node.title.slice(1);
  					//check for duplicates
  					node.title = duplicateNodeTitles(node.title, node);
 					   	
@@ -94,10 +100,10 @@ var editableNodeLabel = function(node) {
 					d3.select(this)
 					  .style("display", "none");
 					// update the cpt
-					// TODO
+					displayCPT(node);
 
 					// if csv data is set update the csv column name
-					if(csvData.length !== 0) {
+					if(csvData) {
 						// TODO
 					}
 				}
@@ -263,7 +269,6 @@ var updateNodeValues = function(node){
 		var text = errorDiv.html() + " Enter a non-empty value.";
 		errorDiv.html(text);						
 	}
-
 }
 
 //update a single value on blur of the input field
@@ -318,6 +323,8 @@ var displayNodeValues = function(d) {
 			   .attr("type", "text")
 			   .attr("value", d.values[i-1])
 			   .on("blur", function() {
+			   	 // enable the save changes btn
+			   	 d3.select("#save-changes-btn")[0][0].disabled = false; 
 			   	 //TODO
 			   	 //Update value
 			   	 updateSingleValue(this, d);
@@ -335,6 +342,8 @@ var displayNodeValues = function(d) {
 			.html("+")
 			.on("click", function() {
 				appendNodeValue();
+				// enable the save changes btn
+			  	d3.select("#save-changes-btn")[0][0].disabled = false;		
 			});
 
 	appendBtns.append("button")
@@ -343,16 +352,18 @@ var displayNodeValues = function(d) {
 			.html("-")
 			.on("click", function() {
 				removeNodeValue();
+				// enable the save changes btn
+			  	d3.select("#save-changes-btn")[0][0].disabled = false;			
 			});
 
-	d3.select("#div-update-btn")
-	  .append("button")
-	  .classed("btn btn-default btn-bayes pull-right", true)
-	  .attr("id", "update-node-values")
-	  .html("Update Values")
-	  .on("click", function() {
-	   	updateNodeValues(d);
-	  });
+	// d3.select("#div-update-btn")
+	//   .append("button")
+	//   .classed("btn btn-default btn-bayes pull-right", true)
+	//   .attr("id", "update-node-values")
+	//   .html("Save Changes")
+	//   .on("click", function() {
+	//    	updateNodeValues(d);
+	//   });
 }
 
 var getNodeParents = function(d){
@@ -369,13 +380,23 @@ var getNodeParents = function(d){
 	return nodeParentsIds;
 }
 
-
 var displayNodeOption = function(option, node) {
 	if(option === "cpt") {
 		displayCPT(node);
 	}
 	else if(option === "val") {
 		displayNodeValues(node);
+	}
+}
+
+var updateNodeOption = function(option, node) {
+	// update the cpt table
+	if(option === "cpt") {
+		updateTbl();
+	}
+	// update node's values
+	else if(option === "val") {
+		updateNodeValues(node);
 	}
 }
 
@@ -402,6 +423,8 @@ var displayNodeInfo = function(node) {
 					 .attr("class", "form-control")
 					 .on("change", function() {
 					 	displayNodeOption(this.options[this.selectedIndex].value, node);
+					 	// disable the save changes btn
+					 	d3.select("#save-changes-btn")[0][0].disabled = true;
 					 });
 
 	select.append("option")
@@ -411,6 +434,21 @@ var displayNodeInfo = function(node) {
 	select.append("option")
 		  .attr("value", "val")
 		  .text("Node Values");
+
+	// TODO
+	// disables, enable on cpt change or node values change
+	var saveChangesBtn = form.append("button")
+					  .classed("btn btn-default btn-bayes margin-btn", true)
+	  				  .attr("id", "save-changes-btn")
+	  				  .attr("disabled", "true")
+					  .html("Save Changes")
+	  				  .on("click", function() {
+					   	// save the changes
+					   	// either node's values or node's cpt
+					   	var selectCtrl = d3.select("#node-options")[0][0];
+					   	var option = selectCtrl.options[selectCtrl.selectedIndex].value;
+					   	updateNodeOption(option, node);
+	  				  });
 
 	control.append("hr");
 
@@ -428,7 +466,9 @@ var nodeMouseDown = function(d){
 	mousedownNode = d;
 
 	// if(connMode) {
-	if(selectedNode === d) {
+	// enter connection mode if clicking again on the selected node with the left mouse button
+	// event.which -> 1: left mouse btn, 2: middle mouse btn, 3: right mouse btn
+	if(selectedNode === d && event.which == 1) {
 		//set the connection mode
 		connecting = true;
 		//reposition the dragline to the center of the node
@@ -521,7 +561,7 @@ var addNewNode = function(predefinedCircle) {
 	refresh();
 };
 
-var addCsvNode = function(name, values, data) {
+var addFileNode = function(name, values, data) {
 	//add a new node found from the csv uploaded file
 	var xPos = Math.random() * (svg.attr("width")-radius) + radius,
 		yPos = Math.random() * (svg.attr("height")-radius) + radius,
@@ -541,28 +581,47 @@ var nodeMenu = [
 ]
 
 var deleteNode = function(node) {
-	//if node info for this node is displayed remove it it
+	var children = getNodeChildren(node);
+	nodes.splice(nodes.indexOf(node),1);
+	var incidentEgdes = removeIncidentEdges(node);
+	//recalculate the cpts for all nodes that are target nodes for the selected node
+	recalculateCPT(incidentEgdes, node);
+
+	//if node info is displayed 
 	if (d3.select(".node-label")[0][0] !== null) {
 		var id = parseInt(d3.select(".node-label").attr("id"));
+		// if info for this node is displayed remove it and set a message
 		if(id === node.id) {
 			clearDisplayField();
+			//warning message
+			var warningDiv = control.append("div")
+									.attr("class", "alert-text alert alert-warning")
+			warningDiv.append("span")
+					  .attr("class", "glyphicon glyphicon-flag")
+					  .attr("aria-hidden", "true");
+			warningDiv.append("span")
+					  .attr("class", "sr-only")
+					  .text("Warning");
+			var text = warningDiv.html() + " Node has been removed."				  		  
+			warningDiv.html(text);
+			//remove after 3 seconds
+			setTimeout(removeAlertMsg, 3000);
 		}
 		else {
 			//check if info about one of the to-be-removed node's children is displayed in the info field
 			//if so, update its table
-			var children = getNodeChildren(node);
+			// var children = getNodeChildren(node);
 			var res = children.filter(function(c){
 				return c.id === parseInt(d3.select(".node-label").attr("id"));
 			});
 			//TODO
 			// update its table
+			if(res[0]) {
+				displayCPT(res[0]);
+			}
 		}
-	}
+	}	
 
-	nodes.splice(nodes.indexOf(node),1);
-	var incidentEgdes = removeIncidentEdges(node);
-	//recalculate the cpts for all nodes that are target nodes for the selected node
-	recalculateCPT(incidentEgdes, node);
+	// update
 	refresh();
-
 }

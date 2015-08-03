@@ -36,6 +36,25 @@ var learnStructure = function() {
 		PCOrientation();
 		// build the resulting structure
 		createConnsFromAdjMatrix();
+
+		// add force layout
+		forceLayout(nodes, edges);
+		// refresh();
+		
+		//success message
+		var successDiv = control.insert("div", "h3.node-label")
+								.attr("class", "alert-text alert alert-success");
+		successDiv.append("span")
+				 	.attr("class", "glyphicon glyphicon-ok")
+					.attr("aria-hidden", "true");
+		successDiv.append("span")
+					.attr("class", "sr-only")
+					.text("Success");
+		var text = successDiv.html() + " Network structure has been successfully learnt.";
+		successDiv.html(text);
+
+		//remove after 3 seconds
+		setTimeout(removeAlertMsg, 3000);		
 	}
 }
 

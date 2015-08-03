@@ -17,7 +17,6 @@ var graph,
 	circles,
 	dragline;
 
-//TODO add linkDownNode here
 var selectedNode,
 	selectedPath,
 	mousedownNode;
@@ -29,109 +28,36 @@ var dragged,
 	focused,
 	uploaded;
 
-var defaultMode,
-	// nodeMode,
-	connMode,
-	// editNodeTextMode,
-	// editNodeMode,
-	sampleMode;
+var defaultMode;
+	// sampleMode;
 
-var setMode = function(mode){
+var setDefaultMode = function(){
 	//clear the display field
 	clearDisplayField();
 
-	// if (mode === "node") {
-	// 	if(!nodeMode) {
-	// 		defaultMode = false;
-	// 		nodeMode = true;
-	// 		connMode = false;
-	// 		editNodeMode = false;
-	// 		sampleMode = false;
-
-	// 		//indicate the mode as selected
-	// 		d3.select("#node-mode")
-	// 		  .classed("selected", true);
-	// 		d3.select("#conn-mode")
-	// 		  .classed("selected", false);
-	// 		d3.select("#edit-mode")
-	// 		  .classed("selected", false);
-	// 		d3.select("#sample-net")
-	// 		  .classed("selected", false);			  
-	// 		return;
-	// 	}
-	// }
-	// if (mode === "conn") {
-	// 	if(!connMode) {
-	// 		defaultMode = false;
-	// 		nodeMode = false;
-	// 		connMode = true;
-	// 		editNodeMode = false
-	// 		sampleMode = false;
-
-	// 		//indicate the mode as selected
-	// 		d3.select("#conn-mode")
-	// 		  .classed("selected", true);
-	// 		d3.select("#node-mode")
-	// 		  .classed("selected", false);
-	// 		d3.select("#edit-mode")
-	// 		  .classed("selected", false);
-	// 		d3.select("#sample-net")
-	// 		  .classed("selected", false);				  			  		  
-	// 		return;
-	// 	}
-	// }
-	// else if (mode === "edit") {
-	// 	if(!editNodeMode) {
-	// 		defaultMode = false;
-	// 		nodeMode = false;
-	// 		connMode = false;
-	// 		editNodeMode = true;
-	// 		sampleMode = false;
-
-	// 		//indicate the mode as selected
-	// 		d3.select("#edit-mode")
-	// 		  .classed("selected", true);
-	// 		d3.select("#conn-mode")
-	// 		  .classed("selected", false);
-	// 		d3.select("#node-mode")
-	// 		  .classed("selected", false);
-	// 		d3.select("#sample-net")
-	// 		  .classed("selected", false);				  			  
-	// 		return;
-	// 	}
-	// }
-	// else 
-	if (mode === "sample") {
-		if(!sampleMode) {
-			sampleMode = true;
-			nodeMode = false;
-			connMode = false;
-			editNodeMode = false;
-			defaultMode = false;
-			d3.select("#node-mode")
-			  .classed("selected", false);
-			d3.select("#conn-mode")
-			  .classed("selected", false);
-			d3.select("#edit-mode")
-			  .classed("selected", false);
-			d3.select("#sample-net")
-			  .classed("selected", true);	
-			return;
-		}
-	}
+// 	if (mode === "sample") {
+// 		if(!sampleMode) {
+// 			sampleMode = true;
+// 			nodeMode = false;
+// 			connMode = false;
+// 			editNodeMode = false;
+// 			defaultMode = false;
+// 			d3.select("#node-mode")
+// 			  .classed("selected", false);
+// 			d3.select("#conn-mode")
+// 			  .classed("selected", false);
+// 			d3.select("#edit-mode")
+// 			  .classed("selected", false);
+// 			d3.select("#sample-net")
+// 			  .classed("selected", true);	
+// 			return;
+// 		}
+// 	}
 	defaultMode = true;
-	// nodeMode = false;
-	// connMode = false;
-	// editNodeMode = false;
-	sampleMode = false;
-	// d3.select("#node-mode")
-	//   .classed("selected", false);
-	// d3.select("#conn-mode")
-	//   .classed("selected", false);
-	// d3.select("#edit-mode")
-	//   .classed("selected", false);
-	d3.select("#sample-net")
-	  .classed("selected", false);		  
+// 	sampleMode = false;
+
+// 	d3.select("#sample-net")
+// 	  .classed("selected", false);		  
 	
 };
 
@@ -184,9 +110,9 @@ var zoom = d3.behavior.zoom()
 			 	svg.style("cursor", "move");
 			 })
 			 .on("zoom", function() {
-			 	if(!editNodeTextMode) {
+			 	// if(!editNodeTextMode) {
 				 	zoomBehavior();			 		
-			 	}
+			 	// }
 			 })
 			 .on("zoomend", function(){
 			 	svg.style("cursor", "default");
@@ -206,9 +132,9 @@ var isEmptyString = function(text) {
 var displayHelp = function() {
 	clearDisplayField();
 	//if sample mode - turn it off
-	if(sampleMode) {
-		setMode("sample");
-	}
+	// if(sampleMode) {
+	// 	setMode("sample");
+	// }
 	// setMode("");
 	//help page
 	control.append("p")
@@ -243,9 +169,9 @@ var displayHelp = function() {
 var displayAbout = function() {
 	clearDisplayField();
 	//if sample mode - turn it off
-	if(sampleMode) {
-		setMode("sample");
-	}
+	// if(sampleMode) {
+	// 	setMode("sample");
+	// }
 
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
@@ -266,142 +192,6 @@ var displayAbout = function() {
 		   .attr("class", "instructions-text text-justified")
 		   .html("If there is a network with known structure but not known probabilities for the random variables, sample data can be used to learn the probabilities for the network.")
 }
-
-// var dragconnect = function (d) {
-// 	// TODO new 
-// 	// dragged = true;
-// 	// console.log(d);
-// 	//set the start point to be the center of the linking node
-// 	var cx = d.x + parseInt(d3.select(this).attr("cx"));
-// 	var cy = d.y + parseInt(d3.select(this).attr("cy"));
-// 	//handle when a line is being dragged to connect 2 nodes
-// 	//update the line based on the mouse coordinates
-// 	dragline.attr("d", "M" + cx + "," + cy + "L" + d3.mouse(graph.node())[0] + "," + d3.mouse(graph.node())[1]);
-// 	// display the other linking nodes
-// 	d3.selectAll("circle.link-node")
-// 	  .filter(function() {
-// 	  	return d3.select(this).attr("class") !== "link-node selected";
-// 	  })
-// 	  .style("display", "initial");
-// };
-
-// var dragLink = d3.behavior.drag()
-// 			 .origin(function(d){
-// 			 	// console.log(this);
-// 			 	return {x: d.x + parseInt(d3.select(this).attr("cx")), y: d.y + parseInt(d3.select(this).attr("cy"))};
-// 			 	// return {x: d.x, y:d.y};
-// 			 })
-// 			 .on("dragstart", function(){
-// 			 	d3.event.sourceEvent.stopPropagation();
-// 			 	svg.style("cursor", "pointer");
-// 			 })
-// 			 .on("drag", dragconnect)
-// 			 .on("dragend", function(){
-// 			 	svg.style("cursor", "default");
-// 			 });
-
-// // var linkDownCircle = null;
-// // var linkUpCircle = null;
-// var linkDownNode = null;
-// var linkUpNode = null;			 
-// var linkNodeMouseDown = function (d, point) {
-// 	//set the starting node and linking circle
-// 	linkDownNode = d;
-// 	// linkDownCircle = point;
-
-// 	var cx = d.x + parseInt(point.attr("cx"));
-// 	var cy = d.y + parseInt(point.attr("cy"));
-// 	dragline.classed("hidden", false)
-// 			.attr("d", "M" + cx + "," + cy + "L" + (cx + 10) + "," + (cy + 10));
-// };
-
-// var linkNodeMouseUp = function (d, point) {
-// 	if(!linkDownNode)
-// 		return;
-
-// 	dragline.classed("hidden", true);
-
-// 	//the node that the mouse is located on on mouseup
-// 	linkUpNode = d;
-// 	//the specific linking circle the mouse is located on mouse up
-// 	// linkUpCircle = point;
-
-// 	//if the mouse has moved to a different circle
-// 	//add a new edge between these 2 nodes
-// 	if(linkDownNode !== linkUpNode) {
-// 			// create an edge
-// 			createNewEdge(linkDownNode, linkUpNode);
-// 			// dragged =false;
-// 	}
-
-// 	//hide only the ones that don't belong to the selected node
-// 	d3.selectAll("circle.link-node")
-// 	  .filter(function() {
-// 	  	return d3.select(this).attr("class") !== "link-node selected";
-// 	  })
-// 	  .style("display", "none");
-// }
-
-// var addLinkingPoints = function(circleGroup) {
-//     var smallR = 3;
-//     circleGroup.append("circle")
-//     			.attr("r", smallR)
-//     			.attr("cx", 17)
-//     			.attr("cy", 17)
-//     			.classed("link-node", true)
-//     			.style("display", "none")
-//     			.on("mousedown", function(d) {
-//     				d3.event.stopPropagation();
-//     				linkNodeMouseDown(d, d3.select(this));
-//     			})
-//     			.on("mouseup", function(d) {
-//     				linkNodeMouseUp(d, d3.select(this));
-//     			})
-//     			.call(dragLink);
-//     circleGroup.append("circle")
-//     			.attr("r", smallR)
-//     			.attr("cx", -17)
-//     			.attr("cy", 17)
-//     			.classed("link-node", true)
-//     			.style("display", "none")
-//     			.on("mousedown", function(d) {
-//     				d3.event.stopPropagation();
-//     				linkNodeMouseDown(d, d3.select(this));
-//     			})
-//     			.on("mouseup", function(d) {
-//     				d3.event.stopPropagation();
-//     				linkNodeMouseUp(d, d3.select(this));
-//     			})
-//     			.call(dragLink);    			    
-//     circleGroup.append("circle")
-//     			.attr("r", smallR)
-//     			.attr("cx", -17)
-//     			.attr("cy", -17)
-//     			.classed("link-node", true)
-//     			.style("display", "none")
-//     			.on("mousedown", function(d) {
-//     				d3.event.stopPropagation();
-//     				linkNodeMouseDown(d, d3.select(this));
-//     			})
-//     			.on("mouseup", function(d) {
-//     				linkNodeMouseUp(d, d3.select(this));
-//     			})
-//     			.call(dragLink);    			   			
-//     circleGroup.append("circle")
-//     			.attr("r", smallR)
-//     			.attr("cx", 17)
-//     			.attr("cy", -17)
-//     			.classed("link-node", true)
-//     			.style("display", "none")
-//     			.on("mousedown", function(d) {
-//     				d3.event.stopPropagation();
-//     				linkNodeMouseDown(d, d3.select(this));
-//     			})
-//     			.on("mouseup", function(d) {
-//     				linkNodeMouseUp(d, d3.select(this));
-//     			})
-//     			.call(dragLink);    			
-// }
 
 var refresh = function(){
 	//data for the paths
@@ -539,10 +329,6 @@ var refresh = function(){
     circleGroup.each(function(c) {
     	multipleLinesText(c.title, d3.select(this));
     });
-
-    //TODO
-    //add linking points
-    // addLinkingPoints(circleGroup);
    			    			    			    			
     //remove old circles
     circles.exit().remove();	   
@@ -565,16 +351,6 @@ var svgMouseDown = function(){
 };
 
 var svgMouseUp = function(){
-	// //TODO change
-	// if(linkDownNode) {
-	// // if(mousedownNode && connMode) {
-	// 	dragline.classed("hidden", true);
-	// 	d3.selectAll("circle.link-node")
-	// 	  .filter(function() {
-	// 	  	return d3.select(this).attr("class") !== "link-node selected";
-	// 	  })
-	// 	  .style("display", "none");
-	// }
 
 	//if in conn mode, discard the dragline
 	if(connecting) {
@@ -586,12 +362,12 @@ var svgMouseUp = function(){
 var deleteNetwork = function(isConfirm) {
 	if(isConfirm) {
 		bootbox.confirm("Are you sure you want to delete the network?", function(result) {
-	  		console.log(result);
 	  		if(result) {
 				nodes = [];
 				edges = [];
 				lastID = 0;
-				refresh();	  			
+				refresh();
+				setDefaultMode();			
 	  		}
 		});		
 	}
@@ -600,163 +376,36 @@ var deleteNetwork = function(isConfirm) {
 		edges = [];
 		lastID = 0;
 		refresh();		
+		setDefaultMode();			
 	}
 }
 
-//parts of the code are taken from http://stackoverflow.com/questions/19684318/how-to-customize-bootbox-js-prompt-options
-//depending on the mode - different download
-// mode 1 -> downloadNetwork
-// mode 2 -> downloadSamples
-// mode 3 -> downloadPNG
-var specifyDownloadName = function(mode, ext, samples) {
-	var filename = "";
-	bootbox.dialog({
-	  message: "<input type='text' id='filename' class='alert-input'></input> " + ext,
-	  title: "Specify file name:",
-	  value: "bayesnet",
-	  buttons: {
-	    main: {
-	      label: "Download",
-	      className: "btn-primary btn-bayes",
-	      callback: function() {
-	        filename = $('#filename').val();
-	        if(mode === 1) {
-		        downloadNetwork(filename);	
-	        }
-	        else if(mode === 2) {
-	        	downloadSamples(filename, samples);
-	        }
-	        else if(mode === 3) {
-	        	downloadPNG(filename);
-	        }
-	      }
-	    },
-	    cancel: {
-	    	label: "Cancel",
-	    	className: "btn-bayes",
-	    }
-	  }
+var forceLayout = function(nodes, links) {
+	var force = d3.layout.force()
+				  .size([width, height])
+				  .nodes(nodes)
+				  .links(links)
+				  // TODO change
+				  .linkDistance(width/2);
+	// console.log("force");
+
+	force.on("end", function(){
+		// update positions of nodes
+        circles.attr("transform", function(d){
+        	console.log("translate(" + d.x + "," + d.y + ")");
+        	return "translate(" + d.x + "," + d.y + ")";
+        });
+
+		// update positions of links
+		paths.attr("d", function(d){
+		 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;			
+		})
 	});
-};
-
-var checkUploadFileExtension = function(filetype, extension) {
-	return filetype == extension;
-}
-
-var downloadNetwork = function(filename){
-	var compactEdges = []
-	edges.forEach(function(e) {
-		var compactEdge = {source: e.source.id, target:e.target.id};
-		compactEdges.push(compactEdge);
-	})
-	var netObject = JSON.stringify({
-		"nodes":nodes,
-		"edges":edges
-	}, null, 2);
-
-	var blob = new Blob([netObject], {type:"text/plain;charset=utf-8"});
-
-	// console.log(filename);	
-	if (!isEmptyString(filename)) {
-		filename = filename + ".json";
-		saveAs(blob, filename);	
-	}
-	else {
-		bootbox.dialog({
-		  message: "Specify a name for the file.",
-		  buttons: {
-		    main: {
-		      label: "OK",
-		      className: "btn-bayes-short",
-		    },
-		  }
-		});		
-	}
+	force.start();
 }
 
 var maxNodeId = function(){
 	return Math.max.apply(Math, nodes.map(function(n) {return n.id}));
-}
-
-//parts of the code have been taken from http://blog.teamtreehouse.com/reading-files-using-the-html5-filereader-api
-var uploadNetwork = function(){
-	if(window.File && window.FileReader && window.FileList && window.Blob) {
-		var fileReader = new FileReader();
-		var uploadFile = d3.select("#hidden-upload").node().files[0];
-
-		//check if it is the correct file type 
-		if(!checkUploadFileExtension(uploadFile.type, "application/json")) {
-			bootbox.dialog({
-			  message: "The uploaded file needs to be .json",
-			  buttons: {
-			    main: {
-			      label: "OK",
-			      className: "btn-bayes-short",
-			    },
-			  }
-			});					
-			return;
-		}
-
-		fileReader.onload = function(){
-			var txt = fileReader.result;
-			try {
-				var netObj = JSON.parse(txt);
-				deleteNetwork(false);
-
-				//clear the display field
-				clearDisplayField();
-
-				nodes = netObj.nodes;
-				var rawEdges = netObj.edges;
-				rawEdges.forEach(function(e, index){
-					var src = nodes.filter(function(n) {
-						return n.id === e.source.id;
-					})[0];
-					var tgt = nodes.filter(function(n) {
-						return n.id === e.target.id; 
-					})[0];	
-					rawEdges[index] = {source: src, target:tgt}; 
-				})
-				edges = rawEdges;
-				//find the max index in the nodes
-				lastID = maxNodeId();
-				//set the status to uploaded
-				uploaded = true;
-				refresh();
-				//set mode to default
-				setMode("");
-				//display instructions
-				displayHelp();
-
-			}
-			catch(err){
-				bootbox.dialog({
-				  message: "Error occured while parsing the file.",
-				  buttons: {
-				    main: {
-				      label: "OK",
-				      className: "btn-bayes-short",
-				    },
-				  }
-				});					
-			}
-		}
-
-		fileReader.readAsText(uploadFile);
-		document.getElementById("hidden-upload").value = "";
-	}
-	else {
-		bootbox.dialog({
-		  message: "Your browser does not support this functionality.",
-		  buttons: {
-		    main: {
-		      label: "OK",
-		      className: "btn-bayes-short",
-		    },
-		  }
-		});			
-	}
 }
 
 window.onbeforeunload = function() {
@@ -770,137 +419,6 @@ window.onresize = function() {
 	svg.attr("width", updatedWidth);
 	svg.attr("height", updatedHeight);
 }
-
-//Initialise
-var loadDefaultNetwork = function(filepath, isInitial, val) {
-	//delete previous network
-	deleteNetwork(false);
-	d3.json(filepath, function(error, netData) {		
-	  // console.log(netData);
-	  nodes = netData.nodes;
-	  // console.log(nodes); 
-	  var rawEdges = netData.edges;
-	  rawEdges.forEach(function(e, index){
-	  	var src = nodes.filter(function(n) {
-	  		return n.id === e.source.id;
-	  	})[0];
-	  	var tgt = nodes.filter(function(n) {
-	  		return n.id === e.target.id; 
-	  	})[0];	
-	  	rawEdges[index] = {source: src, target:tgt}; 
-	  })
-	  edges = rawEdges;
-	  //find the max index in the nodes
-	  lastID = maxNodeId();
-	  //set the status to uploaded
-	  uploaded = true;
-
-	  //render  
-	  refresh();
-	  //set mode to default
-	  setMode("");
-	  if (isInitial) {
-		//display instructions
-		displayHelp();
-	  }
-	  else {
-	  	loadExampleNetworks(val);
-	  }; 		  
-	});
-};
-
-var identifyExampleNetFilepath = function(val) {
-	if(val === "rain") {
-		loadDefaultNetwork("files/wetGrassNet.json", false, val)		
-	}
-	else if(val === "burglary") {
-		loadDefaultNetwork("files/burglaryNetFull.json", false, val)
-	}
-	else if(val === "cancer") {
-		loadDefaultNetwork("files/cancerNet.json", false, val)		
-	}
-	else if(val === "bronchitis") {
-		loadDefaultNetwork("files/smokerBronchitis.json", false, val)
-	}
-}
-
-var loadExampleNetworks = function(selValue) {
-	clearDisplayField();
-
-	//append select for different example networks
-	var form = control.append("div")
-					  .attr("class", "form-group")
-
-	form.append("label")
-		.attr("for", "example-net")
-		.attr("class", "label-text")
-		.text("Select an example network from the menu: ")
-
-	var select = form.append("select")
-					 .attr("id", "example-net")
-					 .attr("class", "form-control")
-					 .on("change", function() {
-					 	identifyExampleNetFilepath(this.options[this.selectedIndex].value);
-					 });
-	select.append("option")
-		  .attr("value", "none")
-		  .attr("disabled", true)
-		  .attr("selected", true)
-		  .text("Select Network")
-	select.append("option")
-		  .attr("value", "rain")
-		  .text("Rain Network");
-	select.append("option")
-		  .attr("value", "burglary")
-		  .text("Burglary Network");
-	select.append("option")
-		  .attr("value", "cancer")
-		  .text("Cancer Network");
-	select.append("option")
-		  .attr("value", "bronchitis")
-		  .text("Basic Bronchitis Network");
-
-	control.append("hr");
-
-	var options = select.selectAll("option")[0];
-	options.forEach(function(option) {
-		if(option.value === selValue) {
-			d3.select(option)
-			  .attr("selected", true);
-		}
-	})
-}
-
-//TODO
-var downloadPNG = function(filename) {
-	var filePngName = filename + ".png";
-	saveSvgAsPng(svg[0][0], filePngName);
-	// var svg = d3.select("svg")[0][0],
- //        img = new Image(),
- //        serializer = new XMLSerializer(),
- //        svgStr = serializer.serializeToString(svg);
-
- //    img.src = 'data:image/svg+xml;base64,'+ window.btoa(svgStr);
-
- //    img.onload = function() {
- //      // context.drawImage(image, 0, 0);
- //      var canvas = document.createElement("canvas");
- //      document.body.appendChild(canvas);
- //      d3.select("canvas").style("display", "none");
-
- //      var w = parseInt(d3.select("svg").attr("width"));
- //      var h = parseInt(d3.select("svg").attr("height"));
- //      canvas.width = w;
- //      canvas.height = h;
- //      canvas.getContext("2d").drawImage(img,0,0,w,h);
- //      var canvasdata = canvas.toDataURL("image/png");
-
- //      var a = document.createElement("a");
- //      a.download = "test.png";
- //      a.href = canvasdata;
- //      a.click();
- //    }  	
-};
 
 var init = function() {
 	//svg width & height
@@ -930,11 +448,11 @@ var init = function() {
 	
 	//work mode
 	defaultMode = true;
-	nodeMode = false;
+	// nodeMode = false;
 	// connMode = false;
-	editNodeTextMode = false;
-	editNodeMode = false;
-	sampleMode = false;
+	// editNodeTextMode = false;
+	// editNodeMode = false;
+	// sampleMode = false;
 
 	nodes = [];
 	edges = [];
@@ -1016,9 +534,10 @@ var init = function() {
 	  });
 	d3.select("#hidden-upload")
 	  .on("change", uploadNetwork);
+
 	d3.select("#sample-net")
 	  .on("click", function() {
-	  	setMode("sample");
+	  	// setMode("sample");
 	  	samplingSettings();
 	  });
 	d3.select("#uploadSample")
@@ -1029,6 +548,15 @@ var init = function() {
 	  .on("change", function() {
 	  	uploadSample();
 	  });
+
+	//upload .bif
+	d3.select("#uploadBif")
+	  .on("click", function(){
+	  	document.getElementById("hidden-upload-3").click();
+	  })
+	d3.select("#hidden-upload-3")
+	  .on("change", uploadBif);
+
 	d3.select("#help")
 	  .on("click", function(){
 	  	//display instructions

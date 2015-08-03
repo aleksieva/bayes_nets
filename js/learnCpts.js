@@ -99,12 +99,42 @@ var datasetDialogSettings = function(filename, table, firstLine) {
                     var headerRadioValue = d3.select("input[name='header']:checked").attr("value")
                     //get the nodes' names
                     headers = [];
+                    // flag to check whether to continue or not
+                    var flag = true;
                     d3.selectAll("input.csv-header")[0].forEach(function(header) {
+                		//check for empty values 
+                    	if(isEmptyString(header.value)) {
+							bootbox.dialog({
+							  message: "Empty node names are not allowed.",
+							  buttons: {
+							    main: {
+							      label: "OK",
+							      className: "btn-bayes-short",
+							    },
+							  }
+							});
+							flag=false;
+                    	}
                     	headers.push(header.value.charAt(0).toUpperCase() + header.value.slice(1));
                     });
-                	// TODO check for empty and duplicate values 
 
-                	processCsvData(headerRadioValue, headers, firstLine);
+                    // check for duplicate values
+                    if(_.uniq(headers).length !== headers.length) {
+						bootbox.dialog({
+						  message: "Duplicate node names are not allowed.",
+						  buttons: {
+						    main: {
+						      label: "OK",
+						      className: "btn-bayes-short",
+						    },
+						  }
+						});
+						flag=false;                    	
+                    }
+
+                    if(flag) {
+                		processCsvData(headerRadioValue, headers, firstLine);
+                	}
                }
             }
         }
@@ -125,8 +155,6 @@ var datasetDialogSettings = function(filename, table, firstLine) {
 var createNodes = function(fdata) {
 	//delete the current network
 	deleteNetwork(false);
-	//clear the dispay field
-	clearDisplayField();
 
 	//create nodes - get the name and the possible values for each node from the fData
 	var colNames = d3.keys(fdata);
@@ -137,11 +165,13 @@ var createNodes = function(fdata) {
 		var data = fdata[name];
 		var name = name.charAt(0).toUpperCase() + name.slice(1);
 		//create new node with the column name as title and the possible values it can take
-		addCsvNode(name, nodeValues);
+		addFileNode(name, nodeValues);
 		// TODO map the data to each node
 		// addCsvNode(name, nodeValues, data);
 	});
 
+	// add to force layout
+	// forceLayout(nodes, edges);
 	refresh();
 }
 
@@ -276,9 +306,9 @@ var learnCPTValues = function() {
 	// }
 }
 
-//remove the success message
+//remove the alert message
 // function used as an argument for the setTimeout
-var removeSuccessMsg = function() {
+var removeAlertMsg = function() {
 	d3.select("#control").select("div.alert-text").remove();
 }
 
@@ -319,11 +349,11 @@ var learnParameters = function() {
 		successDiv.append("span")
 					.attr("class", "sr-only")
 					.text("Success");
-		var text = successDiv.html() + " CPT values have been updated successfully.";
+		var text = successDiv.html() + " CPT values have been successfully updated.";
 		successDiv.html(text);
 
 		//remove after 3 seconds
-		setTimeout(removeSuccessMsg, 3000);
+		setTimeout(removeAlertMsg, 3000);
 
 		//redisplay the table
 		if (flag !== null) {
@@ -333,87 +363,5 @@ var learnParameters = function() {
 			displayCPT(nodeSelected);
 			flag=null;
 		}									
-	}
-}
-
-// TODO why need this?
-// var createMatrixFromCsv = function(csvdata) {
-// 	var matArray = [];
-// 	csvdata.forEach(function(row) {
-// 		var rowArray = [];
-// 		for (var cell in row) {
-// 			rowArray.push(row[cell]);
-// 		}
-// 		console.log(rowArray);
-// 		matArray.push(rowArray);
-// 	});
-
-// }
-
-var uploadSample = function(){
-	if(window.File && window.FileReader && window.FileList && window.Blob) {
-		var fileReader = new FileReader();
-		var uploadFile = d3.select("#hidden-upload-2").node().files[0];
-		//check if it is csv
-		if(!checkUploadFileExtension(uploadFile.type, "text/csv")) {
-			bootbox.dialog({
-			  message: "The uploaded file needs to be .csv",
-			  buttons: {
-			    main: {
-			      label: "OK",
-			      className: "btn-bayes-short",
-			    },
-			  }
-			});					
-			return;
-		}
-
-		//update the dataset name
-		d3.select("#dataset-name")
-		.html("Dataset: " + uploadFile.name)
-		.classed("notice-text", true);
-
-		fileReader.onload = function(event){
-			rawTxt = fileReader.result;		
-
-			//rows of the csv - no header assumed
-			var rows = d3.csv.parseRows(rawTxt);
-			var tblString = tableCsv(rows.slice(0,3));
-
-			//get settings from the user for the dataset
-			//parameters needed: 
-			// 1)filename
-			// 2)table string of the first 3 rows of the csv
-			// 3)header line
-			var firstLine = rows.slice(0,1)[0];
-			datasetDialogSettings(uploadFile.name, tblString, firstLine);
-		
-		}
-		fileReader.onerror = function() {
-			bootbox.dialog({
-			  message: "Unable to read the file " + uploadFile.fileName,
-			  buttons: {
-			    main: {
-			      label: "OK",
-			      className: "btn-bayes-short",
-			    },
-			  }
-			});				
-		}
-		fileReader.readAsText(uploadFile);		
-
-		//reset the value
-		document.getElementById("hidden-upload-2").value = "";
-	}
-	else {
-		bootbox.dialog({
-		  message: "The File APIs are not supported in this browser. Please try again in a different one.",
-		  buttons: {
-		    main: {
-		      label: "OK",
-		      className: "btn-bayes-short",
-		    },
-		  }
-		});			
 	}
 }
