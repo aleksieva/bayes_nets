@@ -126,6 +126,13 @@ hr {
 .btn-bayes[disabled] {
 	background-color: #777 !important;
 }
+
+.small-btn {
+    background-color: #999;
+    width: 30px;
+    text-align: center;
+    padding: 0;
+}
 /*#save-changes-btn {
 	width:30%;
 }

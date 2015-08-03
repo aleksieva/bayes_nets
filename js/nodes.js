@@ -155,7 +155,7 @@ var appendNodeValue = function() {
 					.insert("tr", "#plus-minus-row")
 					.classed("nodeValueRow", true);
 		newRow.append("td")
-				.text("Value");
+				.text("Value " + (numValues + 1) + ":");
 		newRow.append("td")
 				.attr("class", "editable")
 				.append("input")
@@ -280,12 +280,62 @@ var updateSingleValue = function(input, node) {
 
 var displayNodeValues = function(d) {	
 	d3.select("#div-update-btn").html("");
-	
-	var nodeInfo = d3.select("#div-update-btn")
-					 .append("div")
-					 .attr("class", "table-responsive div-table")
-					 .attr("id", "edit-div-tbl")	
-					 .append("table")
+
+	var nodeValsDiv = d3.select("#div-update-btn")
+						.append("div")
+						.attr("class", "table-responsive div-table")
+						.attr("id", "edit-div-tbl");
+
+	var appendBtns = nodeValsDiv.append("div")
+								.classed("pull-right", true);
+
+	appendBtns.append("button")
+			.classed("btn btn-default small-btn", true)
+			.attr("value", "add")
+			.html("+")
+			.on("click", function() {
+				appendNodeValue();
+				// enable the save changes btn
+			  	d3.select("#save-changes-btn")[0][0].disabled = false;		
+			});
+
+	appendBtns.append("button")
+			.classed("btn btn-default small-btn", true)
+			.attr("value", "remove")
+			.html("-")
+			.on("click", function() {
+				removeNodeValue();
+				// enable the save changes btn
+			  	d3.select("#save-changes-btn")[0][0].disabled = false;			
+			});
+
+	// var lastRow = nodeInfo.append("tr")
+	// 					  .attr("id", "plus-minus-row");
+	// lastRow.append("td");
+	// var appendBtns = lastRow.append("td");
+	// // TODO styling buttons
+	// appendBtns.append("button")
+	// 		.classed("btn btn-default btn-bayes-short", true)
+	// 		.attr("value", "add")
+	// 		.html("+")
+	// 		.on("click", function() {
+	// 			appendNodeValue();
+	// 			// enable the save changes btn
+	// 		  	d3.select("#save-changes-btn")[0][0].disabled = false;		
+	// 		});
+
+	// appendBtns.append("button")
+	// 		.classed("btn btn-default btn-bayes-short", true)
+	// 		.attr("value", "remove")
+	// 		.html("-")
+	// 		.on("click", function() {
+	// 			removeNodeValue();
+	// 			// enable the save changes btn
+	// 		  	d3.select("#save-changes-btn")[0][0].disabled = false;			
+	// 		});
+
+
+	var nodeInfo = nodeValsDiv.append("table")
 					 .attr("class", "table table-bayes node-edit-tbl");
 
 	// //add num of values
@@ -315,46 +365,48 @@ var displayNodeValues = function(d) {
 		var currRow = nodeInfo.append("tr")
 							  .attr("class", "nodeValueRow");
 		currRow.append("td")
-			   .text("Value " + i);
+			   .text("Value " + i + ":");
 		currRow.append("td")
 			   .attr("class", "editable")
 			   .append("input")
 			   .classed("nodeValue", true)			   
 			   .attr("type", "text")
 			   .attr("value", d.values[i-1])
-			   .on("blur", function() {
+			   .on("focus", function() {
 			   	 // enable the save changes btn
-			   	 d3.select("#save-changes-btn")[0][0].disabled = false; 
+			   	 d3.select("#save-changes-btn")[0][0].disabled = false; 			   	
+			   })
+			   .on("blur", function() {
 			   	 //TODO
 			   	 //Update value
 			   	 updateSingleValue(this, d);
 			   });
 	}
 
-	var lastRow = nodeInfo.append("tr")
-						  .attr("id", "plus-minus-row");
-	lastRow.append("td");
-	var appendBtns = lastRow.append("td");
-	// TODO styling buttons
-	appendBtns.append("button")
-			.classed("btn btn-default btn-bayes-short", true)
-			.attr("value", "add")
-			.html("+")
-			.on("click", function() {
-				appendNodeValue();
-				// enable the save changes btn
-			  	d3.select("#save-changes-btn")[0][0].disabled = false;		
-			});
+	// var lastRow = nodeInfo.append("tr")
+	// 					  .attr("id", "plus-minus-row");
+	// lastRow.append("td");
+	// var appendBtns = lastRow.append("td");
+	// // TODO styling buttons
+	// appendBtns.append("button")
+	// 		.classed("btn btn-default btn-bayes-short", true)
+	// 		.attr("value", "add")
+	// 		.html("+")
+	// 		.on("click", function() {
+	// 			appendNodeValue();
+	// 			// enable the save changes btn
+	// 		  	d3.select("#save-changes-btn")[0][0].disabled = false;		
+	// 		});
 
-	appendBtns.append("button")
-			.classed("btn btn-default btn-bayes-short", true)
-			.attr("value", "remove")
-			.html("-")
-			.on("click", function() {
-				removeNodeValue();
-				// enable the save changes btn
-			  	d3.select("#save-changes-btn")[0][0].disabled = false;			
-			});
+	// appendBtns.append("button")
+	// 		.classed("btn btn-default btn-bayes-short", true)
+	// 		.attr("value", "remove")
+	// 		.html("-")
+	// 		.on("click", function() {
+	// 			removeNodeValue();
+	// 			// enable the save changes btn
+	// 		  	d3.select("#save-changes-btn")[0][0].disabled = false;			
+	// 		});
 
 	// d3.select("#div-update-btn")
 	//   .append("button")

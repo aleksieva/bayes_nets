@@ -339,10 +339,12 @@ var displayCPT = function(d) {
 
 	d3.selectAll("td.editable")
 	  .selectAll("input")
-	  .on("blur", function() {
-	  	updateCell(d3.select(this), d);
+	  .on("focus", function() {
 	  	// enable the save changes btn
 	  	d3.select("#save-changes-btn")[0][0].disabled = false;
+	  })
+	  .on("blur", function() {
+	  	updateCell(d3.select(this), d);
 	  })
 	
 	// // Handling editing CPTs events
