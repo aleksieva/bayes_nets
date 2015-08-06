@@ -264,75 +264,6 @@ var downloadPNG = function(filename) {
 	saveSvgAsPng(svg[0][0], filePngName);	
 };
 
-// upload csv dataset
-var uploadSample = function(){
-	if(window.File && window.FileReader && window.FileList && window.Blob) {
-		var fileReader = new FileReader();
-		var uploadFile = d3.select("#hidden-upload-2").node().files[0];
-		//check if it is csv
-		if(!checkUploadFileExtension(uploadFile.type, "text/csv")) {
-			bootbox.dialog({
-			  message: "The uploaded file needs to be .csv",
-			  buttons: {
-			    main: {
-			      label: "OK",
-			      className: "btn-bayes-short",
-			    },
-			  }
-			});					
-			return;
-		}
-
-		//update the dataset name
-		d3.select("#dataset-name")
-		.html("Dataset: " + uploadFile.name)
-		.classed("notice-text", true);
-
-		fileReader.onload = function(event){
-			rawTxt = fileReader.result;		
-
-			//rows of the csv - no header assumed
-			var rows = d3.csv.parseRows(rawTxt);
-			var tblString = tableCsv(rows.slice(0,3));
-
-			//get settings from the user for the dataset
-			//parameters needed: 
-			// 1)filename
-			// 2)table string of the first 3 rows of the csv
-			// 3)header line
-			var firstLine = rows.slice(0,1)[0];
-			datasetDialogSettings(uploadFile.name, tblString, firstLine);
-		
-		}
-		fileReader.onerror = function() {
-			bootbox.dialog({
-			  message: "Unable to read the file " + uploadFile.fileName,
-			  buttons: {
-			    main: {
-			      label: "OK",
-			      className: "btn-bayes-short",
-			    },
-			  }
-			});				
-		}
-		fileReader.readAsText(uploadFile);		
-
-		//reset the value
-		document.getElementById("hidden-upload-2").value = "";
-	}
-	else {
-		bootbox.dialog({
-		  message: "The File APIs are not supported in this browser. Please try again in a different one.",
-		  buttons: {
-		    main: {
-		      label: "OK",
-		      className: "btn-bayes-short",
-		    },
-		  }
-		});			
-	}
-}
-
 // parse the bif file text to get the nodes, the connections and the cpt values
 var parseBif = function(txtBif){
 	// delete displayed network
@@ -412,14 +343,24 @@ var parseBif = function(txtBif){
 						})[0].id;
 						parIDs.push(id);
 					});
-					parIDs.sort();
 					//get the values for parents on this row
 					var parentRowVals = pattern[1].split(", ");
 
+					// map index to value
+					var pairsIdVal = [];
+					for(var pair=0; pair<parIDs.length; pair++) {
+						pairsIdVal.push(parIDs[pair] + "" + parentRowVals[pair]);
+					}					
+					// NOTE: JavaScript sorts lexicographically instead of numerically
+					// e.g. [8,35] will be sorted as [35, 8]
+					// parIDs.sort();
+					pairsIdVal.sort();
+
 					var tbl = currNode.tbl;
 					//get to the leaf level for these values
-					for (var level =0; level<parIDs.length; level++) {
-						tbl = tbl[parIDs[level] + "" + parentRowVals[level]];
+					for (var level =0; level<pairsIdVal.length; level++) {
+						// tbl = tbl[parIDs[level] + "" + parentRowVals[level]];
+						tbl = tbl[pairsIdVal[level]]
 					}
 
 					// update the tbl values (one row)
@@ -472,7 +413,7 @@ var uploadBif = function() {
 			refresh();
 
 			// add to force layout
-			forceLayout(nodes, edges);
+			// forceLayout(nodes, edges);
 		}
 		fileReader.onerror = function() {
 			bootbox.dialog({

@@ -34,66 +34,73 @@
 				</div> 
 				<div class="navbar-collapse collapse"> <!-- id=menu? -->
 					<ul class="nav navbar-nav">
+						<!-- Load/Save -->
+						<li class="dropdown">
+							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Load/Save<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><input type="file" id="hidden-upload-2" class="hidden-upload"> </li>
+								<li><a href='#' id='loadData' class="control">Use Toy Dataset
+            						<span class="glyphicon glyphicon-list pull-right" aria-hidden="true"></span>	
+								</a></li>
+            					<li><a href='#' id='loadNet' class="control">Use Toy Network
+            						<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+            					</a></li>
+								<li role="separator" class="divider"></li>
+								<li><input type="file" id="hidden-upload-3" class="hidden-upload"> </li>
+            					<li><a href='#' id='uploadBif' class="control">Import BIF
+            						<span class="glyphicon glyphicon-upload pull-right" aria-hidden="true"></span>
+            					</a></li>									
+								<li><a href='#' id='uploadSample' class="control">Import CSV
+									<span class="glyphicon glyphicon-file pull-right" aria-hidden="true"></span>
+								</a></li>
+								<li><input type="file" id="hidden-upload" class="hidden-upload"> </li>	
+            					<li><a href='#' id='uploadNet' class="control">Import JSON
+            						<span class="glyphicon glyphicon-upload pull-right" aria-hidden="true"></span>
+            					</a></li>							
+            					<li role="separator" class="divider"></li>
+								<li><a href='#' id='downloadNet' class="control tour-step tour-step-eighteen">Export JSON
+									<span class="glyphicon glyphicon-download pull-right" aria-hidden="true"></span>
+								</a></li> 
+								<li><a href='#' id='downloadImg' class="control">Export PNG
+									<span class="glyphicon glyphicon-picture pull-right" aria-hidden="true"></span>
+								</a></li>
+							</ul>
+						</li>
 						<!-- My Network -->
 						<li class="dropdown">
 							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My Network<span class="caret"></span></a>
           					<ul class="dropdown-menu">
           						<li><a href='#' id='sample-net' class="control tour-step tour-step-thirteen">Sample from Network  
-									<span class="glyphicon glyphicon-list-alt pull-right" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
 								</a></li> 
-								<li><a href='#' id='downloadImg' class="control">Export to PNG
-									<span class="glyphicon glyphicon-picture pull-right" aria-hidden="true"></span>
+								<li><a href='#' id='learnStruct' class="control disabled">Learn Structure
+									<span class="glyphicon glyphicon-link pull-right" aria-hidden="true"></span>
 								</a></li>
-								<li><a href='#' id='downloadNet' class="control tour-step tour-step-eighteen">Export to JSON
-									<span class="glyphicon glyphicon-download pull-right" aria-hidden="true"></span>
-								</a></li>          					
+								<li><a href='#' id='learnParams' class="control disabled">Learn Parameters
+									<span class="glyphicon glyphicon-stats pull-right" aria-hidden="true"></span>
+								</a></li>
             					<li role="separator" class="divider"></li>
-								<li><input type="file" id="hidden-upload" class="hidden-upload"> </li>	
-            					<li><a href='#' id='uploadNet' class="control">Import from JSON
-            						<span class="glyphicon glyphicon-upload pull-right" aria-hidden="true"></span>
-            					</a></li>
-								<li><input type="file" id="hidden-upload-3" class="hidden-upload"> </li>
-            					<li><a href='#' id='uploadBif' class="control">Import from BIF
-            						<span class="glyphicon glyphicon-upload pull-right" aria-hidden="true"></span>
-            					</a></li>
-            					<li><a href='#' id='loadNet' class="control">Import Example Network
-            						<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
-            					</a></li>
-            					<li role="separator" class="divider"></li>
-            					<li><a href='#' id='deleteNet' class="control">Clear the Canvas
+            					<li><a href='#' id='deleteNet' class="control">Clear All
         							<span class="glyphicon glyphicon-trash pull-right" aria-hidden="true"></span>
 		        				</a></li>	
           					</ul>							
 						</li>
-						<!-- Datasets -->
-						<li class="dropdown">
-							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Choose Data<span class="caret"></span></a>
-							<ul class="dropdown-menu">
-								<li><a href='#' id='uploadSample' class="control">Import CSV
-									<span class="glyphicon glyphicon-file pull-right" aria-hidden="true"></span>
-								</a></li>
-								<li><input type="file" id="hidden-upload-2" class="hidden-upload"> </li>
-								<li><a href='#' id='loadData' class="control">Use Toy Dataset
-								</a></li>								
-							</ul>
-						</li>
-						<!-- Learning -->
-						<li class="dropdown">
-							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Learn<span class="caret"></span></a>
-							<ul class="dropdown-menu">
-								<li><a href='#' id='learnStruct' class="control">Learn Structure
-								</a></li>
-								<li><a href='#' id='learnParams' class="control">Learn Parameters
-								</a></li>	
-							</ul>
-						</li>
 						<!-- Help -->
 						<li class="dropdown">
-							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tool Info<span class="caret"></span></a>
+							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About<span class="caret"></span></a>
 							<ul class="dropdown-menu">
-								<li><a href='#' id='about' class='control'>About</a></li>
-								<li><a href='#' id='help' class='control'>Help</a></li>
-								<li><a href='#' id='tutorial' class='control'>Tutorial</a></li>
+								<li><a href='#' id='about' class='control'>About this Tool
+									<span class="glyphicon glyphicon-user pull-right" aria-hidden="true"></span>								
+								</a></li>
+								<li><a href='#' id='about' class='control'>Bayesian Nets Information
+									<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>								
+								</a></li>
+								<li><a href='#' id='help' class='control'>Help
+									<span class="glyphicon glyphicon-question-sign pull-right" aria-hidden="true"></span>								
+								</a></li>
+								<li><a href='#' id='tutorial' class='control'>Tutorial
+									<span class="glyphicon glyphicon-bell pull-right" aria-hidden="true"></span>								
+								</a></li>
 							</ul>
 						</li>
 					</ul>

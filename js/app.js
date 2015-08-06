@@ -213,10 +213,6 @@ var refresh = function(){
 		 .classed("selected", function(d) {
 		 	return d === selectedPath;
 		 })
-		 // TODO remove?
-		 .classed("orientated", function(d) {
-		 	return d.orientated;
-		 })
 		 .style("marker-end", "url(#arrow)")
 		 .attr("d", function(d) {
 		 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
@@ -348,6 +344,11 @@ var svgMouseDown = function(){
 		refresh();
 		clearDisplayField();
 	}
+	// deselect a selected link
+	else if(selectedPath) {
+		selectedPath = null;
+		refresh();
+	}
 };
 
 var svgMouseUp = function(){
@@ -359,7 +360,24 @@ var svgMouseUp = function(){
 	}
 };
 
-var deleteNetwork = function(isConfirm) {
+var deleteData = function(){
+	rawTxt = null;
+	csvData = null;
+	fData = null;
+
+	// change the dataset label
+	d3.select("#dataset-name")
+	.html("Dataset: (none)")
+	.classed("notice-text", false);
+
+	// disable learning controls
+	d3.select("#learnStruct")
+	  .classed("disabled", true);
+	d3.select("#learnParams")
+	  .classed("disabled", true);
+}
+
+var deleteNetwork = function(isConfirm, all) {
 	if(isConfirm) {
 		bootbox.confirm("Are you sure you want to delete the network?", function(result) {
 	  		if(result) {
@@ -367,7 +385,10 @@ var deleteNetwork = function(isConfirm) {
 				edges = [];
 				lastID = 0;
 				refresh();
-				setDefaultMode();			
+				setDefaultMode();
+				if(all) {
+					deleteData();
+				}
 	  		}
 		});		
 	}
@@ -376,7 +397,10 @@ var deleteNetwork = function(isConfirm) {
 		edges = [];
 		lastID = 0;
 		refresh();		
-		setDefaultMode();			
+		setDefaultMode();
+		if(all) {
+			deleteData();
+		}
 	}
 }
 
@@ -526,7 +550,8 @@ var init = function() {
 	  });
 	d3.select("#deleteNet")
 	  .on("click", function(){
-	  	deleteNetwork(true);
+	  	deleteNetwork(true, true);
+	  	// deleteData();
 	  });
 	d3.select("#uploadNet")
 	  .on("click", function(){

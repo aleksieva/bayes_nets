@@ -3,6 +3,19 @@ var rawTxt,
     csvData,
     fData;
 
+// table for the dataset name and number of rows , columns
+var tableDataCharacteristics = function(filename) {
+	var html = '<div class="form-group"><table class="table table-dialog">';
+	// header
+	html += '<thead><tr><th>Dataset:</th><th>#Rows:</th><th>#Columns:</th></tr></thead>'
+	//values
+	//subtract 1 because the last row is "
+	var rows = rawTxt.split('\n').length - 1;
+	var columns = rawTxt.split("\n")[0].split(",").length;
+	html += '<tbody><tr><td class="csv-settings-text">'+filename+'</td><td class="csv-settings-text">'+rows+'</td><td class="csv-settings-text">'+columns+'</td></tr></tbody>'
+	html += '</table></div>';
+	return html;
+}
 //format the first 3 rows of the csv data to display in the dialog window
 var tableCsv = function(rows) {
 	var htmlString ='<div class="form-group"><table class="table table-dialog"><tbody>';
@@ -67,17 +80,18 @@ var columnNames = function(id, firstLine) {
 
 //dialog window setting when a csv data file is uploaded
 var datasetDialogSettings = function(filename, table, firstLine) {
-	// var test = firstRow;
+	var statsTbl = tableDataCharacteristics(filename);
+
 	bootbox.dialog({
         title: "CSV Dataset Settings",
         message: '<div class="row">  ' +
             '<div class="col-md-12"> ' +
             '<form class="form-horizontal"> ' +
-            
-            '<div class="form-group"> ' +
-            '<label class="col-md-3 control-label" for="datasetName">Dataset: </label> ' +
-            '<div id="datasetName" class="col-md-6 csv-settings-text"> ' + filename + '</div> ' +
-            '</div>' + 
+			statsTbl+            
+            // '<div class="form-group"> ' +
+            // '<label class="col-md-3 control-label" for="datasetName">Dataset: </label> ' +
+            // '<div id="datasetName" class="col-md-6 csv-settings-text"> ' + filename + '</div> ' +
+            // '</div>' + 
             table +
             '<div class="form-group">' +                    
             '<label class="col-md-4 control-label" for="header">Does the uploaded CSV file have a header?</label> ' +
@@ -192,6 +206,58 @@ var formatUploadSample = function(data) {
 	return formattedData;
 }
 
+// check for missing values
+var checkMissingData = function() {
+	csvData.forEach(function(row) {
+		var keys = Object.keys(row);
+		keys.forEach(function(key){
+			if(row[key] === undefined || isEmptyString(row[key])) {
+				bootbox.dialog({
+				  message: "Missing values in the dataset are not allowed.",
+				  buttons: {
+				    main: {
+				      label: "OK",
+				      className: "btn-bayes-short",
+				    },
+				  }
+				});
+				return false;					
+			}
+		})
+	});
+	return true;
+}
+
+var checkNoObservedValues = function() {
+	Object.keys(fData).forEach(function(name){
+		if(_.uniq(fData[name]) < 2) {
+			bootbox.dialog({
+			  message: name + " does not have 2 observed values.",
+			  buttons: {
+			    main: {
+			      label: "OK",
+			      className: "btn-bayes-short",
+			    },
+			  }
+			});
+			return false;				
+		} 
+	});
+	return true;
+};
+
+// validate the csv data
+// 1. check for missing values
+// 2. check if all vars have at least two observed values
+var validateCsvData = function() {
+	var flag1 = checkMissingData();
+	var flag2 = checkNoObservedValues();
+	// TODO if it fails set the csvData and fData and rawTxt to null
+	// TODO dataset name & learning controls - handle
+
+	return flag1 && flag2;
+}
+
 // process csv data based on the dialog box settings 
 var processCsvData = function(radioVal, headers, firstLine) {
 	if (radioVal == "Yes") {
@@ -209,8 +275,19 @@ var processCsvData = function(radioVal, headers, firstLine) {
 	csvData = d3.csv.parse(rawTxt);
 	//reformat the data
 	fData = formatUploadSample(csvData);
+	// validate csv
+	var valid = validateCsvData();
+	if(!valid) {
+		return;
+	}
 	//get the variables names and create nodes
-	createNodes(fData);	
+	createNodes(fData);
+	//enable learning controls
+	d3.select("#learnStruct")
+	  .classed("disabled", false);
+	d3.select("#learnParams")
+	  .classed("disabled", false);
+
 };
 
 // var learnCPTSingleNode = function(level, parents, indexes, cpt) {
@@ -363,5 +440,74 @@ var learnParameters = function() {
 			displayCPT(nodeSelected);
 			flag=null;
 		}									
+	}
+}
+
+// upload csv dataset
+var uploadSample = function(){
+	if(window.File && window.FileReader && window.FileList && window.Blob) {
+		var fileReader = new FileReader();
+		var uploadFile = d3.select("#hidden-upload-2").node().files[0];
+		//check if it is csv
+		if(!checkUploadFileExtension(uploadFile.type, "text/csv")) {
+			bootbox.dialog({
+			  message: "The uploaded file needs to be .csv",
+			  buttons: {
+			    main: {
+			      label: "OK",
+			      className: "btn-bayes-short",
+			    },
+			  }
+			});					
+			return;
+		}
+
+		//update the dataset name
+		d3.select("#dataset-name")
+		.html("Dataset: " + uploadFile.name)
+		.classed("notice-text", true);
+
+		fileReader.onload = function(event){
+			rawTxt = fileReader.result;		
+
+			//rows of the csv - no header assumed
+			var rows = d3.csv.parseRows(rawTxt);
+			var tblString = tableCsv(rows.slice(0,3));
+
+			//get settings from the user for the dataset
+			//parameters needed: 
+			// 1)filename
+			// 2)table string of the first 3 rows of the csv
+			// 3)header line
+			var firstLine = rows.slice(0,1)[0];
+			datasetDialogSettings(uploadFile.name, tblString, firstLine);
+		
+		}
+		fileReader.onerror = function() {
+			bootbox.dialog({
+			  message: "Unable to read the file " + uploadFile.fileName,
+			  buttons: {
+			    main: {
+			      label: "OK",
+			      className: "btn-bayes-short",
+			    },
+			  }
+			});				
+		}
+		fileReader.readAsText(uploadFile);		
+
+		//reset the value
+		document.getElementById("hidden-upload-2").value = "";
+	}
+	else {
+		bootbox.dialog({
+		  message: "The File APIs are not supported in this browser. Please try again in a different one.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});			
 	}
 }

@@ -38,9 +38,9 @@ var learnStructure = function() {
 		createConnsFromAdjMatrix();
 
 		// add force layout
-		forceLayout(nodes, edges);
+		// forceLayout(nodes, edges);
 		// refresh();
-		
+
 		//success message
 		var successDiv = control.insert("div", "h3.node-label")
 								.attr("class", "alert-text alert alert-success");
@@ -102,16 +102,6 @@ var initialisePairMatrix = function() {
 	}
 }
 
-// TODO need it?
-// // set the value for the independency matrix 
-// var setValueIndepMatrix = function(node1, node2, set) {
-// 	var node1Index= nodes.indexOf(node1);
-// 	var node2Index= nodes.indexOf(node2);
-// 	indepMat[node1Index][node2Index] = set;
-// 	// TODO do I need:
-// 	// indepMat[node2Index][node1Index] = set;
-// }
-
 // get neighbours of a node from the current state of the adjacency matrix
 var getNeighboursAdjMat = function(node) {
 	var neighbours = [];
@@ -126,6 +116,29 @@ var getNeighboursAdjMat = function(node) {
 	return neighbours;
 }
 
+// get symmetric neighbours of a node from the current state of the adjacency matrix
+var getSymNeighAdjMat = function(node) {
+	var symNeighs = [];
+	var index = nodes.indexOf(node);
+	for (var cell in adjMat[index]) {
+		if(adjMat[index][cell] == 1 && adjMat[cell][index] == 1) {
+			symNeighs.push(cell);
+		}
+	}
+	return symNeighs;
+}
+
+// check if a node has in links
+var hasInLinks = function(node) {
+	var inLinks = [];
+	var index = nodes.indexOf(node);
+	for (var cell in adjMat[index]) {
+		if(adjMat[cell][index] == 1) {
+			return true;
+		}
+	}
+	return false;
+}
 // remove a connection between two nodes
 // symmetric and unsymmetric option
 var removeConnAdjMatrix = function(source, target, option) {
@@ -148,7 +161,7 @@ var createConnsFromAdjMatrix = function() {
 			// console.log(targetNode);
 			// console.log("cell value: " + adjMat[row][cell]);
 			if(adjMat[row][cell]) {
-				createNewEdge(sourceNode, targetNode, true);
+				createNewEdge(sourceNode, targetNode);
 			}
 		}
 	}
@@ -377,29 +390,38 @@ var PCSkeletonLearning = function() {
 			var neighbours = getNeighboursAdjMat(nodes[node]);
 			//for each pair node-neighbour
 			for (var neigh in neighbours) {
-				// check if this pair has already been checked
-				if(i==0 && pairMat[node][neighbours[neigh]] == 1) {
-					break;
-				}
-				console.log("Pair nodes: " + node + " " + neighbours[neigh]);
-				// unconditional independence
-				//check if this is the first round				
-				if(i==0) {
-					// console.time("independence");
-					var independent = independenceTest(nodes[node], nodes[neighbours[neigh]], []);
-					console.log("Independent: ", independent);
-					// console.timeEnd("independece");
-					if(independent) {
-						// keep the empty set in the independence Matrix
-						// setValueIndepMatrix(nodes[node], nodes[neighbours[neigh]], combo);
-						indepMat[node][neighbours[neigh]] = [];
-						indepMat[neighbours[neigh]][node] = [];
-						// remove the link between these nodes symmetrically
-						removeConnAdjMatrix(nodes[node], nodes[neighbours[neigh]], "symmetric");
+				// check if this pair has already been checked and if this is the first round
+				// if(i==0 && pairMat[node][neighbours[neigh]] == 0) {
+				if (i==0) {
+					// break;
+					if(pairMat[node][neighbours[neigh]] == 0) {
+						console.log("Pair nodes: " + node + " " + neighbours[neigh]);
+	
+						// set this pair as checked for this round
+						pairMat[node][neighbours[neigh]] = 1;
+						pairMat[neighbours[neigh]][node] = 1;
+	
+					// unconditional independence
+					//check if this is the first round				
+					// if(i==0) {
+						// console.time("independence");
+						var independent = independenceTest(nodes[node], nodes[neighbours[neigh]], []);
+						console.log("Independent: ", independent);
+						// console.timeEnd("independece");
+						if(independent) {
+							// keep the empty set in the independence Matrix
+							// setValueIndepMatrix(nodes[node], nodes[neighbours[neigh]], combo);
+							indepMat[node][neighbours[neigh]] = [];
+							indepMat[neighbours[neigh]][node] = [];
+							// remove the link between these nodes symmetrically
+							removeConnAdjMatrix(nodes[node], nodes[neighbours[neigh]], "symmetric");
+						}
 					}
 				}
 				// conditional independence
 				else {
+					console.log("Pair nodes: " + node + " " + neighbours[neigh]);
+
 					// get the whole set of other node's neighbours
 					var wholeSet = neighbours.filter(function(n) {
 						return n !== neighbours[neigh];
@@ -425,9 +447,6 @@ var PCSkeletonLearning = function() {
 						}
 					}	
 				}
-				// set this pair as checked for this round
-				pairMat[node][neighbours[neigh]] = 1;
-				pairMat[neighbours[neigh]][node] = 1;
 			}
 		}
 		i++;
@@ -442,12 +461,18 @@ var unmarriedCollider = function() {
 	for (var n1 in nodes) {
 		for (var n2 in nodes) {
 			if(pairMat[n1][n2] !== 1) {
-				// get neighbours of each node
-				var neigh1 = getNeighboursAdjMat(nodes[n1]);
-				var neigh2 = getNeighboursAdjMat(nodes[n2]);
+				// update the pair mat
+				pairMat[n1][n2] = 1;
+				pairMat[n2][n1] = 1;
+				// get symmetric neighbours of each node
+				// var neigh1 = getNeighboursAdjMat(nodes[n1]);
+				// var neigh2 = getNeighboursAdjMat(nodes[n2]);
+				var neigh1 = getSymNeighAdjMat(nodes[n1]);
+				var neigh2 = getSymNeighAdjMat(nodes[n2]);
+
 				var commonNeighs = _.intersection(neigh1, neigh2);
 				for (var c in commonNeighs) {
-					if(!_.contains(indepMat[n2][n2], commonNeighs[c])) {
+					if(!_.contains(indepMat[n1][n2], commonNeighs[c])) {
 						var source = nodes[commonNeighs[c]];
 						removeConnAdjMatrix(source, nodes[n1], "unsymmetric");
 						removeConnAdjMatrix(source, nodes[n2], "unsymmetric");	
@@ -458,7 +483,25 @@ var unmarriedCollider = function() {
 	}
 }
 
+// x → z − y ⇒ x → z → y
+var orientedGrandParent = function() {
+	for (var n in nodes) {
+		// check if a node has any inlinks
+		if(hasInLinks(nodes[n])) {
+			// check if a node has any unorientated edges
+			var symNeighs = getSymNeighAdjMat(nodes[n]);
+			// orientate the unorientated edges to be outlinks from the current node
+			for (var sn in symNeighs) {
+				removeConnAdjMatrix(nodes[symNeighs[sn]], nodes[n], "unsymmetric");
+			}
+		}
+	}
+}
+
 var PCOrientation = function() {
 	// unmarried collider rule
 	unmarriedCollider();
+	// orient a node to be a child if grandparent is oriented
+	// x → z − y ⇒ x → z → y
+	orientedGrandParent();
 }

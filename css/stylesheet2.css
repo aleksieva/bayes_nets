@@ -48,6 +48,11 @@ li > a.control:hover, li>a.control:focus {
 	background-color: #e7e7e7 !important;
 }
 
+li > a.disabled {
+	pointer-events:none;
+	color:gray !important;
+}
+
 #control {
 	height:78%;
 	overflow-y:auto; 

@@ -1,8 +1,7 @@
-var createNewEdge = function(sourceNode, targetNode, orient) {
+var createNewEdge = function(sourceNode, targetNode) {
 	//create a new edge
 	var newEdge = {source:sourceNode, target:targetNode};
-	// TODO remove?
-	newEdge["orientated"] = orient? true : false;
+
 	var duplicates = edges.filter(function(e){
 		//check if there is an edge in the opposite direction
 		//i.e an edge with reverse target and source to the new edges
