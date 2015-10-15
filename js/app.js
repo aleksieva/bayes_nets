@@ -6,7 +6,8 @@ var width,
 	constants;
 
 var	svg,
-	control;
+	control,
+	force;
 
 var nodes,
 	edges,
@@ -35,30 +36,7 @@ var setDefaultMode = function(){
 	//clear the display field
 	clearDisplayField();
 
-// 	if (mode === "sample") {
-// 		if(!sampleMode) {
-// 			sampleMode = true;
-// 			nodeMode = false;
-// 			connMode = false;
-// 			editNodeMode = false;
-// 			defaultMode = false;
-// 			d3.select("#node-mode")
-// 			  .classed("selected", false);
-// 			d3.select("#conn-mode")
-// 			  .classed("selected", false);
-// 			d3.select("#edit-mode")
-// 			  .classed("selected", false);
-// 			d3.select("#sample-net")
-// 			  .classed("selected", true);	
-// 			return;
-// 		}
-// 	}
-	defaultMode = true;
-// 	sampleMode = false;
-
-// 	d3.select("#sample-net")
-// 	  .classed("selected", false);		  
-	
+	defaultMode = true;	
 };
 
 //handle drag behaviour
@@ -89,6 +67,7 @@ var drag = d3.behavior.drag()
 			 	return {x: d.x, y:d.y};
 			 })
 			 .on("dragstart", function(){
+			 	force.stop();
 			 	d3.event.sourceEvent.stopPropagation();
 			 	svg.style("cursor", "pointer");
 			 })
@@ -130,55 +109,100 @@ var isEmptyString = function(text) {
 }
 
 var displayHelp = function() {
-	clearDisplayField();
-	//if sample mode - turn it off
-	// if(sampleMode) {
-	// 	setMode("sample");
-	// }
-	// setMode("");
-	//help page
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")
-		   .html("<span class='instructions-text-title'> Add a Node : </span> Select the \'Add Node\' mode and click on the work field.");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Edit Node Name: </span> Shift-click on the node.");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Edit Node: </span> Select the \'Edit Node \' mode and click on the node to edit.");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Delete Node: </span> In \'Edit Node \' mode for the node you want to delete - click \'Delete Node \' button or in any mode press Backspace/Delete");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Add Link: </span> In \'Add Link \' mode drag a line from one node to another.");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Reverse Link: </span> Drag a link in the opposite direction of the already existing link to reverse it.");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Delete Link: </span> Select a link by clicking on it and press Backspace/Delete.");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")	
-		   .html("<span class='instructions-text-title'> Sample Data: </span> Select \'Sample from Network\' mode and in the settings menu that will appear on the right side of the screen select any values that you want to be fixed and the number of samples and click \'Run\'.");
-	control.append("p")
-		   .attr("class", "instructions-text text-justified")
-		   .html("<span class='instructions-text-title'> Learn Probabilities </span> Click on \'Learn from Sample\' and upload sample data .csv file where the node titles are equivalent to the ones in the network.")
+	// clearDisplayField();
+
+// 	setInterval(function() {
+// 	//help page
+// 	// setTimeout(function() {
+// 		clearDisplayField();
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")
+// 			   .html("<span class='instructions-text-title'> Add a Node: </span> Double-click on the canvas.");
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")	
+// 			   .html("<span class='instructions-text-title'> Edit Node: </span> Click on the node and edit its name, CPT or values it can take from the menu on the right.");
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")	
+// 			   .html("<span class='instructions-text-title'> Delete Node: </span> Right-click on the node and select <span class='instructions-text-control'>\'Remove Node\'</span>.");
+// 	// }, 3000);
+// 	setTimeout(function() {
+// 		clearDisplayField();
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")	
+// 			   .html("<span class='instructions-text-title'> Add Link: </span> Select a node and click on it simulataneously dragging to the node you want to connect it to.");
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")	
+// 			   .html("<span class='instructions-text-title'> Delete Link: </span> Right-click on the link and select <span class='instructions-text-control'>\'Remove Link\'</span>.");
+// 	}, 1000);
+// 	setTimeout(function() {
+// 		clearDisplayField();
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")	
+// 			   .html("<span class='instructions-text-title'> Sample Data: </span> Select <span class='instructions-text-control'>\'Sample from Network\'</span> option from <span class='instructions-text-control'>\'My Network\'</span> control. In the settings menu that will appear on the right side of the screen select any values that you want to be fixed and the number of samples and click <span class='instructions-text-control'>\'Run\'</span>.");
+// 	}, 2000);
+// 	setTimeout(function() {
+// 		clearDisplayField();
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")
+// 			   .html("<span class='instructions-text-title'> Load a Dataset: </span> From the <span class='instructions-text-control'>\'Load\\Save\'</span> menu option - select either <span class='instructions-text-control'>\'Use Toy Dataset\'</span> option or <span class='instructions-text-control'>\'Import CSV\'</span> to import a .csv file.");
+// 	}, 3000);
+// 	setTimeout(function() {
+// 		clearDisplayField();
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")
+// 			   .html("<span class='instructions-text-title'> Learn Network Structure: </span> After loading a dataset, select <span class='instructions-text-control'>\'Learn Structure\'</span> option from <span class='instructions-text-control'>\'My Network\'</span> menu.");
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")
+// 			   .html("<span class='instructions-text-title'> Learn Network CPTs: </span> After loading a dataset, select <span class='instructions-text-control'>\'Learn Parameters\'</span> option from <span class='instructions-text-control'>\'My Network\'</span> menu.")
+// 	}, 4000);
+// 	setTimeout(function() {
+// 		clearDisplayField();
+// 		control.append("p")
+// 			   .attr("class", "instructions-text text-justified")
+// 			   .html("Other options you can explore are importing/exporting different file formats and using pre-loaded data."); 
+// 	}, 5000);		
+// },500);
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")
+	// 	   .html("<span class='instructions-text-title'> Add a Node: </span> Double-click on the canvas.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")	
+	// 	   .html("<span class='instructions-text-title'> Edit Node: </span> Click on the node and edit its name, CPT or values it can take from the menu on the right.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")	
+	// 	   .html("<span class='instructions-text-title'> Delete Node: </span> Right-click on the node and select <span class='instructions-text-control'>\'Remove Node\'</span>.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")	
+	// 	   .html("<span class='instructions-text-title'> Add Link: </span> Select a node and click on it simulataneously dragging to the node you want to connect it to.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")	
+	// 	   .html("<span class='instructions-text-title'> Delete Link: </span> Right-click on the link and select <span class='instructions-text-control'>\'Remove Link\'</span>.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")	
+	// 	   .html("<span class='instructions-text-title'> Sample Data: </span> Select <span class='instructions-text-control'>\'Sample from Network\'</span> option from <span class='instructions-text-control'>\'My Network\'</span> control. In the settings menu that will appear on the right side of the screen select any values that you want to be fixed and the number of samples and click <span class='instructions-text-control'>\'Run\'</span>.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")
+	// 	   .html("<span class='instructions-text-title'> Load a Dataset: </span> From the <span class='instructions-text-control'>\'Load\\Save\'</span> menu option - select either <span class='instructions-text-control'>\'Use Toy Dataset\'</span> option or <span class='instructions-text-control'>\'Import CSV\'</span> to import a .csv file.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")
+	// 	   .html("<span class='instructions-text-title'> Learn Network Structure: </span> After loading a dataset, select <span class='instructions-text-control'>\'Learn Structure\'</span> option from <span class='instructions-text-control'>\'My Network\'</span> menu.");
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")
+	// 	   .html("<span class='instructions-text-title'> Learn Network CPTs: </span> After loading a dataset, select <span class='instructions-text-control'>\'Learn Parameters\'</span> option from <span class='instructions-text-control'>\'My Network\'</span> menu.")
+	// control.append("p")
+	// 	   .attr("class", "instructions-text text-justified")
+	// 	   .html("Other options you can explore are importing/exporting different file formats and using pre-loaded data."); 
 }
 
-var displayAbout = function() {
+var displayInfo = function() {
 	clearDisplayField();
-	//if sample mode - turn it off
-	// if(sampleMode) {
-	// 	setMode("sample");
-	// }
 
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
 		   .html("Bayesian Networks are graphical models for reasoning under uncertainty.");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
-		   .html("Bayesian Networks are directed acyclic graphs(DAGs) so the designed networks should not contain cycles.");
+		   .html("Bayesian Networks are directed acyclic graphs(DAGs). Networks designed by the user should not contain cycles.");
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
 		   .html("BNs are represented by nodes and arcs, where the nodes are random variables and an arc shows a direct causal connections between a parent node and a child node.");
@@ -187,10 +211,23 @@ var displayAbout = function() {
 		   .html("Each node can have up to 10 values. The values need to be discrete, mutually exclisive and exhaustive for the domain. The default values for each node are 1 and 0 (True and False).")
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
-		   .html("To generate sample data from a network Ancestral(Direct) Sampling algorithm is used. If the user needs to, they can fix the values for any of the nodes. Thus the sampling method might also act as a classifier.")
+		   .html("Ancestral(Direct) Sampling algorithm is used to generate sample data from a network. The user can fix the values for any of the nodes. If all the values but one are fixed the sampling method will also act as a classifier.")
+
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("The structure and the parameters of a network can be learnt from sample data. The algorithm used for learning a structure is called the PC Algorithm.")
 	control.append("p")
 		   .attr("class", "instructions-text text-justified")
 		   .html("If there is a network with known structure but not known probabilities for the random variables, sample data can be used to learn the probabilities for the network.")
+}
+
+var displayAbout = function() {
+	clearDisplayField();
+	// TODO
+	control.append("p")
+		   .attr("class", "instructions-text text-justified")
+		   .html("This tool has been developed as a third year project by Anna Aleksieva in the School of Computer Science.");
+
 }
 
 var refresh = function(){
@@ -261,44 +298,16 @@ var refresh = function(){
     		   	 d3.select(this)
     		   	   .select("circle")
     		   	   .attr("r", radius + 2);
-    		   	//move out the linking points if shown
-    		   	 var lpoints = d3.select(this)
-    		   	   .selectAll(".link-node");
-    		   	 lpoints.each(function() {
-    		   	 	var xPos = parseInt(d3.select(this).attr("cx"));
-    		   	 	var offset = 2;
-    		   	 	if (xPos > 0) {
-    		   	 		xPos += 2;
-    		   	 	}
-    		   	 	else {
-    		   	 		xPos -= 2;
-    		   	 	}
-    		   	 	d3.select(this).attr("cx", xPos);
-    		   	 });
     		   })
     		   .on("mouseout", function(d){
     		   	//shrink the circle
     		   	 d3.select(this)
     		   	   .select("circle")
     		   	   .attr("r", radius- 2);
-    		   	//move in the linking points if shown
-    		   	 var lpoints = d3.select(this)
-    		   	   .selectAll(".link-node");
-    		   	 lpoints.each(function() {
-    		   	 	var xPos = parseInt(d3.select(this).attr("cx"));
-    		   	 	var offset = 2;
-    		   	 	if (xPos > 0) {
-    		   	 		xPos -= 2;
-    		   	 	}
-    		   	 	else {
-    		   	 		xPos += 2;
-    		   	 	}
-    		   	 	d3.select(this).attr("cx", xPos);
-    		   	 });
     		   })
 			   .on("mousedown", function(d){
     		      d3.event.stopPropagation();
-    		      nodeMouseDown(d);
+    		      nodeMouseDown(d, d3.event.which);
     		   })
 			   .on("mouseup", function(d){
 			   	  //need to have propagation for dragging
@@ -375,6 +384,18 @@ var deleteData = function(){
 	  .classed("disabled", true);
 	d3.select("#learnParams")
 	  .classed("disabled", true);
+
+	// update glyphicons if changes have happened
+	d3.select("#glyphicon-struct").remove();
+	d3.select("#p-struct").append("span")
+						  .attr("id", "glyphicon-struct")
+						  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+						  .attr("aria-hidden", "true");	
+	d3.select("#glyphicon-params").remove();
+	d3.select("#p-params").append("span")
+						  .attr("id", "glyphicon-params")
+						  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+						  .attr("aria-hidden", "true");	  
 }
 
 var deleteNetwork = function(isConfirm, all) {
@@ -405,27 +426,31 @@ var deleteNetwork = function(isConfirm, all) {
 }
 
 var forceLayout = function(nodes, links) {
-	var force = d3.layout.force()
-				  .size([width, height])
-				  .nodes(nodes)
-				  .links(links)
-				  // TODO change
-				  .linkDistance(width/2);
-	// console.log("force");
+	// var force = d3.layout.force()
+	// 			  .size([width, height])
+	// 			  .nodes(nodes)
+	// 			  .links(links)
+	// 			  // TODO change
+	// 			  .linkDistance(30)
+	// 			  .charge(-120);
+	// // console.log("force");
 
-	force.on("end", function(){
-		// update positions of nodes
-        circles.attr("transform", function(d){
-        	console.log("translate(" + d.x + "," + d.y + ")");
-        	return "translate(" + d.x + "," + d.y + ")";
-        });
+	// force.on("end", function(){
+	// 	// update positions of nodes
+ //        circles.attr("transform", function(d){
+ //        	console.log("translate(" + d.x + "," + d.y + ")");
+ //        	return "translate(" + d.x + "," + d.y + ")";
+ //        });
 
-		// update positions of links
-		paths.attr("d", function(d){
-		 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;			
-		})
-	});
-	force.start();
+	// 	// update positions of links
+	// 	paths.attr("d", function(d){
+	// 	 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;			
+	// 	})
+	// });
+	// force.start();
+	force.nodes(nodes)
+		 .links(links)
+		 .start();
 }
 
 var maxNodeId = function(){
@@ -472,15 +497,31 @@ var init = function() {
 	
 	//work mode
 	defaultMode = true;
-	// nodeMode = false;
-	// connMode = false;
-	// editNodeTextMode = false;
-	// editNodeMode = false;
-	// sampleMode = false;
 
 	nodes = [];
 	edges = [];
 	lastID=1;
+
+	// initialise force layout
+	force = d3.layout.force()
+				  .size([width, height])
+				  // TODO change
+				  .linkDistance(150)
+				  .charge(-250);
+
+	force.on("tick", function(){
+		// update positions of nodes
+        circles.attr("transform", function(d){
+        	// console.log("translate(" + d.x + "," + d.y + ")");
+        	return "translate(" + d.x + "," + d.y + ")";
+        });
+
+		// update positions of links
+		paths.attr("d", function(d){
+		 	return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;			
+		})
+	});
+	// end 
 
 	control = d3.select("#control");
 
@@ -582,19 +623,31 @@ var init = function() {
 	d3.select("#hidden-upload-3")
 	  .on("change", uploadBif);
 
+	//help info about the tool controls
 	d3.select("#help")
 	  .on("click", function(){
 	  	//display instructions
 	  	displayHelp();
 	  });
+	// about the tool
 	d3.select("#about")
 	  .on("click", function(){
 	  	//display info
 	  	displayAbout();
 	  });
+	// about BNs
+	d3.select("#info")
+	  .on("click", function(){
+	  	// TODO links to helpful websites
+	  	displayInfo();
+	  });
+
+	// example networks
 	d3.select("#loadNet")
 	  .on("click", loadExampleNetworks);
-
+	// example datasets
+	d3.select("#loadData")
+	  .on("click", loadExampleData);
 	//download a png image of the current state of the svg
 	d3.select("#downloadImg")
 	  .on("click", function() {
@@ -621,4 +674,4 @@ var init = function() {
 }();
 
 //Initialise
-loadDefaultNetwork("files/burglaryNetFull.json", true);
+loadDefaultNetwork("files/nets/burglaryNetFull.json", true);

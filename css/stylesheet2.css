@@ -38,10 +38,16 @@ body {
 	text-decoration: none !important;
 }
 
+/*change width of the dropdown menu*/
+.dropdown-menu {
+	min-width: 200px;
+}
+
 /*TODO change appearance when clicked */
 li > a.control {
 	color:#0489B1 !important; 
 	text-decoration: none !important;
+	white-space: inherit ! important;	
 }
 
 li > a.control:hover, li>a.control:focus {
@@ -54,8 +60,8 @@ li > a.disabled {
 }
 
 #control {
-	height:78%;
-	overflow-y:auto; 
+	/*height:78%;*/
+	overflow-x:auto; 
 }
 
 #footer {
@@ -149,26 +155,45 @@ hr {
 }
 
 /* Tables and Components */
+#div-update-btn {
+	overflow-y: auto;
+}
+
 .div-table {
 	width :100%;
 	height: 188px;
-	overflow: auto;
+	/*overflow-y: auto;*/
 	margin-bottom: 10px;
 }
 
 .sample-table {
 	width :100%;
-	height: 328px;
-	overflow: auto;	
+	/*height: 328px;*/
+	overflow-x: auto;	
 }
 
 .table-bayes {
+	/*border: 1px solid #DDDDDD;*/
+	/*border-radius: 2px;*/
     /*table-layout: fixed;*/
     /*word-wrap: break-word;*/
 }
+/* format the cpt table only*/
+.cpt-table {
+	border: 1px solid #DDDDDD;
+	border-radius: 2px;	
+}
+
+.cpt-table>thead>tr>th {
+	border:1px solid #DDDDDD !important;	
+}
+
+.cpt-table>tr>td {
+	border:1px solid #DDDDDD;
+}
 
 .form-group {
-	overflow-x:scroll;
+	/*overflow-x:scroll;*/
 }
 .table-dialog {
 	margin-bottom: 0 !important;
@@ -183,15 +208,15 @@ th {
 td {
 	text-align: center;
 	color : gray;
-	padding-top:1px;	
+	padding-top:1px;
 }
 
 /* table inputs */
 .editable > input {
 	width:60px;
 	text-align: center;
-	border: 1px solid gray;
-	border-radius: 5px;
+	border: 1px solid #2E9DBE;
+	border-radius: 4px;
 	padding: 4px;
 }
 
@@ -337,6 +362,12 @@ path.conn.orientated {
 	color : #0489B1;
 	padding-top: 5px;
 	font-weight:200px;
+}
+
+.instructions-text-control {
+	font-size: 14px;
+	font-family: sans-serif;
+	color : black;
 }	
 
 .label-text {
@@ -369,6 +400,11 @@ path.conn.orientated {
 	padding: 5px;
 }
 
+/*Dataset on toggle*/
+.navbar-text {
+	margin-left: 15px;
+}
+
 /* CSV dialog box*/
 .csv-settings-text {
 	padding-top: 7px;
@@ -379,4 +415,13 @@ path.conn.orientated {
 input.csv-header {
 	color:#0489B1;
 	text-align: center;
+}
+
+/*Glyphicons style*/
+.glyphicon-navbar-ban {
+	color: red;
+}
+
+.glyphicon-navbar-ok {
+	color: green;
 }

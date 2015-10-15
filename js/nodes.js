@@ -104,7 +104,13 @@ var editableNodeLabel = function(node) {
 
 					// if csv data is set update the csv column name
 					if(csvData) {
-						// TODO
+						// rename the csvData
+						csvData.forEach(function(row) {
+							row[node.title] = row[prevTitle];
+							delete row[prevTitle];
+						})
+						// generate new fData
+						fData = formatUploadSample(csvData);
 					}
 				}
 		   });	
@@ -513,14 +519,14 @@ var displayNodeInfo = function(node) {
 
 }
 
-var nodeMouseDown = function(d){
+var nodeMouseDown = function(d, eventNum){
 	//TODO move to refresh?
 	mousedownNode = d;
 
 	// if(connMode) {
 	// enter connection mode if clicking again on the selected node with the left mouse button
 	// event.which -> 1: left mouse btn, 2: middle mouse btn, 3: right mouse btn
-	if(selectedNode === d && event.which == 1) {
+	if(selectedNode === d && eventNum == 1) {
 		//set the connection mode
 		connecting = true;
 		//reposition the dragline to the center of the node

@@ -93,6 +93,17 @@ var uploadNetwork = function(){
 		d3.select("#dataset-name")
 		.html("Dataset: " + uploadFile.name)
 		.classed("notice-text", true);
+		// update glyphicons if changes have happened
+		d3.select("#glyphicon-struct").remove();
+		d3.select("#p-struct").append("span")
+							  .attr("id", "glyphicon-struct")
+							  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+							  .attr("aria-hidden", "true");	
+		d3.select("#glyphicon-params").remove();
+		d3.select("#p-params").append("span")
+							  .attr("id", "glyphicon-params")
+							  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+							  .attr("aria-hidden", "true");
 
 		fileReader.onload = function(){
 			var txt = fileReader.result;
@@ -157,12 +168,38 @@ var uploadNetwork = function(){
 
 //Initialise
 var loadDefaultNetwork = function(filepath, isInitial, val) {
+	// get file's name
+	var fileName = filepath.split("/")[filepath.split("/").length-1];
+	// update dataset header
+	d3.select("#dataset-name")
+		.html("Dataset: " + fileName)
+		.classed("notice-text", true);
+
+	// disable learning controls
+	d3.select("#learnStruct")
+	  .classed("disabled", true);
+	d3.select("#learnParams")
+	  .classed("disabled", true);
+	  
+	// update glyphicons if changes have happened
+	d3.select("#glyphicon-struct").remove();
+	d3.select("#p-struct").append("span")
+						  .attr("id", "glyphicon-struct")
+						  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+						  .attr("aria-hidden", "true");	
+	d3.select("#glyphicon-params").remove();
+	d3.select("#p-params").append("span")
+						  .attr("id", "glyphicon-params")
+						  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+						  .attr("aria-hidden", "true");
+
+
 	//delete previous network
 	deleteNetwork(false);
-	d3.json(filepath, function(error, netData) {		
-	  // console.log(netData);
+	d3.json(filepath, function(error, netData) {
+	// process the nodes
 	  nodes = netData.nodes;
-	  // console.log(nodes); 
+	  // process the edges
 	  var rawEdges = netData.edges;
 	  rawEdges.forEach(function(e, index){
 	  	var src = nodes.filter(function(n) {
@@ -182,7 +219,7 @@ var loadDefaultNetwork = function(filepath, isInitial, val) {
 	  //render  
 	  refresh();
 	  //set mode to default
-	  setDefaultMode();
+	  // setDefaultMode();
 	  if (isInitial) {
 		//display instructions
 		displayHelp();
@@ -193,25 +230,34 @@ var loadDefaultNetwork = function(filepath, isInitial, val) {
 	});
 };
 
+// local filepath to example network
 var identifyExampleNetFilepath = function(val) {
 	if(val === "rain") {
-		loadDefaultNetwork("files/wetGrassNet.json", false, val)		
+		loadDefaultNetwork("files/nets/wetGrassNet.json", false, val)		
 	}
 	else if(val === "burglary") {
-		loadDefaultNetwork("files/burglaryNetFull.json", false, val)
+		loadDefaultNetwork("files/nets/burglaryNetFull.json", false, val)
 	}
 	else if(val === "cancer") {
-		loadDefaultNetwork("files/cancerNet.json", false, val)		
+		loadDefaultNetwork("files/nets/cancerNet.json", false, val)		
 	}
 	else if(val === "bronchitis") {
-		loadDefaultNetwork("files/smokerBronchitis.json", false, val)
+		loadDefaultNetwork("files/nets/smokerBronchitis.json", false, val)
 	}
-}
+	else if(val === "asia") {
+		loadDefaultNetwork("files/nets/asia.json", false, val);
+	}
+	else if(val === "alarm") {
+		loadDefaultNetwork("files/nets/alarm.json", false, val);
+	}
+};
 
+// example networks
 var loadExampleNetworks = function(selValue) {
 	clearDisplayField();
 	// deselect the node if such is selected
 	selectedNode = null;
+	selectedPath = null;
 	refresh();
 
 	//append select for different example networks
@@ -233,21 +279,27 @@ var loadExampleNetworks = function(selValue) {
 		  .attr("value", "none")
 		  .attr("disabled", true)
 		  .attr("selected", true)
-		  .text("Select Network")
+		  .text("Select Network:")
 	select.append("option")
-		  .attr("value", "rain")
-		  .text("Rain Network");
+		  .attr("value", "alarm")
+		  .text("Alarm");	  
 	select.append("option")
-		  .attr("value", "burglary")
-		  .text("Burglary Network");
-	select.append("option")
-		  .attr("value", "cancer")
-		  .text("Cancer Network");
+		  .attr("value", "asia")
+		  .text("Asia");
 	select.append("option")
 		  .attr("value", "bronchitis")
-		  .text("Basic Bronchitis Network");
+		  .text("Basic Bronchitis");
+	select.append("option")
+		  .attr("value", "burglary")
+		  .text("Burglary");
+	select.append("option")
+		  .attr("value", "cancer")
+		  .text("Cancer");
+	select.append("option")
+		  .attr("value", "rain")
+		  .text("Rain");		  
 
-	control.append("hr");
+	// control.append("hr");
 
 	var options = select.selectAll("option")[0];
 	options.forEach(function(option) {
@@ -255,8 +307,116 @@ var loadExampleNetworks = function(selValue) {
 			d3.select(option)
 			  .attr("selected", true);
 		}
+	});
+};
+
+// load a dataset
+var loadDataset = function(filepath, val) {
+	// get file's name
+	var fileName = filepath.split("/")[filepath.split("/").length-1];
+	// update dataset header
+	d3.select("#dataset-name")
+		.html("Dataset: " + fileName)
+		.classed("notice-text", true);	
+
+	// load the data
+	d3.csv(filepath, function(data){
+		// get the csv data
+		csvData = data;
+		//reformat the data
+		fData = formatUploadSample(csvData);
+		//get the variables names and create nodes
+		createNodes(fData);
+		// keep the select on the right-side menu
+		loadExampleData(val);
 	})
-}
+
+	// update the controls
+	d3.select("#learnStruct")
+	  .classed("disabled", false);
+	d3.select("#learnParams")
+	  .classed("disabled", false);
+
+	// update glyphicons if changes have happened
+	d3.select("#glyphicon-struct").remove();
+	d3.select("#p-struct").append("span")
+						  .attr("id", "glyphicon-struct")
+						  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+						  .attr("aria-hidden", "true");	
+	d3.select("#glyphicon-params").remove();
+	d3.select("#p-params").append("span")
+						  .attr("id", "glyphicon-params")
+						  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+						  .attr("aria-hidden", "true");
+};
+
+// dataset filepath
+var identifyExampleDataFilepath = function(val) {
+	if (val === "cancer") {
+		loadDataset("files/datasets/cancer80000.csv", val);
+	}
+	// else if (val === "asia") {
+	// 	loadDataset("files/datasets/asia50000.csv", val);
+	// }
+	else if (val === "rain") {
+		loadDataset("files/datasets/rain1000.csv", val);
+	}
+	else if (val === "burglary") {
+		loadDataset("files/datasets/burglary20000.csv", val);
+	}
+};
+
+// example datasets
+var loadExampleData = function(selected) {
+	clearDisplayField();
+	// deselect the node if such is selected
+	selectedNode = null;
+	selectedPath = null;
+	refresh();
+
+	//append select for different example networks
+	var form = control.append("div")
+					  .attr("class", "form-group")
+
+	form.append("label")
+		.attr("for", "example-dataset")
+		.attr("class", "label-text")
+		.text("Select an example dataset from the menu: ")
+
+	var select = form.append("select")
+					 .attr("id", "example-dataset")
+					 .attr("class", "form-control")
+					 .on("change", function() {
+					 	identifyExampleDataFilepath(this.options[this.selectedIndex].value);
+					 });
+	select.append("option")
+		  .attr("value", "none")
+		  .attr("disabled", true)
+		  .attr("selected", true)
+		  .text("Select Dataset:")
+	// select.append("option")
+	// 	  .attr("value", "asia")
+	// 	  .text("Asia")
+	select.append("option")
+		  .attr("value", "burglary")
+		  .text("Burglary");
+	select.append("option")
+		  .attr("value", "cancer")
+		  .text("Cancer");
+	select.append("option")
+		  .attr("value", "rain")
+		  .text("Rain");		  
+
+	// used when the function is called after a dataset is loaded and we want to keep the select menu
+	// sets the select to the correct selected value
+	var options = select.selectAll("option")[0];
+	options.forEach(function(option) {
+		if(option.value === selected) {
+			d3.select(option)
+			  .attr("selected", true);
+		}
+	});
+};
 
 //download the canvas as png format
 var downloadPNG = function(filename) {
@@ -406,6 +566,17 @@ var uploadBif = function() {
 		.html("Dataset: " + uploadFile.name)
 		.classed("notice-text", true);
 
+		// update glyphicons if changes have happened
+		d3.select("#glyphicon-struct").remove();
+		d3.select("#p-struct").append("span")
+							  .attr("id", "glyphicon-struct")
+							  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+							  .attr("aria-hidden", "true");	
+		d3.select("#glyphicon-params").remove();
+		d3.select("#p-params").append("span")
+							  .attr("id", "glyphicon-params")
+							  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+							  .attr("aria-hidden", "true");
 		fileReader.onload = function(event){
 			// TODO make local var
 			txtBif = fileReader.result;
@@ -442,4 +613,60 @@ var uploadBif = function() {
 		  }
 		});			
 	}	
+}
+
+// loading image when running function
+var loader = function() {
+  return function() {
+    // var radius = 100;
+    // var tau = 2 * Math.PI;
+
+    // var arc = d3.svg.arc()
+    //         .innerRadius(radius*0.7)
+    //         .outerRadius(radius*0.9)
+    //         .startAngle(0);
+
+    var loaderG = svg.append("g")
+        .attr("id", "imgLoader")
+        .attr("transform", "translate(" + (svg.attr("width") / 2 - 240) + "," + (svg.attr("height") / 2 -160) + ")");
+
+    var img = loaderG.append("image")
+                 .attr("x", 0)
+                 .attr("y", 0)
+                 .attr("width", 480)
+                 .attr("height", 320)
+                 .attr("xlink:href", "img/loading.gif")
+    // var text = loaderG.append("text")
+				// 	.attr("x", -35)
+    //                 .attr("y", 0)
+    //                 .text("Loading...")
+    //                 .attr("font-family", "sans-serif")
+    //                 .attr("font-size", "20px")
+    //                 .attr("fill", "#CC0B7C");    
+
+    // var background = loaderG.append("path")
+    //         .datum({endAngle: 0.33*tau})
+    //         .style("fill", "#CC0B7C")
+    //         .attr("d", arc)
+    //         .call(spin, 1500)
+
+    // function spin(selection, duration) {
+    //     selection.transition()
+    //         .ease("linear")
+    //         .duration(duration)
+    //         .attrTween("transform", function() {
+    //             return d3.interpolateString("rotate(0)", "rotate(360)");
+    //         });
+
+    //     setTimeout(function() { spin(selection, duration); }, duration);
+    // }
+
+    // function transitionFunction(path) {
+    //     path.transition()
+    //         .duration(7500)
+    //         .attrTween("stroke-dasharray", tweenDash)
+    //         .each("end", function() { d3.select(this).call(transition); });
+    // }
+
+  };
 }

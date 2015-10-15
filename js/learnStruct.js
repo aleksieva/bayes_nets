@@ -5,6 +5,11 @@ var indepMat;
 // matrix to track whether this pair has already been checked at this round
 var pairMat;
 
+// remove success message
+var removeSuccessMsg = function() {
+	d3.select("#outer-control").select("div.alert-text").remove();
+}
+
 //main function to handle the structure learning workflow
 var learnStructure = function() {
 	// if data has not been uploaded, warn the user 
@@ -28,33 +33,48 @@ var learnStructure = function() {
 		initialiseIndepMatrix();
 		// set p(X=x) for all nodes
 		preliminaryProbabilities();
-		//learn the structure
-		console.time("skeleton learning");
-		PCSkeletonLearning();
-		console.timeEnd("skeleton learning");
-		// learn the orientation
-		PCOrientation();
-		// build the resulting structure
-		createConnsFromAdjMatrix();
+		// show the loading image
+		var loaderImg = loader();
+		loaderImg();
 
-		// add force layout
-		// forceLayout(nodes, edges);
-		// refresh();
+		setTimeout(function(){
+			//learn the structure
+			// console.time("skeleton learning");
+			PCSkeletonLearning();
+			// console.timeEnd("skeleton learning");
+			// learn the orientation
+			PCOrientation();
+			// build the resulting structure
+			createConnsFromAdjMatrix();
 
-		//success message
-		var successDiv = control.insert("div", "h3.node-label")
-								.attr("class", "alert-text alert alert-success");
-		successDiv.append("span")
-				 	.attr("class", "glyphicon glyphicon-ok")
-					.attr("aria-hidden", "true");
-		successDiv.append("span")
-					.attr("class", "sr-only")
-					.text("Success");
-		var text = successDiv.html() + " Network structure has been successfully learnt.";
-		successDiv.html(text);
+			// remove loading image
+			d3.select("#imgLoader").remove();
+			// add force layout
+			forceLayout(nodes, edges);
+			// refresh();
 
+			// update glyphicon for structure
+			d3.select("#glyphicon-struct").remove();
+			d3.select("#p-struct").append("span")
+								  .attr("id", "glyphicon-struct")
+								  .attr("class", "glyphicon glyphicon-ok-circle glyphicon-navbar-ok")
+								  .attr("aria-hidden", "true");
+			//success message
+			var successDiv = d3.select("#outer-control").insert("div", "#control")
+			// var successDiv = d3.select("#control").append("div")
+									.attr("class", "alert-text alert alert-success");
+			successDiv.append("span")
+					 	.attr("class", "glyphicon glyphicon-ok")
+						.attr("aria-hidden", "true");
+			successDiv.append("span")
+						.attr("class", "sr-only")
+						.text("Success");
+			var text = successDiv.html() + " Network structure has been successfully learnt.";
+			successDiv.html(text);
+		}, 1000);
+			
 		//remove after 3 seconds
-		setTimeout(removeAlertMsg, 3000);		
+		setTimeout(removeSuccessMsg, 3000);		
 	}
 }
 
@@ -193,36 +213,18 @@ var mi = function(x, y) {
 	for (xVal in x.values) {
 		for (yVal in y.values) {
 			// calculate the joint probablity p(X=x,Y=y)
-			// console.time("indexes intersection");
-			// // var indexes =[];
-			// var indexesX = [];
-			// x.csvData.forEach(function(cell, i) {
-			// 	if(cell == valuesX[xVal]) {
-			// 		// indexes.push(i);
-			// 		indexesX.push(i);
-			// 	}
-			// });
-			// // y.csvData.forEach(function(cell, i) {
-			// // 	if(cell !== valuesY[yVal] && _.contains(indexes, i)) {
-			// // 		indexes.splice(indexes.indexOf(i), 1);
-			// // 	}
-			// // });
-			// var indexesY = [];
-			// y.csvData.forEach(function(cell, i){
-			// 	if(cell == valuesY[yVal]) {
-			// 		indexesY.push(i);
-			// 	}
-			// })
-			// var jointOccurrences = _.intersection(indexesX, indexesY).length;
-			// console.timeEnd("indexes intersection");
-			// var pXY = jointOccurrences / x.csvData.length;
-			// pXY = indexes.length / x.csvData.length;
 			var jointOccurrences = _.filter(csvData, function(row) {
 				return row[x.title] == x.values[xVal] && row[y.title] == y.values[yVal];
 			}).length;
+			// pseudo count for this value assignment for x and y
+			var Cxy = 1;
+			//summed pseudo count for possible value assignments
+			var Csum = x.values.length * y.values.length;
+			// calculate the joint probability with pseudo counts
 			var pXY = jointOccurrences / csvData.length;
+			// var pXY = (jointOccurrences + Cxy)/ (csvData.length+Csum);
+
 			// calculate this round
-			// TODO add pseudo counts
 			var val;
 			if(pXY != 0) {
 				val = pXY * Math.log(pXY / (x.probValues[x.values[xVal]] * y.probValues[y.values[yVal]]));
@@ -238,37 +240,22 @@ var mi = function(x, y) {
 
 // calculate conditional mutual information recursively
 // var condMI = function(counter, x, y, set, csvZ) {
-var condMI = function(counter, x, y, set, filterObj) {	
+var condMI = function(counter, x, y, set, filterObj, dof) {	
 	var sum = 0;
 	// base case
 	// all z values are fixed -> loop through x and y possible values
 	if (counter == set.length) {
-		// var xValues = x.values;
-		// var yValues = y.values;
-
 		// calculate Nz
-		// var Nz = _.where(csvData, filterObj).length; 
 		var csvZ = _.where(csvData, filterObj);
 
 		for (var xVal in x.values) {
 			// add x and its value to a new object
 			var xObj = {};
-			// _.extend(xObj, filterObj);
 			xObj[x.title] = x.values[xVal];
 			// calculate Nxz
-			// var Nxz = _.where(csvData, xObj).length;
 			var Nxz = _.where(csvZ, xObj).length;
 
 			for (var yVal in y.values) {
-				// Nxz = _.filter(csvZ, function(row){
-				// 	return row[x.title] === x.values[xVal];
-				// });
-				// Nyz = _.filter(csvZ, function(row){
-				// 	return row[y.title] === y.values[yVal];
-				// });
-				// Nxyz = _.intersection(Nxz, Nyz);
-
-
 				// add y and its value to the filter object
 				xObj[y.title] = y.values[yVal];
 				// calculate Nxyz
@@ -284,6 +271,9 @@ var condMI = function(counter, x, y, set, filterObj) {
 
 				// calculate the value for this round
 				// deal with 0s 
+				// TODO value with pseudo counts?
+				// WRONG
+				// (Nxyz + 1)/(N + |X||Y||Z|) * ln((Nxyz + 1)(Nz + |X|)(Nz + |Y|)/((Nz + |X||Y|)*Nxz*Nyz)
 				if(Nxyz === 0) {
 					// TODO pseudo counts
 					var valRound = 0;
@@ -292,6 +282,7 @@ var condMI = function(counter, x, y, set, filterObj) {
 					// var valRound = (Nxyz / csvData.length) * Math.log((Nxyz * Nz)/(Nxz * Nyz));
 					var valRound = (Nxyz / csvData.length) * Math.log((Nxyz * csvZ.length)/(Nxz * Nyz));					
 				}
+				// var valRound = ((Nxyz + 1)/(csvData.length + dof)) * Math.log(((Nxyz+1)*(csvZ.length+x.values.length)*(csvZ.length+y.values.length))/((csvZ.length + x.values.length * y.values.length) * Nxz * Nyz));
 				// console.log("value: " + valRound);
 				sum += valRound;
 			}
@@ -303,18 +294,13 @@ var condMI = function(counter, x, y, set, filterObj) {
 		// console.log(currZ);
 		counter ++;
 		for (var val in currZ.values) {
-			// var newCsvZ = _.filter(csvZ, function(row){
-			// 	return row[currZ.title] === currZ.values[val];
-			// })
-			// var partSum = condMI(counter, x, y, set, newCsvZ);
-
 			// create new object to hold the value of this iteration of current z
 			var currFilterObj = {};
 			_.extend(currFilterObj, filterObj);
 			// add z title and value to the object
 			currFilterObj[currZ.title] = currZ.values[val];
 			// go to the next level
-			var partSum = condMI(counter, x, y, set, currFilterObj);
+			var partSum = condMI(counter, x, y, set, currFilterObj, dof);
 
 			sum += partSum;
 		}
@@ -328,11 +314,6 @@ var condMI = function(counter, x, y, set, filterObj) {
 // test whether x and y are (un)conditionally independent
 // if set is [], then the unconditional case
 var independenceTest = function(x, y, set) {
-	// var mutInf = mutInfRecurs(0, x, y, set, csvData);
-	// console.log(mutInf);
-	// return 0;
-	// var valuesX = x.values;
-	// var valuesY = y.values;
 	var mutInf = null;	
 	var degreesOfFreedom = Math.abs(x.values.length -1) * Math.abs(y.values.length-1);
 	var alpha = 0.05;
@@ -348,7 +329,7 @@ var independenceTest = function(x, y, set) {
 	// conditional independence test
 	else {
 		// calculate degrees of freedom
-		// TODO check
+		// TODO observed combinations of z values
 		var zSumVals = 1;
 		for (var z in set) {
 			zSumVals *= nodes[set[z]].values.length;
@@ -356,8 +337,8 @@ var independenceTest = function(x, y, set) {
 		degreesOfFreedom = degreesOfFreedom * zSumVals;
 		criticalValue = chisqrdistr(degreesOfFreedom, alpha);
 
-		mutInf = condMI(0, x, y, set, {});
-		// mutInf = condMI(0, x, y, set, csvData);
+		// calculate conditional mutual information
+		mutInf = condMI(0, x, y, set, {}, degreesOfFreedom);
 	}
 
 	var gStatistic = 2 * csvData.length * mutInf;

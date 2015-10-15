@@ -185,8 +185,19 @@ var createNodes = function(fdata) {
 	});
 
 	// add to force layout
-	// forceLayout(nodes, edges);
+	forceLayout(nodes, edges);
 	refresh();
+
+	//warn the user that learning structure might take long time
+	var warningDiv = d3.select("#outer-control").insert("div", "#control")
+							.attr("class", "alert-text alert alert-warning")
+	warningDiv.append("span")
+			  .attr("class", "glyphicon glyphicon-info-sign")
+			  .attr("aria-hidden", "true");
+	var text = warningDiv.html() + " Learning the structure of a network is an NP algorithm. An attempt to learn the structure of a network bigger than 10 nodes might crash your browser."				  		  
+	warningDiv.html(text);
+	//remove after 3 seconds
+	setTimeout(removeSuccessMsg, 5000);	
 }
 
 var formatUploadSample = function(data) {
@@ -208,42 +219,53 @@ var formatUploadSample = function(data) {
 
 // check for missing values
 var checkMissingData = function() {
+	var flag = true;
 	csvData.forEach(function(row) {
 		var keys = Object.keys(row);
 		keys.forEach(function(key){
 			if(row[key] === undefined || isEmptyString(row[key])) {
-				bootbox.dialog({
-				  message: "Missing values in the dataset are not allowed.",
-				  buttons: {
-				    main: {
-				      label: "OK",
-				      className: "btn-bayes-short",
-				    },
-				  }
-				});
-				return false;					
+				flag = false;
 			}
-		})
+		});
 	});
-	return true;
+
+	if (!flag) {
+		bootbox.dialog({
+		  message: "Missing values in the dataset are not allowed.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});
+	}
+
+	return flag;
 }
 
+// check if all the nodes have at least 2 observed values in the dataset
 var checkNoObservedValues = function() {
+	var flag = true;
 	Object.keys(fData).forEach(function(name){
 		if(_.uniq(fData[name]) < 2) {
-			bootbox.dialog({
-			  message: name + " does not have 2 observed values.",
-			  buttons: {
-			    main: {
-			      label: "OK",
-			      className: "btn-bayes-short",
-			    },
-			  }
-			});
-			return false;				
+			flag = false;
 		} 
 	});
-	return true;
+
+	if(!flag) {
+		bootbox.dialog({
+		  message:"Less than 2 observed values for a node are not allowed.",
+		  buttons: {
+		    main: {
+		      label: "OK",
+		      className: "btn-bayes-short",
+		    },
+		  }
+		});		
+	}
+	return flag;
+
 };
 
 // validate the csv data
@@ -252,8 +274,22 @@ var checkNoObservedValues = function() {
 var validateCsvData = function() {
 	var flag1 = checkMissingData();
 	var flag2 = checkNoObservedValues();
-	// TODO if it fails set the csvData and fData and rawTxt to null
-	// TODO dataset name & learning controls - handle
+	// if it fails set the csvData and fData and rawTxt to null
+	// dataset name & learning controls - handle
+	if(!(flag1 && flag2)) {
+		rawTxt = null;
+		csvData = null;
+		fData = null;
+		//update the dataset name
+		d3.select("#dataset-name")
+		  .html("Dataset: (none)")
+		  .classed("notice-text", false);
+		// disable learning controls
+		d3.select("#learnStruct")
+		  .classed("disabled", true);
+		d3.select("#learnParams")
+		  .classed("disabled", true);		  	
+	}
 
 	return flag1 && flag2;
 }
@@ -287,10 +323,8 @@ var processCsvData = function(radioVal, headers, firstLine) {
 	  .classed("disabled", false);
 	d3.select("#learnParams")
 	  .classed("disabled", false);
-
 };
 
-// var learnCPTSingleNode = function(level, parents, indexes, cpt) {
 var learnCPTSingleNode = function(level, parents, csv, cpt) {	
 	if (level === parents.length-1) {
 		var leafId = parents[level];
@@ -301,22 +335,16 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 		var values = leaf.values;
 
 		values.forEach(function(value) {
-			// TODO remove
+			// count number of occurrences
 			var occurrences = _.filter(csv, function(row) {
 				return row[leaf.title] === value;
 			});
-			var numOccurrences = _.filter(leaf.csvData, function(rowVal) {
-				return rowVal === value;
-			}).length;
-			// var occurrences = [];
-			// leaf.csvData.forEach(function(val, i) {
-			// 	if(val == value && _.contains(indexes,i)) {
-			// 		occurrences.push(i);
-			// 	}
-			// })
 			var entry = leafId + value;
 			// cpt[entry] = numOccurrences / leaf.csvData.length
-			cpt[entry] = occurrences.length / csv.length;
+			// pseudo counts
+			var Cij = 1;
+			var Cj = leaf.values.length;
+			cpt[entry] = (occurrences.length + Cij) / (csv.length + Cj);
 		});
 	}
 	else if(level < parents.length-1) {
@@ -332,19 +360,12 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 
 		//go through each value
 		values.forEach(function(value){
-			// TODO remove
+			// send as arguments the rows in csv data which match the condition for this level
 			var occurrences = _.filter(csv, function(row){
 				return row[parent.title] === value;
 			});
 			var entry = parentId + value;
 			learnCPTSingleNode(level, parents, occurrences, cpt[entry]);
-			// var newIndexes = [];
-			// parent.csvData.forEach(function(val, i) {
-			// 	if(val == value && _.contains(indexes,i)) {
-			// 		newIndexes.push(i);
-			// 	}
-			// });
-			// learnCPTSingleNode(level, parents, newIndexes, cpt[entry]);
 		});
 	}
 	else {
@@ -362,7 +383,6 @@ var learnCPTSingleNode = function(level, parents, csv, cpt) {
 
 // learn the CPT values for a node based on the data and the current structure 
 var learnCPTValues = function() {
-	// TODO remove
 	for(var key in fData) {
 		var node = nodes.filter(function(n){
 			return n.title === key;
@@ -373,14 +393,6 @@ var learnCPTValues = function() {
 			learnCPTSingleNode(0, parents, csvData, node.tbl);
 		}
 	}
-	// for(var n in nodes) {
-	// 	var node = nodes[n];
-	// 	if(node.csvData) {
-	// 		var parents = getNodeParents(node);
-	// 		parents.push(node.id);
-	// 		learnCPTSingleNode(0, parents, _.range(0, csvData.length), node.tbl);
-	// 	}
-	// }
 }
 
 //remove the alert message
@@ -411,14 +423,22 @@ var learnParameters = function() {
 		if (d3.select("#control").select("h3.node-label")[0][0] !== null) {
 			flag = parseInt(d3.select("#control").select("h3.node-label")[0][0].id);
 		}
-		else {
-			// clear the display field
-			// only clear the display field if it is different from displaying node info
-			clearDisplayField();			
-		}
+		// else {
+		// 	// clear the display field
+		// 	// only clear the display field if it is different from displaying node info
+		// 	clearDisplayField();			
+		// }
+
+		// update glyphicon for parameters
+		d3.select("#glyphicon-params").remove();
+		d3.select("#p-params").append("span")
+							  .attr("id", "glyphicon-params")
+							  .attr("class", "glyphicon glyphicon-ok-circle glyphicon-navbar-ok")
+							  .attr("aria-hidden", "true");
 
 		//success message
-		var successDiv = control.insert("div", "h3.node-label")
+		// var successDiv = control.insert("div", "h3.node-label")
+		var successDiv = d3.select("#outer-control").insert("div", "#control")
 								.attr("class", "alert-text alert alert-success");
 		successDiv.append("span")
 				 	.attr("class", "glyphicon glyphicon-ok")
@@ -430,7 +450,7 @@ var learnParameters = function() {
 		successDiv.html(text);
 
 		//remove after 3 seconds
-		setTimeout(removeAlertMsg, 3000);
+		setTimeout(removeSuccessMsg, 3000);
 
 		//redisplay the table
 		if (flag !== null) {
@@ -466,6 +486,18 @@ var uploadSample = function(){
 		d3.select("#dataset-name")
 		.html("Dataset: " + uploadFile.name)
 		.classed("notice-text", true);
+
+		// update glyphicons if changes have happened
+		d3.select("#glyphicon-struct").remove();
+		d3.select("#p-struct").append("span")
+							  .attr("id", "glyphicon-struct")
+							  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+							  .attr("aria-hidden", "true");	
+		d3.select("#glyphicon-params").remove();
+		d3.select("#p-params").append("span")
+							  .attr("id", "glyphicon-params")
+							  .attr("class", "glyphicon glyphicon-ban-circle glyphicon-navbar-ban")
+							  .attr("aria-hidden", "true");
 
 		fileReader.onload = function(event){
 			rawTxt = fileReader.result;		

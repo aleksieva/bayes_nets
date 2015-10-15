@@ -253,11 +253,14 @@ var displayCPTRows = function(cpt, list, level, chain) {
 var cptColumnNames = function(parents, values){
 	var names = [];
 
+	// get parents' names
 	parents.forEach(function(parent) {
 		var filteredNode = nodes.filter(function(n) {
 			return n.id === parent;
 		})[0];
-		names.push(filteredNode.title.charAt(0).toUpperCase());
+		// names.push(filteredNode.title.charAt(0).toUpperCase());
+		// TODO try
+		names.push(filteredNode.title);
 	})
 
 	var currName = "P(" + names[names.length-1];

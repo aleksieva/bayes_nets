@@ -4,7 +4,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width initial-scale=1">
-		<title> Bayesian networks tool </title>
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<title> BayANet: A Bayesian networks tool </title>
 		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<link rel="stylesheet" href="css/bootstrap-tour.min.css">
 		<link rel="stylesheet" href="lib/d3-context-menu-master/css/d3-context-menu.css">    
@@ -16,26 +17,25 @@
 			<div class="container-fluid container-header">
 				<div class="navbar-header">
 					<!-- TODO add toggle button ??-->
-					<a class="navbar-title navbar-brand tour-step tour-step-one" href="#">Bayesian Networks Tool</a>
+					<a class="navbar-title navbar-brand tour-step tour-step-one" href="#">BayANet: A Bayesian Networks Tool in the Browser</a>
 				</div>
-<!-- 				<div class="navbar-collapse collapse">
-					<ul class="nav navbar-nav navbar-right">
-						<li><a href='#' id='tutorial'>Tutorial</a></li>					
-						<li><a href='#' id='help'>Help</a></li>
-						<li><a href='#' id='about'>About</a></li>
-					</ul>
-				</div> -->
 			</div>
 		</nav>
 		<nav class="navbar navbar-default navbar-controls" role="navigation">
 			<div class="container-fluid">
 				<div class="navbar-header">
 					<!-- TODO toggles -->
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            		<span class="sr-only">Toggle navigation</span>
+		            <span class="icon-bar"></span>
+        		    <span class="icon-bar"></span>
+            		<span class="icon-bar"></span>
+          			</button>
 				</div> 
 				<div class="navbar-collapse collapse"> <!-- id=menu? -->
-					<ul class="nav navbar-nav">
+					<ul class="nav navbar-nav tour-step tour-step-two">
 						<!-- Load/Save -->
-						<li class="dropdown">
+						<li class="dropdown tour-step tour-step-nineteen-one">
 							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Load/Save<span class="caret"></span></a>
 							<ul class="dropdown-menu">
 								<li><input type="file" id="hidden-upload-2" class="hidden-upload"> </li>
@@ -43,7 +43,7 @@
             						<span class="glyphicon glyphicon-list pull-right" aria-hidden="true"></span>	
 								</a></li>
             					<li><a href='#' id='loadNet' class="control">Use Toy Network
-            						<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+            						<span class="glyphicon glyphicon-gift pull-right" aria-hidden="true"></span>
             					</a></li>
 								<li role="separator" class="divider"></li>
 								<li><input type="file" id="hidden-upload-3" class="hidden-upload"> </li>
@@ -67,11 +67,11 @@
 							</ul>
 						</li>
 						<!-- My Network -->
-						<li class="dropdown">
+						<li class="dropdown tour-step tour-step-dropdown tour-step-learning-one tour-step-learning-two">
 							<a href="#" class="control dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My Network<span class="caret"></span></a>
           					<ul class="dropdown-menu">
           						<li><a href='#' id='sample-net' class="control tour-step tour-step-thirteen">Sample from Network  
-									<span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-list-alt pull-right" aria-hidden="true"></span>
 								</a></li> 
 								<li><a href='#' id='learnStruct' class="control disabled">Learn Structure
 									<span class="glyphicon glyphicon-link pull-right" aria-hidden="true"></span>
@@ -92,8 +92,8 @@
 								<li><a href='#' id='about' class='control'>About this Tool
 									<span class="glyphicon glyphicon-user pull-right" aria-hidden="true"></span>								
 								</a></li>
-								<li><a href='#' id='about' class='control'>Bayesian Nets Information
-									<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>								
+								<li><a href='#' id='info' class='control'>Bayesian Nets Information
+									<span class="glyphicon glyphicon-info-sign pull-right" aria-hidden="true"></span>								
 								</a></li>
 								<li><a href='#' id='help' class='control'>Help
 									<span class="glyphicon glyphicon-question-sign pull-right" aria-hidden="true"></span>								
@@ -106,8 +106,15 @@
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 					<!-- change the text on data upload -->
-						<p id="dataset-name" class="navbar-text">Dataset: (none)</p>
-					</ul>
+						<p id="dataset-name" class="navbar-text tour-step tour-step-two-one">Dataset: (none)</p>
+					<!-- update if the structure and the parameters have been learnt -->
+						<p id="p-struct" class="navbar-text">Structure: 
+							<span id="glyphicon-struct" class="glyphicon glyphicon-ban-circle glyphicon-navbar-ban" aria-hidden="true"></span>
+						</p>
+						<p id="p-params" class="navbar-text">Parameters: 
+							<span id="glyphicon-params" class="glyphicon glyphicon-ban-circle glyphicon-navbar-ban" aria-hidden="true"></span>
+						</p>
+					</ul>														
 				</div>
 			</div> <!-- container-fluid -->
 		</nav>
@@ -118,7 +125,9 @@
 				<div class="col-sm-8 col-md-8 tour-step tour-step-three" id="workspace"> </div>
 				<!-- Control Field -->
 				<!-- col-sm-3 col-md-3 -->
-				<div class="col-sm-4 col-md-4 tour-step tour-step-four" id="control"> </div>
+				<div class="col-sm-4 col-md-4 tour-step tour-step-four" id="outer-control">
+					<div id="control"> </div>
+				</div>
 				<!-- Sample field -->
 				<!-- <div class="col-sm-9 col-md-10 pull-right" id="long-sample"> </div> -->
 			</div>

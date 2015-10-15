@@ -222,28 +222,17 @@ var displaySamples = function(samples, noSample, fSample) {
 		var warningDiv = control.append("div")
 								.attr("class", "alert-text alert alert-warning")
 		warningDiv.append("span")
-				  .attr("class", "glyphicon glyphicon-flag")
+				  .attr("class", "glyphicon glyphicon-info-sign")
 				  .attr("aria-hidden", "true");
 		warningDiv.append("span")
 				  .attr("class", "sr-only")
 				  .text("Warning");
-		var text = warningDiv.html() + "Only the first 20 samples will be displayed. If you wish to view all the samples, download them by clicking the \'Download\' button."				  		  
+		var text = warningDiv.html() + " Only the first 20 samples will be displayed. If you wish to view all the samples, download them by clicking the \'Download\' button."				  		  
 		warningDiv.html(text);
 	}
 
 	// append table for the results
 	var sampleTbl;
-
-	//TODO remove?
-	// if(noSample <= 10) {
-	// 	sampleTbl = control.append("div");
-	// }
-	// else {
-	// 	sampleTbl = d3.select("#long-sample").append("div");
-	// }
-	// sampleTbl = sampleTbl.attr("class", "table-responsive sample-table")
-	// 		 			 .append("table")
-	// 					 .attr("class", "table table-bayes sample-tbl");	
 	sampleTbl = control.append("div")
 						   .attr("class", "table-responsive sample-table")
 						   .append("table")
@@ -285,6 +274,32 @@ var checkExistingCpts = function() {
 		return false;
 	}
 	return true; 
+}
+
+// calculate in advance the time needed for 100 samples to inform the user
+var estimatedSampling = function() {
+	var estimatedSamples = 100;
+	var start = new Date().getTime();
+	// console.log(start);
+	for(var i=0; i<estimatedSamples; i++) {
+		singleSample();
+	}
+	var stop = new Date().getTime();
+	// console.log(stop);
+	var time = (stop - start)/1000;
+	// console.log(time);
+
+	//info message
+	var infoDiv = control.append("div")
+						.attr("class", "alert-text alert alert-info")
+	infoDiv.append("span")
+			  .attr("class", "glyphicon glyphicon-cog")
+			  .attr("aria-hidden", "true");
+	infoDiv.append("span")
+			  .attr("class", "sr-only")
+			  .text("Info");
+	var text = infoDiv.html() + " Estimated time for sampling 100 samples is " + time + " seconds.";				  		  
+	infoDiv.html(text);	
 }
 
 var ancestralSampling = function(fSample) {
@@ -329,74 +344,74 @@ var ancestralSampling = function(fSample) {
 }
 
 var samplingSettings = function(){
-	// if(sampleMode) {
-		// clear the display field
-		clearDisplayField();
-		// deselect if there is a selected node
-		selectedNode = null;
-		refresh();	
+	// clear the display field
+	clearDisplayField();
+	// deselect if there is a selected node
+	selectedNode = null;
+	refresh();	
 
-		//keep the fixed values here
-		var fixedSamples = {};
-		nodes.forEach(function(node){
-			fixedSamples[node.id] = "none";
-		})
+	//keep the fixed values here
+	var fixedSamples = {};
+	nodes.forEach(function(node){
+		fixedSamples[node.id] = "none";
+	})
 
-		//number of samples
-		control.append("label")
-			.attr("for", "num-samples-input")
-			.attr("class", "label-text")
-			.text("Choose number of samples:")
-		control.append("input")
-		  	   .attr("id", "num-samples-input")
-			   .attr("type", "number")
-			   .attr("min", "1");
-		control.append("button")
-			   .attr("class", "btn btn-default btn-bayes-short margin-btn")
-			   .attr("id", "runSamplingBtn")
-			   .html("Run")
-			   .on("click", function(){
-					ancestralSampling(fixedSamples);
-			   });
+	// estimated time for sampling
+	estimatedSampling();
 
-		//fixed ancestral sampling
-		control.append("hr");
-		control.append("label")
-			   .attr("for", "fixed-sampling-div")
-			   .attr("class", "label-text")
-			   .text("Fix the values of any of the nodes:");
-		var fixedTbl = control.append("div")
-			   .attr("class", "table-responsive sample-table")
-			   .attr("id", "fixed-sampling-div")
-			   .append("table")
-			   .attr("class", "table table-bayes");
-		nodes.forEach(function(node) {
-			var row = fixedTbl.append("tr");
+	//number of samples
+	control.append("label")
+		.attr("for", "num-samples-input")
+		.attr("class", "label-text")
+		.text("Choose number of samples:")
+	control.append("input")
+	  	   .attr("id", "num-samples-input")
+		   .attr("type", "number")
+		   .attr("min", "1");
+	control.append("button")
+		   .attr("class", "btn btn-default btn-bayes-short margin-btn")
+		   .attr("id", "runSamplingBtn")
+		   .html("Run")
+		   .on("click", function(){
+				ancestralSampling(fixedSamples);
+		   });
 
-			//append node titles
-			row.append("td").text(node.title);
-			//append selects with values
-			var select = row.append("td")
-								 .append("select")
-								 .attr("id", node.id)
-								 .attr("class", "form-control")
-								 .on("change", function(){
-								 	fixedSamples[this.id] = this.options[this.selectedIndex].value;
-								 	console.log(fixedSamples);
-								 });
+	//fixed ancestral sampling
+	control.append("hr");
+	control.append("label")
+		   .attr("for", "fixed-sampling-div")
+		   .attr("class", "label-text")
+		   .text("Fix the values of any of the nodes:");
+	var fixedTbl = control.append("div")
+		   .attr("class", "table-responsive sample-table")
+		   .attr("id", "fixed-sampling-div")
+		   .append("table")
+		   .attr("class", "table table-bayes");
+	nodes.forEach(function(node) {
+		var row = fixedTbl.append("tr");
 
-			//default option
+		//append node titles
+		row.append("td").text(node.title);
+		//append selects with values
+		var select = row.append("td")
+							 .append("select")
+							 .attr("id", node.id)
+							 .attr("class", "form-control")
+							 .on("change", function(){
+							 	fixedSamples[this.id] = this.options[this.selectedIndex].value;
+							 	// console.log(fixedSamples);
+							 });
+
+		//default option
+		select.append("option")
+			  .attr("value", "none")
+			  .attr("selected", true)
+			  .text("Not fixed")//?
+		//all possible values for this node	  
+		node.values.forEach(function(value) {
 			select.append("option")
-				  .attr("value", "none")
-				  .attr("selected", true)
-				  .text("Not fixed")//?
-			//all possible values for this node	  
-			node.values.forEach(function(value) {
-				select.append("option")
-				      .attr("value", value)
-				      .text(value);
-			});
-		})
-	// }
-
+			      .attr("value", value)
+			      .text(value);
+		});
+	})
 }
