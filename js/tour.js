@@ -278,24 +278,55 @@ var startTour = function() {
       {
         element: ".tour-step.tour-step-learning-one",
         placement: "bottom",
-        backdrop:true ,
+        backdrop:true,
         title: "Learning Structure",
         content: "Click the dropdown menu and select 'Learn Structure'."
       },
+      {
+        element: ".tour-step.tour-step-structure-learnt",
+        placement: "right",
+        title: "Structure",
+        content: "The structure has been learnt."
+      },      
       {
         element: ".tour-step.tour-step-learning-two",
         placement: "bottom",
         backdrop:true ,
         title: "Learning Parameters",
         content: "Click the dropdown menu and select 'Learn Parameters'."
-      },                        
+      },
+      {
+        element: ".tour-step.tour-step-params-learnt",
+        placement: "top",
+        title: "Learning Parameters",
+        content: "Click on the 'Rain' node to select it.",
+        reflex:true,
+        onShow: function(tour) {
+          var selection = d3.selectAll("g.node");
+          selection.filter(function(d, i) {return d.title === "Rain"})
+                   .classed("tour-step tour-step-params-learnt", true);
+        },
+        onShown: function(tour) {
+          $(".popover.tour-tour .popover-navigation .btn-group .btn[data-role=next]").prop("disabled", true);
+        },                                 
+      },
+      {
+        element: ".tour-step.tour-step-updated-cpt",
+        placement: "left",
+        title: "Learning Parameters",
+        content: "Notice that the CPT has been updated.",
+        onShow: function(tour) {
+          d3.select(".cpt-table.table-bayes")
+          .classed("tour-step tour-step-updated-cpt", true);
+        },                                
+      },
       {
         element: ".tour-step.tour-step-twenty",
         placement: "bottom",
         orphan: true,
         backdrop: true,
         title: "Thank you.",
-        content: "Have fun exploring the features of the tool.",
+        content: "Have fun exploring the other features of the tool.",
       },                    
     ]);
  
