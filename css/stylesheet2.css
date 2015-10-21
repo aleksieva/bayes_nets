@@ -357,17 +357,20 @@ path.conn.orientated {
 }
 
 .instructions-text-title {
-	font-size: 15px;
-	font-family: sans-serif;
-	color : #0489B1;
+	font-size: 20px;
+	font-family: Arial, sans-serif;
+	/*color : #0489B1;*/
+	color:#CC0B7C;		
 	padding-top: 5px;
 	font-weight:200px;
 }
 
 .instructions-text-control {
-	font-size: 14px;
-	font-family: sans-serif;
-	color : black;
+	font-size: 18px;
+	font-weight: 200px;
+	font-family: Arial, sans-serif;
+	/*color : black;*/
+	color: #0489B1;
 }	
 
 .label-text {

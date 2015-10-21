@@ -223,10 +223,14 @@ var loadDefaultNetwork = function(filepath, isInitial, val) {
 	  if (isInitial) {
 		//display instructions
 		displayHelp();
+		// forceLayout(nodes, edges);
 	  }
 	  else {
 	  	loadExampleNetworks(val);
-	  }; 		  
+	  };
+
+	  // start the force layout 
+	  forceLayout(nodes, edges);
 	});
 };
 

@@ -1,6 +1,29 @@
 .my-slider{
-	background: #F8F8F8 !important;
+	/*background: #F8F8F8 !important;*/
+	background: url(../img/paper.png) repeat 0% 0%;
 	min-width: 10px !important;
-	margin:0 !important;
-	border: 2px solid #E7E7E7;
+	/*margin:0 !important;*/
+/*	border: 2px solid #E7E7E7;
+    border-top: 15px solid #E7E7E7;
+    border-bottom: 15px solid #E7E7E7;*/
+}
+
+.da-arrows span{
+	background: #01A9DB !important;
+	top:86% !important;
+}
+
+.da-dots{
+	bottom: 85% !important;
+}
+
+.da-dots span{
+	background: #01A9DB !important;
+}
+
+.da-slide p{
+	width: 87%;
+	height: inherit;
+	top:80px;
+	position: relative;
 }

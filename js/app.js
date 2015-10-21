@@ -179,14 +179,14 @@ var displayHelp = function() {
 	// Start the slider
 	$('#help-slider').cslider({
 		// index of current slide
-		current		: 0, 	
+		// current		: 0, 	
 		// increment the background position 
 		// (parallax effect) when sliding	
 		bgincrement	: 50,	
 		// slideshow on / off	
 		autoplay	: true,
 		// time between transitions	
-		interval	: 3000 
+		// interval	: 3000 
 	});
 
 }
@@ -269,7 +269,17 @@ var displayAbout = function() {
 		  .classed("da-slide", true)
 		  .append("p")
 		  .attr("class", "instructions-text text-justified")
-		  .html("This tool has been developed as a third year project by Anna Aleksieva in the School of Computer Science.");
+		  .html("BayANet has been developed as a third year project by Anna Aleksieva in the School of Computer Science.");
+	slider.append("div")
+		  .classed("da-slide", true)
+		  .append("p")
+		  .attr("class", "instructions-text text-justified")
+		  .html("The tool has been developed to serve as a teaching tool for COMP61011.");	
+	slider.append("div")
+		  .classed("da-slide", true)
+		  .append("p")
+		  .attr("class", "instructions-text text-justified")
+		  .html("The aim of this application is to overcome the limitations of other existing Bayesian Networks tools and to provide beginners with understanding of the core principles of BNs.");	
 
 	// Append the arrows 
 	var arrowsNav = slider.append("nav")
@@ -294,7 +304,52 @@ var displayAbout = function() {
 };
 
 var displayResources = function(){
+
 	clearDisplayField();
+
+	// Append the slider
+	var slider = control.append("div")
+		   				.classed("da-slider my-slider", true)
+		   				.attr("id", "resources-slider");
+// TODO
+	// Append frames for the slideshow 
+	// slider.append("div")
+	// 	  .classed("da-slide", true)
+	// 	  .append("p")
+	// 	  .attr("class", "instructions-text text-justified")
+	// 	  .html("BayANet has been developed as a third year project by Anna Aleksieva in the School of Computer Science.");
+	// slider.append("div")
+	// 	  .classed("da-slide", true)
+	// 	  .append("p")
+	// 	  .attr("class", "instructions-text text-justified")
+	// 	  .html("The tool has been developed to serve as a teaching tool for COMP61011.");	
+	// slider.append("div")
+	// 	  .classed("da-slide", true)
+	// 	  .append("p")
+	// 	  .attr("class", "instructions-text text-justified")
+	// 	  .html("The aim of this application is to overcome the limitations of other existing Bayesian Networks tools and to provide beginners with understanding of the core principles of BNs.");	
+
+
+	// Append the arrows 
+	var arrowsNav = slider.append("nav")
+						  .attr("class", "da-arrows");
+	arrowsNav.append("span")
+			 .attr("class", "da-arrows-prev");
+	arrowsNav.append("span")
+			 .attr("class", "da-arrows-next");
+
+	// Start the slider
+	$('#resouces-slider').cslider({
+		// index of current slide
+		current		: 0, 	
+		// increment the background position 
+		// (parallax effect) when sliding	
+		bgincrement	: 50,	
+		// slideshow on / off	
+		autoplay	: true,
+		// time between transitions	
+		interval	: 3000 
+	});	
 };
 
 var refresh = function(){
@@ -709,9 +764,10 @@ var init = function() {
 	  	displayInfo();
 	  });
 	// resources for BNS
-	d3.select("#info")
+	d3.select("#resources")
 	  .on("click", function(){
-	  	displayResources();
+	  	// TODO
+	  	// displayResources();
 	  })
 
 	// example networks
